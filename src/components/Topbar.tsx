@@ -1,0 +1,95 @@
+import { useState } from 'react';
+import { Search, Filter, User, HelpCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface TopbarProps {
+  onSearchChange?: (query: string) => void;
+  onFilterChange?: (filter: string) => void;
+  className?: string;
+}
+
+export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    onSearchChange?.(value);
+  };
+
+  return (
+    <div className={`bg-card border-b border-border px-6 py-4 flex items-center justify-between ${className}`}>
+      {/* Search and filters */}
+      <div className="flex items-center space-x-4 flex-1 max-w-2xl">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Zoek in subject, afzender of label..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
+        <Select onValueChange={onFilterChange}>
+          <SelectTrigger className="w-32">
+            <Filter className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Filter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle</SelectItem>
+            <SelectItem value="urgent">Urgent</SelectItem>
+            <SelectItem value="unread">Ongelezen</SelectItem>
+            <SelectItem value="complaints">Klachten</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Status and user menu */}
+      <div className="flex items-center space-x-4">
+        <Badge variant="secondary" className="text-xs">
+          Demo Modus
+        </Badge>
+        
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-muted-foreground"
+          title="Sneltoetsen (druk op ?)"
+        >
+          <HelpCircle className="h-4 w-4" />
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="text-sm">Support Team</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>Profiel</DropdownMenuItem>
+            <DropdownMenuItem>Instellingen</DropdownMenuItem>
+            <DropdownMenuItem>Uitloggen</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+}
