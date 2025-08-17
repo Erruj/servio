@@ -28,7 +28,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     locale: nl 
   });
 
-  const fullDate = format(new Date(mail.receivedAt), 'PPP om HH:mm', { locale: nl });
+  const fullDate = format(new Date(mail.receivedAt), "PPP 'om' HH:mm", { locale: nl });
 
   return (
     <div className={`bg-card overflow-y-auto ${className}`}>
