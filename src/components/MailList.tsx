@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { getCategoryColor, getUrgencyColor, getSentimentColor } from '@/lib/dummy';
 
 interface MailListProps {
   mails: MailItem[];
@@ -56,6 +55,12 @@ export function MailList({
     onSelectMail(mail);
   };
 
+  // Get first 10 words from email body
+  const getEmailPreview = (body: string): string => {
+    const words = body.split(' ').slice(0, 10);
+    return words.join(' ') + (body.split(' ').length > 10 ? '...' : '');
+  };
+
   // Mock analysis data for display (in real app this would come from AI analysis)
   const getMailAnalysis = (mail: MailItem) => {
     // Simple heuristic for demo
@@ -81,26 +86,50 @@ export function MailList({
     return { category, urgency, sentiment };
   };
 
+  const getCategoryClassName = (category: Category): string => {
+    const classes = {
+      'Retour': 'category-retour',
+      'Klacht': 'category-klacht', 
+      'Factuur': 'category-factuur',
+      'Vraag': 'category-vraag',
+      'Technisch': 'category-technisch',
+      'Overig': 'category-overig'
+    };
+    return classes[category];
+  };
+
+  const getUrgencyClassName = (urgency: Urgency): string => {
+    const classes = {
+      'Hoog': 'urgency-high',
+      'Normaal': 'urgency-normal', 
+      'Laag': 'urgency-low'
+    };
+    return classes[urgency];
+  };
+
   return (
-    <div className={cn('bg-card border-r border-border overflow-hidden', className)}>
+    <div className={cn('bg-card border-r border-border overflow-hidden shadow-card', className)}>
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground">
-          Inbox ({filteredMails.length})
+      <div className="p-6 border-b border-border bg-secondary/30">
+        <h2 className="text-xl font-bold text-foreground flex items-center">
+          📧 Inbox ({filteredMails.length})
         </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Inkomende support emails
+        </p>
       </div>
 
       {/* Mail list */}
       <div className="overflow-y-auto flex-1">
         {filteredMails.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">
-            <p>Geen emails gevonden</p>
+            <p className="text-lg mb-2">Geen emails gevonden</p>
             {searchQuery && (
-              <p className="text-sm mt-2">Probeer een andere zoekterm</p>
+              <p className="text-sm">Probeer een andere zoekterm</p>
             )}
           </div>
         ) : (
-          <div className="space-y-1 p-2">
+          <div className="space-y-0">
             {filteredMails.map((mail) => {
               const isSelected = mail.id === selectedMailId;
               const analysis = getMailAnalysis(mail);
@@ -108,26 +137,33 @@ export function MailList({
                 addSuffix: true, 
                 locale: nl 
               });
+              const emailPreview = getEmailPreview(mail.body);
+              const senderName = mail.from.split('@')[0].replace('.', ' ');
 
               return (
                 <div
                   key={mail.id}
                   onClick={() => handleMailClick(mail)}
                   className={cn(
-                    'p-4 rounded-xl cursor-pointer transition-all hover:bg-secondary/50',
-                    isSelected && 'bg-primary/10 border border-primary/20',
-                    mail.unread && 'bg-secondary/30'
+                    'p-5 cursor-pointer transition-all duration-200 border-b border-border hover:bg-secondary/50',
+                    isSelected && 'bg-primary/10 border-l-4 border-l-primary shadow-subtle',
+                    mail.unread && 'bg-secondary/20'
                   )}
                 >
                   {/* Header row */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
                       {mail.unread && (
-                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse" />
                       )}
-                      <span className="font-medium text-sm text-foreground truncate max-w-48">
-                        {mail.from.split('@')[0]}
+                      <span className="font-semibold text-foreground text-sm">
+                        {senderName}
                       </span>
+                      {/* Urgency indicator */}
+                      <div className={cn(
+                        'w-2.5 h-2.5 rounded-full',
+                        getUrgencyClassName(analysis.urgency)
+                      )} />
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {timeAgo}
@@ -135,40 +171,36 @@ export function MailList({
                   </div>
 
                   {/* Subject */}
-                  <h3 className="font-medium text-foreground mb-2 line-clamp-1">
+                  <h3 className="font-semibold text-foreground mb-2 line-clamp-1 text-base">
                     {mail.subject}
                   </h3>
 
-                  {/* Snippet */}
+                  {/* Email preview - first 10 words */}
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {mail.snippet}
+                    {emailPreview}
                   </p>
 
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-1">
+                  {/* Category badge and attachments */}
+                  <div className="flex items-center justify-between">
                     <Badge 
-                      variant="secondary" 
-                      className={cn('text-xs', getCategoryColor(analysis.category))}
+                      variant="outline" 
+                      className={cn('text-xs font-medium border', getCategoryClassName(analysis.category))}
                     >
                       {analysis.category}
                     </Badge>
-                    <Badge 
-                      variant="secondary"
-                      className={cn('text-xs', getUrgencyColor(analysis.urgency))}
-                    >
-                      {analysis.urgency}
-                    </Badge>
-                    <Badge 
-                      variant="secondary"
-                      className={cn('text-xs', getSentimentColor(analysis.sentiment))}
-                    >
-                      {analysis.sentiment}
-                    </Badge>
-                    {mail.attachments && mail.attachments.length > 0 && (
-                      <Badge variant="outline" className="text-xs">
-                        📎 {mail.attachments.length}
-                      </Badge>
-                    )}
+                    
+                    <div className="flex items-center space-x-2">
+                      {mail.attachments && mail.attachments.length > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          📎 {mail.attachments.length}
+                        </Badge>
+                      )}
+                      {mail.unread && (
+                        <Badge variant="default" className="text-xs bg-primary">
+                          Nieuw
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
