@@ -58,11 +58,10 @@ const Inbox = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-primary">
-                    🎉 Welkom bij Smart Support Desk
+                    🎉 Welkom bij Promptmate Desk
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Sneller antwoorden met AI — zonder de controle te verliezen. 
-                    Koppel je mailbox of begin met demo-data.
+                    Je AI-assistent voor klantenservice. Selecteer links een mail om te starten.
                   </p>
                 </div>
                 <div className="flex space-x-3">

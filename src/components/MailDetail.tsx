@@ -293,17 +293,17 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           </>
         )}
 
-        {/* AI Reply Suggestion */}
-        <Card className="shadow-card bg-gradient-to-br from-primary/5 to-accent/5">
-          <CardHeader>
+        {/* AI Reply Suggestion - Prominent Section */}
+        <Card className="shadow-elevated border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 ring-1 ring-primary/10">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold flex items-center">
-                <Sparkles className="h-5 w-5 mr-2 text-primary" />
+              <CardTitle className="text-xl font-bold flex items-center text-primary">
+                <Sparkles className="h-6 w-6 mr-3 text-primary animate-pulse" />
                 🤖 AI Suggestie Antwoord
               </CardTitle>
               <div className="flex items-center space-x-3">
                 <Select value={tone} onValueChange={(value) => setTone(value as ToneOfVoice)}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-32 shadow-subtle">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -318,12 +318,16 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   size="sm"
                   onClick={generateAiReply}
                   disabled={isGeneratingReply}
+                  className="shadow-subtle"
                 >
                   <RefreshCw className={`h-4 w-4 mr-2 ${isGeneratingReply ? 'animate-spin' : ''}`} />
                   Vernieuw
                 </Button>
               </div>
             </div>
+            <p className="text-sm text-muted-foreground mt-2 bg-white/50 p-3 rounded-lg">
+              De AI heeft dit antwoord gegenereerd op basis van de email-inhoud en je bedrijfsrichtlijnen.
+            </p>
           </CardHeader>
           <CardContent>
             {isGeneratingReply ? (
@@ -337,7 +341,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
                 readOnly={!isEditingReply}
-                className={`min-h-48 resize-none ${!isEditingReply ? 'bg-secondary/30' : ''}`}
+                className={`min-h-48 resize-none text-base shadow-subtle ${!isEditingReply ? 'bg-white/70' : 'bg-white'}`}
                 placeholder="AI genereert hier een antwoord..."
               />
             )}
@@ -345,10 +349,11 @@ export function MailDetail({ mail, className }: MailDetailProps) {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 pt-2">
           <Button 
             onClick={handleSendReply}
-            className="flex-1 bg-success text-success-foreground hover:bg-success/90 shadow-card hover:shadow-elevated transition-all duration-200"
+            size="lg"
+            className="flex-1 bg-green-600 text-white hover:bg-green-700 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
             disabled={isGeneratingReply || !reply.trim()}
           >
             <Send className="h-5 w-5 mr-2" />
@@ -358,7 +363,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           <Button 
             variant={isEditingReply ? "default" : "outline"}
             onClick={() => setIsEditingReply(!isEditingReply)}
-            className="flex-1 shadow-card hover:shadow-elevated transition-all duration-200"
+            size="lg"
+            className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
             disabled={isGeneratingReply}
           >
             <Edit className="h-5 w-5 mr-2" />
@@ -368,7 +374,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           <Button 
             variant="outline" 
             onClick={handleMarkAsResolved}
-            className="flex-1 shadow-card hover:shadow-elevated transition-all duration-200"
+            size="lg"
+            className="flex-1 bg-gray-500 text-white hover:bg-gray-600 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
           >
             <CheckCircle2 className="h-5 w-5 mr-2" />
             Markeer als afgehandeld

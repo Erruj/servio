@@ -146,22 +146,30 @@ export function MailList({
                   onClick={() => handleMailClick(mail)}
                   className={cn(
                     'p-5 cursor-pointer transition-all duration-200 border-b border-border hover:bg-secondary/50',
-                    isSelected && 'bg-primary/10 border-l-4 border-l-primary shadow-subtle',
-                    mail.unread && 'bg-secondary/20'
+                    isSelected && 'bg-primary/10 border-l-4 border-l-primary shadow-card ring-1 ring-primary/20',
+                    mail.unread && 'bg-secondary/30'
                   )}
                 >
-                  {/* Header row */}
+                   {/* Header row */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      {mail.unread && (
-                        <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse" />
-                      )}
-                      <span className="font-semibold text-foreground text-sm">
-                        {senderName}
-                      </span>
+                      {/* Avatar */}
+                      <div className="avatar-placeholder">
+                        {senderName.charAt(0).toUpperCase()}
+                      </div>
+                      
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-foreground text-sm">
+                          {senderName}
+                        </span>
+                        {mail.unread && (
+                          <span className="text-xs text-primary font-medium">Nieuw</span>
+                        )}
+                      </div>
+                      
                       {/* Urgency indicator */}
                       <div className={cn(
-                        'w-2.5 h-2.5 rounded-full',
+                        'w-3 h-3 rounded-full shadow-sm',
                         getUrgencyClassName(analysis.urgency)
                       )} />
                     </div>
