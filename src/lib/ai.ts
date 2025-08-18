@@ -3,18 +3,29 @@
 
 import { MailItem, AnalysisResult, ReplyGenerationParams, TemplateItem, Category, Urgency, Sentiment } from '@/types';
 import { dummyTemplates } from './dummy';
+import { sanitizeText, aiInputSchema, checkRateLimit, SecurityError, handleSecurityError } from '@/lib/security';
 
 /**
  * Mock function to analyze email content and generate insights
  * TODO: Replace with actual AI analysis using OpenAI/Claude/etc
  */
 export async function analyzeEmail(mail: MailItem): Promise<AnalysisResult> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+  try {
+    // Rate limiting check
+    if (!checkRateLimit(`analyze_${mail.id}`, 5, 60000)) {
+      throw new SecurityError('Te veel analyseverzoeken. Probeer het later opnieuw.');
+    }
+
+    // Sanitize input
+    const sanitizedSubject = sanitizeText(mail.subject);
+    const sanitizedBody = sanitizeText(mail.body);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
   
-  // Simple heuristic-based analysis for demo purposes
-  const body = mail.body.toLowerCase();
-  const subject = mail.subject.toLowerCase();
+    // Simple heuristic-based analysis for demo purposes
+    const body = sanitizedBody.toLowerCase();
+    const subject = sanitizedSubject.toLowerCase();
   
   let category: Category = 'Overig';
   let urgency: Urgency = 'Normaal';
@@ -60,14 +71,17 @@ export async function analyzeEmail(mail: MailItem): Promise<AnalysisResult> {
   const policyFlags = checkPolicyFlags(mail, category);
   
   return {
-    summary,
-    bullets,
-    category,
-    urgency,
-    sentiment,
-    suggestedTemplateId: suggestedTemplate?.id,
-    policyFlags
-  };
+      summary,
+      bullets,
+      category,
+      urgency,
+      sentiment,
+      suggestedTemplateId: suggestedTemplate?.id,
+      policyFlags
+    };
+  } catch (error) {
+    throw new SecurityError(handleSecurityError(error));
+  }
 }
 
 /**
@@ -75,8 +89,21 @@ export async function analyzeEmail(mail: MailItem): Promise<AnalysisResult> {
  * TODO: Replace with actual AI generation
  */
 export async function generateReply(params: ReplyGenerationParams): Promise<string> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
+  try {
+    // Validate and sanitize input
+    const validatedInput = aiInputSchema.parse({
+      content: params.mail.body,
+      tone: params.tone || 'professional',
+      language: params.language || 'NL'
+    });
+
+    // Rate limiting check
+    if (!checkRateLimit(`reply_${params.mail.id}`, 3, 60000)) {
+      throw new SecurityError('Te veel antwoordverzoeken. Probeer het later opnieuw.');
+    }
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
   
   const { mail, analysis, tone, language, template } = params;
   
@@ -90,27 +117,34 @@ export async function generateReply(params: ReplyGenerationParams): Promise<stri
     .replace('{{reset_link}}', 'https://example.com/reset?token=abc123')
     .replace('{{invoice_number}}', extractInvoiceNumber(mail.body) || 'INV-2024-001');
   
-  // Adjust tone
-  let reply = adjustToneOfVoice(baseTemplate, tone, language);
-  
-  return reply;
+    // Adjust tone
+    let reply = adjustToneOfVoice(baseTemplate, tone, language);
+    
+    return sanitizeText(reply);
+  } catch (error) {
+    throw new SecurityError(handleSecurityError(error));
+  }
 }
 
 /**
  * Regenerate reply with variation
  */
 export async function regenerateReply(params: ReplyGenerationParams): Promise<string> {
-  // Add some variation to the reply
-  const baseReply = await generateReply(params);
-  
-  // Simple variation - in real implementation, this would be more sophisticated
-  const variations = [
-    baseReply,
-    baseReply.replace('Dank je', 'Bedankt'),
-    baseReply.replace('Met vriendelijke groet', 'Hartelijke groet'),
-  ];
-  
-  return variations[Math.floor(Math.random() * variations.length)];
+  try {
+    // Add some variation to the reply
+    const baseReply = await generateReply(params);
+    
+    // Simple variation - in real implementation, this would be more sophisticated
+    const variations = [
+      baseReply,
+      baseReply.replace('Dank je', 'Bedankt'),
+      baseReply.replace('Met vriendelijke groet', 'Hartelijke groet'),
+    ];
+    
+    return variations[Math.floor(Math.random() * variations.length)];
+  } catch (error) {
+    throw new SecurityError(handleSecurityError(error));
+  }
 }
 
 /**

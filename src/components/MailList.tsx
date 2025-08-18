@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { searchQuerySchema, sanitizeText, SecurityError } from '@/lib/security';
+import { useToast } from '@/hooks/use-toast';
 
 interface MailListProps {
   mails: MailItem[];
@@ -22,12 +24,34 @@ export function MailList({
   filter = 'all',
   className 
 }: MailListProps) {
+  const { toast } = useToast();
+
+  // Validate and sanitize search query
+  const safeSearchQuery = useMemo(() => {
+    if (!searchQuery) return '';
+    
+    try {
+      if (searchQuery.length > 0) {
+        searchQuerySchema.parse(searchQuery);
+      }
+      return sanitizeText(searchQuery);
+    } catch (error) {
+      if (error instanceof SecurityError) {
+        toast({
+          title: "Ongeldige zoekopdracht",
+          description: "Gebruik alleen letters, cijfers en basis leestekens.",
+          variant: "destructive"
+        });
+      }
+      return '';
+    }
+  }, [searchQuery, toast]);
   const filteredMails = useMemo(() => {
     let filtered = mails;
 
     // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (safeSearchQuery) {
+      const query = safeSearchQuery.toLowerCase();
       filtered = filtered.filter(mail => 
         mail.subject.toLowerCase().includes(query) ||
         mail.from.toLowerCase().includes(query) ||
@@ -49,7 +73,7 @@ export function MailList({
     }
 
     return filtered;
-  }, [mails, searchQuery, filter]);
+  }, [mails, safeSearchQuery, filter]);
 
   const handleMailClick = (mail: MailItem) => {
     onSelectMail(mail);
@@ -124,7 +148,7 @@ export function MailList({
         {filteredMails.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">
             <p className="text-lg mb-2">Geen emails gevonden</p>
-            {searchQuery && (
+            {safeSearchQuery && (
               <p className="text-sm">Probeer een andere zoekterm</p>
             )}
           </div>

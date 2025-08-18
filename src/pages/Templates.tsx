@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/table';
 import { TemplateItem, Category, Language } from '@/types';
 import { dummyTemplates } from '@/lib/dummy';
+import { templateSchema, searchQuerySchema, sanitizeText, SecurityError, handleSecurityError } from '@/lib/security';
 import { 
   Plus, 
   Edit, 
@@ -48,6 +49,26 @@ const Templates = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<TemplateItem | null>(null);
   const { toast } = useToast();
+
+  // Validate search query
+  const handleSearchChange = (value: string) => {
+    try {
+      if (value.length > 0) {
+        searchQuerySchema.parse(value);
+      }
+      setSearchQuery(sanitizeText(value));
+    } catch (error) {
+      if (error instanceof SecurityError) {
+        toast({
+          title: "Ongeldige zoekopdracht",
+          description: "Gebruik alleen letters, cijfers en basis leestekens.",
+          variant: "destructive"
+        });
+        return;
+      }
+      setSearchQuery(sanitizeText(value));
+    }
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -110,10 +131,18 @@ const Templates = () => {
   };
 
   const handleSave = () => {
-    if (!formData.name.trim() || !formData.body.trim()) {
+    try {
+      // Validate form data with Zod
+      templateSchema.parse({
+        name: formData.name,
+        category: formData.category as Category,
+        language: formData.language,
+        body: formData.body
+      });
+    } catch (error) {
       toast({
         title: "Validatie fout",
-        description: "Naam en inhoud zijn verplicht.",
+        description: "Controleer de invoer. Naam en inhoud zijn verplicht en mogen alleen geldige tekens bevatten.",
         variant: "destructive"
       });
       return;
@@ -202,8 +231,9 @@ const Templates = () => {
                   <Input
                     placeholder="Zoek in templates..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                     className="pl-10"
+                    maxLength={100}
                   />
                 </div>
                 <Badge variant="secondary">
@@ -316,8 +346,9 @@ const Templates = () => {
                 <label className="text-sm font-medium">Naam</label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: sanitizeText(e.target.value) }))}
                   placeholder="Template naam..."
+                  maxLength={100}
                 />
               </div>
               
@@ -365,9 +396,10 @@ const Templates = () => {
               <label className="text-sm font-medium">Template Inhoud</label>
               <Textarea
                 value={formData.body}
-                onChange={(e) => setFormData(prev => ({ ...prev, body: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, body: sanitizeText(e.target.value) }))}
                 placeholder="Template inhoud met placeholders zoals {{naam}}, {{order_id}}, etc..."
                 className="min-h-48"
+                maxLength={5000}
               />
               <p className="text-xs text-muted-foreground">
                 Gebruik placeholders: {`{{naam}}, {{order_id}}, {{bedrag}}, {{reset_link}}, {{invoice_number}}`}

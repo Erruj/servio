@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { analyzeEmail, generateReply } from '@/lib/ai';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeHtml, SecurityError, handleSecurityError } from '@/lib/security';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface MailDetailProps {
   mail: MailItem | null;
@@ -67,7 +69,15 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       const result = await analyzeEmail(mail);
       setAnalysis(result);
     } catch (error) {
-      console.error('Analysis error:', error);
+      const errorMessage = error instanceof SecurityError 
+        ? error.message 
+        : handleSecurityError(error);
+      console.error('Analysis failed:', error);
+      toast({
+        title: "Analyse mislukt",
+        description: errorMessage,
+        variant: "destructive"
+      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -86,7 +96,15 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       });
       setReply(generatedReply);
     } catch (error) {
-      console.error('Reply generation error:', error);
+      const errorMessage = error instanceof SecurityError 
+        ? error.message 
+        : handleSecurityError(error);
+      console.error('Reply generation failed:', error);
+      toast({
+        title: "Antwoord genereren mislukt",
+        description: errorMessage,
+        variant: "destructive"
+      });
     } finally {
       setIsGeneratingReply(false);
     }
@@ -160,8 +178,9 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   };
 
   return (
-    <div className={`bg-background overflow-y-auto ${className}`}>
-      <div className="p-6 space-y-6">
+    <ErrorBoundary>
+      <div className={`bg-background overflow-y-auto ${className}`}>
+        <div className="p-6 space-y-6">
         {/* Header */}
         <div className="border-b border-border pb-4">
           <h1 className="text-2xl font-bold text-foreground mb-2 flex items-center">
@@ -227,9 +246,12 @@ export function MailDetail({ mail, className }: MailDetailProps) {
 
           <CardContent>
             <div className="bg-secondary/30 rounded-xl p-4">
-              <div className="whitespace-pre-wrap text-foreground leading-relaxed">
-                {mail.body}
-              </div>
+              <div 
+                className="whitespace-pre-wrap text-foreground leading-relaxed"
+                dangerouslySetInnerHTML={{ 
+                  __html: sanitizeHtml(mail.body.replace(/\n/g, '<br>')) 
+                }}
+              />
             </div>
           </CardContent>
         </Card>
@@ -381,7 +403,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             Markeer als afgehandeld
           </Button>
         </div>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
