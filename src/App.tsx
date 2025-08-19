@@ -12,6 +12,9 @@ import Statistics from "./pages/Statistics";
 import Templates from "./pages/Templates";
 import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
+import Signup from "./pages/Signup";
+import MailboxSetup from "./pages/MailboxSetup";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -49,6 +52,9 @@ function AppRoutes() {
       <Route path="/templates" element={<Templates />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/mailbox-setup" element={<MailboxSetup />} />
+      <Route path="/analytics" element={<Analytics />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

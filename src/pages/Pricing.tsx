@@ -133,6 +133,16 @@ const Pricing = () => {
                       className={`w-full shadow-card ${
                         plan.popular ? 'bg-primary hover:bg-primary/90' : ''
                       }`}
+                      onClick={() => {
+                        if (plan.name === 'Free') {
+                          window.location.href = '/signup';
+                        } else if (plan.name === 'Pro') {
+                          window.location.href = '/signup';
+                        } else {
+                          // Business plan - contact
+                          window.open('mailto:sales@promptmate.nl?subject=Business Plan Interesse', '_blank');
+                        }
+                      }}
                     >
                       {plan.buttonText}
                     </Button>
@@ -191,7 +201,11 @@ const Pricing = () => {
               <p className="text-muted-foreground">
                 Probeer Promptmate Desk 30 dagen gratis. Geen creditcard vereist.
               </p>
-              <Button size="lg" className="shadow-card">
+              <Button 
+                size="lg" 
+                className="shadow-card"
+                onClick={() => window.location.href = '/signup'}
+              >
                 Start je gratis trial
               </Button>
             </div>

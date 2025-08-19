@@ -149,7 +149,8 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 hover:bg-primary/10 transition-colors cursor-pointer">
+                <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 hover:bg-primary/10 transition-colors cursor-pointer"
+                     onClick={() => window.location.href = '/'}>
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-primary rounded-lg">
                       <AlertTriangle className="h-5 w-5 text-primary-foreground" />
@@ -161,7 +162,8 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-success/5 rounded-xl border border-success/10 hover:bg-success/10 transition-colors cursor-pointer">
+                <div className="p-4 bg-success/5 rounded-xl border border-success/10 hover:bg-success/10 transition-colors cursor-pointer"
+                     onClick={() => window.location.href = '/templates'}>
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-success rounded-lg">
                       <CheckCircle className="h-5 w-5 text-success-foreground" />
@@ -173,14 +175,15 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-warning/5 rounded-xl border border-warning/10 hover:bg-warning/10 transition-colors cursor-pointer">
+                <div className="p-4 bg-warning/5 rounded-xl border border-warning/10 hover:bg-warning/10 transition-colors cursor-pointer"
+                     onClick={() => window.location.href = '/analytics'}>
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-warning rounded-lg">
                       <MessageSquare className="h-5 w-5 text-warning-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">Templates</h3>
-                      <p className="text-sm text-muted-foreground">Beheer je email templates</p>
+                      <h3 className="font-semibold text-foreground">Bekijk Details</h3>
+                      <p className="text-sm text-muted-foreground">Uitgebreide analytics en statistieken</p>
                     </div>
                   </div>
                 </div>

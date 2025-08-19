@@ -10,17 +10,42 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { X, Sparkles, Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/hooks/use-toast';
 
 // Lazy load MailDetail for performance
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
 
 const Inbox = () => {
   const { user, logout } = useAuth();
-  const [mails, setMails] = useState<MailItem[]>(dummyMails);
+  const { toast } = useToast();
+  const [mails, setMails] = useState<MailItem[]>([]);
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [demoDataLoaded, setDemoDataLoaded] = useState(false);
+
+  // Load demo data function
+  const loadDemoData = () => {
+    setMails(dummyMails);
+    setDemoDataLoaded(true);
+    setShowOnboarding(false);
+    toast({
+      title: "📧 Demo-data geladen!",
+      description: "5 voorbeeldmails zijn toegevoegd aan je inbox.",
+    });
+  };
+
+  // Auto-load demo data on first visit if no mails
+  useEffect(() => {
+    if (mails.length === 0 && !demoDataLoaded) {
+      // Auto-load demo data after a short delay
+      const timer = setTimeout(() => {
+        loadDemoData();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [mails.length, demoDataLoaded]);
 
   // Mark mail as read when selected
   const handleMailSelect = (mail: MailItem) => {
@@ -57,42 +82,52 @@ const Inbox = () => {
             onFilterChange={setFilter}
           />
 
-        {/* Onboarding banner */}
-        {showOnboarding && (
-          <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-b border-primary/20 px-6 py-5 shadow-subtle">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <Sparkles className="h-6 w-6 text-primary" />
+          {/* Onboarding banner */}
+          {showOnboarding && (
+            <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-b border-primary/20 px-6 py-5 shadow-subtle">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-primary/20 rounded-xl">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-primary">
+                      🎉 Welkom bij Promptmate Desk
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Jouw AI-klantenservice-assistent. Koppel je mailbox of laad demo-data om te starten.
+                    </p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      className="shadow-card"
+                      onClick={loadDemoData}
+                    >
+                      📊 Laad demo-data
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="shadow-subtle"
+                      onClick={() => window.location.href = '/mailbox-setup'}
+                    >
+                      📧 Mailbox koppelen
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-primary">
-                    🎉 Welkom bij Promptmate Desk
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Jouw AI-klantenservice-assistent. Koppel je mailbox of laad demo-data om te starten.
-                  </p>
-                </div>
-                <div className="flex space-x-3">
-                  <Button variant="default" size="sm" className="shadow-card">
-                    📊 Laad demo-data
-                  </Button>
-                  <Button variant="outline" size="sm" className="shadow-subtle">
-                    📧 Mailbox koppelen
-                  </Button>
-                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowOnboarding(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowOnboarding(false)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </Button>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Content area - Two column layout */}
         <div className="flex-1 flex overflow-hidden">

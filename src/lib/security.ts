@@ -23,6 +23,43 @@ export const sanitizeText = (text: string): string => {
   });
 };
 
+// Input validation helper
+export const validateInput = (input: string, type: 'text' | 'email' | 'name' | 'password'): { isValid: boolean; sanitized: string } => {
+  if (!input || typeof input !== 'string') {
+    return { isValid: false, sanitized: '' };
+  }
+
+  const sanitized = input.trim().slice(0, 1000);
+  
+  switch (type) {
+    case 'email':
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return { 
+        isValid: emailRegex.test(sanitized) && sanitized.length <= 254, 
+        sanitized 
+      };
+    
+    case 'name':
+      return { 
+        isValid: sanitized.length >= 2 && sanitized.length <= 50, 
+        sanitized 
+      };
+    
+    case 'password':
+      return { 
+        isValid: sanitized.length >= 8 && sanitized.length <= 128, 
+        sanitized 
+      };
+    
+    case 'text':
+    default:
+      return { 
+        isValid: sanitized.length > 0 && sanitized.length <= 1000, 
+        sanitized 
+      };
+  }
+};
+
 // Validation schemas
 export const emailSchema = z.string().email().max(254);
 
