@@ -4,21 +4,24 @@ export const dummyMails: MailItem[] = [
   {
     id: 'mail_001',
     from: 'jan.bakker@email.com',
-    to: ['support@bedrijf.nl'],
+    to: ['support@promptmate.nl'],
     subject: 'Bestelling 12345 beschadigd aangekomen',
-    snippet: 'Mijn bestelling kwam beschadigd aan en ik wil graag mijn geld terug...',
-    body: `Beste support,
+    snippet: 'Mijn bestelling kwam beschadigd aan en ik wil graag mijn geld terug voor €89,95...',
+    body: `Beste Promptmate support,
 
-Mijn bestelling #12345 kwam gisteren beschadigd aan. De verpakking was zwaar beschadigd en het product binnenin is gebroken. 
+Mijn bestelling #12345 kwam gisteren beschadigd aan. De verpakking was zwaar beschadigd en het product binnenin is volledig gebroken. 
 
-Ik wil graag een volledige terugbetaling van €89,95. Dit is zeer teleurstellend aangezien ik klant ben sinds 2020.
+Ik wil graag een volledige terugbetaling van €89,95. Dit is zeer teleurstellend aangezien ik een trouwe klant ben sinds 2020 en altijd tevreden was met jullie service.
+
+Kunnen jullie dit zo snel mogelijk oplossen? Ik heb foto's van de schade bijgevoegd.
 
 Met vriendelijke groet,
-Jan Bakker`,
+Jan Bakker
+Klantnummer: PM-2020-4567`,
     receivedAt: '2024-01-15T09:30:00Z',
     unread: true,
-    labels: ['klant-support'],
-    attachments: [{ name: 'foto-schade.jpg', sizeKB: 245 }]
+    labels: ['klant-support', 'beschadiging'],
+    attachments: [{ name: 'foto-schade.jpg', sizeKB: 245 }, { name: 'verpakking-beschadigd.jpg', sizeKB: 187 }]
   },
   {
     id: 'mail_002',
@@ -131,22 +134,126 @@ Robert Smit`,
     labels: ['escalatie', 'verzending']
   },
   {
-    id: 'mail_008',
-    from: 'info@groothandel.nl',
-    to: ['support@bedrijf.nl'],
-    subject: 'B2B Partnership mogelijkheden',
-    snippet: 'We zijn geïnteresseerd in een zakelijke samenwerking...',
-    body: `Geachte heer/mevrouw,
+    id: 'mail_009',
+    from: 'support@webshop.com',
+    to: ['support@promptmate.nl'],
+    subject: 'Integratie met jullie AI-platform',
+    snippet: 'We willen graag onze webshop integreren met jullie AI-oplossing...',
+    body: `Geachte Promptmate team,
 
-Wij zijn Groothandel Nederland en zijn geïnteresseerd in een mogelijke B2B samenwerking.
+We hebben jullie AI-klantenservice platform ontdekt en zijn zeer geïnteresseerd in een integratie met onze webshop.
 
-Kunnen we een afspraak maken om de mogelijkheden te bespreken?
+Onze webshop verwerkt ongeveer 500 klantenservice emails per dag en we denken dat jullie AI-oplossing ons enorm kan helpen bij het automatiseren van veel voorkomende vragen.
+
+Kunnen we een demo inplannen om de mogelijkheden te bespreken?
 
 Met vriendelijke groet,
-Directie Groothandel Nederland`,
-    receivedAt: '2024-01-15T05:45:00Z',
+Thomas van der Berg
+CTO WebShop Solutions`,
+    receivedAt: '2024-01-15T04:30:00Z',
     unread: true,
-    labels: ['zakelijk']
+    labels: ['business', 'integratie']
+  },
+  {
+    id: 'mail_010',
+    from: 'customer.service@retailco.nl',
+    to: ['support@promptmate.nl'],
+    subject: 'URGENT: API rate limit overschreden',
+    snippet: 'Onze API calls worden geblokeerd vanwege rate limiting...',
+    body: `URGENT!
+
+Onze API calls naar jullie service worden sinds vanmorgen 09:00 geblokeerd vanwege rate limiting.
+
+Dit betekent dat onze klantenservice stilstaat en we kunnen geen automatische antwoorden meer genereren.
+
+Status: CRITICAL
+Impact: Alle klantenservice emails liggen stil
+Klanten beïnvloed: 200+ wachtend op antwoord
+
+Please fix ASAP!
+
+RetailCo Support Team
+Incident #RC-2024-0115`,
+    receivedAt: '2024-01-15T09:45:00Z',
+    unread: true,
+    labels: ['urgent', 'technical', 'api']
+  },
+  {
+    id: 'mail_011',
+    from: 'feedback@customer.com',
+    to: ['support@promptmate.nl'],
+    subject: 'Geweldige AI antwoorden! 5 sterren ⭐⭐⭐⭐⭐',
+    snippet: 'Jullie AI genereert echt professionele antwoorden...',
+    body: `Beste Promptmate team,
+
+Ik wilde jullie bedanken voor de geweldige service! Sinds we jullie AI-platform gebruiken is onze klantenservice drastisch verbeterd.
+
+De AI genereert echt professionele en empathische antwoorden die perfect passen bij onze tone-of-voice. Onze klanten zijn veel tevredener en onze response tijd is van 24 uur naar 2 uur gegaan!
+
+Resultaten na 3 maanden:
+✅ 85% van emails automatisch afgehandeld
+✅ Klanttevredenheid van 7.2 naar 9.1
+✅ 60% minder werkdruk voor ons team
+✅ €15.000 per maand bespaard op personeelskosten
+
+Ik kan Promptmate Desk aan iedereen aanbevelen!
+
+Met dank,
+Sarah van der Meer
+Hoofd Klantenservice
+TechNova B.V.`,
+    receivedAt: '2024-01-14T14:20:00Z',
+    unread: false,
+    labels: ['testimonial', 'positief', 'success-story']
+  },
+  {
+    id: 'mail_012',
+    from: 'security@corp.com',
+    to: ['support@promptmate.nl'],
+    subject: 'Vraag over data privacy & GDPR compliance',
+    snippet: 'We hebben vragen over hoe jullie omgaan met klantdata...',
+    body: `Geachte Promptmate team,
+
+Voor we een contract aangaan hebben we enkele vragen over data privacy en GDPR compliance:
+
+1. Waar wordt onze klantdata opgeslagen? (EU servers?)
+2. Hoe lang bewaren jullie emails die door de AI geanalyseerd worden?
+3. Hebben jullie een Data Processing Agreement (DPA) beschikbaar?
+4. Kunnen we een audit doen van jullie security measures?
+5. Is er end-to-end encryptie van alle data?
+
+Als grote corporate klant met 50.000+ klanten moeten we zeker zijn dat alle privacy wetgeving wordt nageleefd.
+
+Met vriendelijke groet,
+Johan Pieterse
+Chief Information Security Officer
+Corp International`,
+    receivedAt: '2024-01-15T08:10:00Z',
+    unread: true,
+    labels: ['enterprise', 'security', 'gdpr', 'compliance']
+  },
+  {
+    id: 'mail_013',
+    from: 'startup@innovate.nl',
+    to: ['support@promptmate.nl'],
+    subject: 'Studenten discount beschikbaar?',
+    snippet: 'We zijn een startup en zoeken naar een betaalbare AI-oplossing...',
+    body: `Hey Promptmate team!
+
+We zijn een startup (5 personen) en hebben jullie AI-platform ontdekt. Het ziet er geweldig uit!
+
+We verwerken ongeveer 50 support emails per week en groeien snel. Het Pro abonnement is momenteel nog te duur voor ons, maar het Free plan heeft te weinig AI antwoorden.
+
+Hebben jullie een startup/student discount programma? Of misschien een speciale prijs voor startups?
+
+We zouden graag willen groeien met jullie platform!
+
+Groeten,
+Emma & het Innovate team
+Startup in Amsterdam`,
+    receivedAt: '2024-01-14T19:45:00Z',
+    unread: true,
+    labels: ['startup', 'pricing', 'discount']
   }
 ];
 

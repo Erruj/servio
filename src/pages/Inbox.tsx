@@ -1,15 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { MailItem } from '@/types';
 import { Sidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { Topbar } from '@/components/Topbar';
 import { MailList } from '@/components/MailList';
-import { MailDetail } from '@/components/MailDetail';
 import { dummyMails } from '@/lib/dummy';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, Loader2 } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
+
+// Lazy load MailDetail for performance
+const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
 
 const Inbox = () => {
+  const { user, logout } = useAuth();
   const [mails, setMails] = useState<MailItem[]>(dummyMails);
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,17 +42,20 @@ const Inbox = () => {
   }, [mails, selectedMail]);
 
   return (
-    <div className="h-screen flex bg-background">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header user={user} onLogout={logout} />
       
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Topbar */}
-        <Topbar 
-          onSearchChange={setSearchQuery}
-          onFilterChange={setFilter}
-        />
+      <div className="flex-1 flex">
+        {/* Sidebar */}
+        <Sidebar />
+        
+        {/* Main content */}
+        <div className="flex-1 flex flex-col">
+          {/* Topbar */}
+          <Topbar 
+            onSearchChange={setSearchQuery}
+            onFilterChange={setFilter}
+          />
 
         {/* Onboarding banner */}
         {showOnboarding && (
@@ -61,12 +70,12 @@ const Inbox = () => {
                     🎉 Welkom bij Promptmate Desk
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Je AI-assistent voor klantenservice. Selecteer links een mail om te starten.
+                    Jouw AI-klantenservice-assistent. Koppel je mailbox of laad demo-data om te starten.
                   </p>
                 </div>
                 <div className="flex space-x-3">
                   <Button variant="default" size="sm" className="shadow-card">
-                    📊 Start demo-data
+                    📊 Laad demo-data
                   </Button>
                   <Button variant="outline" size="sm" className="shadow-subtle">
                     📧 Mailbox koppelen
@@ -103,10 +112,19 @@ const Inbox = () => {
 
             {/* Mail detail with integrated analysis and reply - Right column */}
             <div className="flex-1">
-              <MailDetail
-                mail={selectedMail}
-                className="h-full"
-              />
+              <Suspense fallback={
+                <div className="h-full bg-card flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Laden...</p>
+                  </div>
+                </div>
+              }>
+                <MailDetail
+                  mail={selectedMail}
+                  className="h-full"
+                />
+              </Suspense>
             </div>
           </div>
 
@@ -120,8 +138,11 @@ const Inbox = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

@@ -146,11 +146,24 @@ export function MailList({
       {/* Mail list */}
       <div className="overflow-y-auto flex-1">
         {filteredMails.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">
-            <p className="text-lg mb-2">Geen emails gevonden</p>
-            {safeSearchQuery && (
-              <p className="text-sm">Probeer een andere zoekterm</p>
-            )}
+          <div className="p-8 text-center text-muted-foreground space-y-4">
+            <div className="p-6 bg-secondary/30 rounded-2xl">
+              <div className="text-6xl mb-4">📭</div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {safeSearchQuery ? 'Geen resultaten' : 'Geen nieuwe mails'}
+              </h3>
+              <p className="text-sm">
+                {safeSearchQuery 
+                  ? `Geen emails gevonden voor "${safeSearchQuery}"`
+                  : 'Er zijn momenteel geen emails in je inbox'
+                }
+              </p>
+              {safeSearchQuery && (
+                <p className="text-xs mt-2 text-muted-foreground">
+                  Probeer een andere zoekterm of verwijder de filters
+                </p>
+              )}
+            </div>
           </div>
         ) : (
           <div className="space-y-0">

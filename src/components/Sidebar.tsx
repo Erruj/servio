@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, BarChart3, FileText, Settings, Brain, PieChart } from 'lucide-react';
+import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Euro } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -11,6 +11,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: PieChart },
   { name: 'Statistieken', href: '/stats', icon: BarChart3 },
   { name: 'Templates', href: '/templates', icon: FileText },
+  { name: 'Pricing', href: '/pricing', icon: Euro },
   { name: 'Instellingen', href: '/settings', icon: Settings },
 ];
 
@@ -26,8 +27,8 @@ export function Sidebar({ className }: SidebarProps) {
             <Brain className="h-7 w-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Smart Support</h1>
-            <p className="text-sm text-muted-foreground">AI-powered desk</p>
+            <h1 className="text-xl font-bold text-foreground">Promptmate Desk</h1>
+            <p className="text-sm text-muted-foreground">AI-powered support</p>
           </div>
         </div>
       </div>
@@ -57,8 +58,8 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Footer */}
       <div className="p-6 border-t border-border">
         <div className="text-xs text-muted-foreground">
-          <p>Versie 1.0</p>
-          <p className="mt-1">© 2024 Smart Support Desk</p>
+          <p>Versie 2.0.1</p>
+          <p className="mt-1">© 2024 Promptmate Desk</p>
         </div>
       </div>
     </div>

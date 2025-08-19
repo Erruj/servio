@@ -1,8 +1,11 @@
 import { Sidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { Topbar } from '@/components/Topbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { dummyStats } from '@/lib/dummy';
+import { useAuth } from '@/components/AuthProvider';
 import { 
   Mail, 
   Clock, 
@@ -15,17 +18,21 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const { user, logout } = useAuth();
   const latestStats = dummyStats[0];
   
   // Calculate urgent emails count (mock data)
   const urgentEmails = 8;
   
   return (
-    <div className="h-screen flex bg-background">
-      <Sidebar />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header user={user} onLogout={logout} />
       
-      <div className="flex-1 flex flex-col">
-        <Topbar />
+      <div className="flex-1 flex">
+        <Sidebar />
+        
+        <div className="flex-1 flex flex-col">
+          <Topbar />
         
         <div className="flex-1 overflow-y-auto p-8 space-y-8">
           {/* Header */}
@@ -214,8 +221,11 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

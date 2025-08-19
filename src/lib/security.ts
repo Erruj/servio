@@ -44,7 +44,7 @@ export const aiInputSchema = z.object({
 // Rate limiting (simple in-memory implementation)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-export const checkRateLimit = (identifier: string, maxRequests = 10, windowMs = 60000): boolean => {
+export const checkRateLimit = (identifier: string, maxRequests = 50, windowMs = 60000): boolean => {
   const now = Date.now();
   const record = rateLimitMap.get(identifier);
   
