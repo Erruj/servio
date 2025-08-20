@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Topbar } from '@/components/Topbar';
 import { MailList } from '@/components/MailList';
+import { useTranslation } from 'react-i18next';
 import { dummyMails } from '@/lib/dummy';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ const MailDetail = lazy(() => import('@/components/MailDetail').then(module => (
 const Inbox = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [mails, setMails] = useState<MailItem[]>([]);
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,10 +94,10 @@ const Inbox = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-primary">
-                      🎉 Welkom bij Servio
+                      🎉 {t('welcome').split(' — ')[0]}
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Welkom bij Servio — jouw AI-klantenservice-assistent. Koppel je mailbox of laad demo-data om te starten.
+                      {t('welcome')}. {t('connectMailbox')} {t('loadDemoData').toLowerCase()}.
                     </p>
                   </div>
                   <div className="flex space-x-3">
@@ -105,7 +107,7 @@ const Inbox = () => {
                       className="shadow-card"
                       onClick={loadDemoData}
                     >
-                      📊 Laad demo-data
+                      📊 {t('loadDemoData')}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -113,7 +115,7 @@ const Inbox = () => {
                       className="shadow-subtle"
                       onClick={() => window.location.href = '/mailbox-setup'}
                     >
-                      📧 Mailbox koppelen
+                      📧 {t('connectMailbox')}
                     </Button>
                   </div>
                 </div>
@@ -151,7 +153,7 @@ const Inbox = () => {
                 <div className="h-full bg-card flex items-center justify-center">
                   <div className="text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-                    <p className="text-muted-foreground">Laden...</p>
+                    <p className="text-muted-foreground">{t('loading')}</p>
                   </div>
                 </div>
               }>

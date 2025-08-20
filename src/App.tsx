@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { LoginForm } from "@/components/LoginForm";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { useLanguagePersistence } from "@/hooks/useLanguagePersistence";
+import "@/lib/i18n";
 import Inbox from "./pages/Inbox";
 import Dashboard from "./pages/Dashboard";
 import Statistics from "./pages/Statistics";
@@ -28,6 +31,7 @@ const queryClient = new QueryClient({
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
+  useLanguagePersistence();
 
   if (isLoading) {
     return (
@@ -63,17 +67,19 @@ function AppRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <ErrorBoundary>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </ErrorBoundary>
-      </AuthProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <AuthProvider>
+          <ErrorBoundary>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </ErrorBoundary>
+        </AuthProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

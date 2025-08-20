@@ -1,22 +1,25 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Euro } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarProps {
   className?: string;
 }
 
-const navigation = [
-  { name: 'Inbox', href: '/', icon: Mail },
-  { name: 'Dashboard', href: '/dashboard', icon: PieChart },
-  { name: 'Statistieken', href: '/stats', icon: BarChart3 },
-  { name: 'Templates', href: '/templates', icon: FileText },
-  { name: 'Pricing', href: '/pricing', icon: Euro },
-  { name: 'Instellingen', href: '/settings', icon: Settings },
+const getNavigation = (t: any) => [
+  { name: t('inbox'), href: '/', icon: Mail },
+  { name: t('dashboard'), href: '/dashboard', icon: PieChart },
+  { name: t('statistics'), href: '/stats', icon: BarChart3 },
+  { name: t('templates'), href: '/templates', icon: FileText },
+  { name: t('pricing'), href: '/pricing', icon: Euro },
+  { name: t('settings'), href: '/settings', icon: Settings },
 ];
 
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
+  const { t } = useTranslation();
+  const navigation = getNavigation(t);
 
   return (
     <div className={cn('w-64 bg-card border-r border-border flex flex-col shadow-card', className)}>
@@ -58,7 +61,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Footer */}
       <div className="p-6 border-t border-border">
         <div className="text-xs text-muted-foreground">
-          <p>Versie 2.0.1</p>
+          <p>{t('version')} 2.0.1</p>
           <p className="mt-1">© 2024 Servio</p>
         </div>
       </div>
