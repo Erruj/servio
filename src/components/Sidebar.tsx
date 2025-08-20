@@ -27,7 +27,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Brain className="h-7 w-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Promptmate Desk</h1>
+            <h1 className="text-xl font-bold text-foreground">Servio</h1>
             <p className="text-sm text-muted-foreground">AI-powered support</p>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="p-6 border-t border-border">
         <div className="text-xs text-muted-foreground">
           <p>Versie 2.0.1</p>
-          <p className="mt-1">© 2024 Promptmate Desk</p>
+          <p className="mt-1">© 2024 Servio</p>
         </div>
       </div>
     </div>

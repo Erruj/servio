@@ -4,10 +4,10 @@ export const dummyMails: MailItem[] = [
   {
     id: 'mail_001',
     from: 'jan.bakker@email.com',
-    to: ['support@promptmate.nl'],
+    to: ['support@servio.nl'],
     subject: 'Bestelling 12345 beschadigd aangekomen',
     snippet: 'Mijn bestelling kwam beschadigd aan en ik wil graag mijn geld terug voor €89,95...',
-    body: `Beste Promptmate support,
+    body: `Beste Servio support,
 
 Mijn bestelling #12345 kwam gisteren beschadigd aan. De verpakking was zwaar beschadigd en het product binnenin is volledig gebroken. 
 
@@ -136,10 +136,10 @@ Robert Smit`,
   {
     id: 'mail_009',
     from: 'support@webshop.com',
-    to: ['support@promptmate.nl'],
+    to: ['support@servio.nl'],
     subject: 'Integratie met jullie AI-platform',
     snippet: 'We willen graag onze webshop integreren met jullie AI-oplossing...',
-    body: `Geachte Promptmate team,
+    body: `Geachte Servio team,
 
 We hebben jullie AI-klantenservice platform ontdekt en zijn zeer geïnteresseerd in een integratie met onze webshop.
 
@@ -157,7 +157,7 @@ CTO WebShop Solutions`,
   {
     id: 'mail_010',
     from: 'customer.service@retailco.nl',
-    to: ['support@promptmate.nl'],
+    to: ['support@servio.nl'],
     subject: 'URGENT: API rate limit overschreden',
     snippet: 'Onze API calls worden geblokeerd vanwege rate limiting...',
     body: `URGENT!
@@ -181,10 +181,10 @@ Incident #RC-2024-0115`,
   {
     id: 'mail_011',
     from: 'feedback@customer.com',
-    to: ['support@promptmate.nl'],
+    to: ['support@servio.nl'],
     subject: 'Geweldige AI antwoorden! 5 sterren ⭐⭐⭐⭐⭐',
     snippet: 'Jullie AI genereert echt professionele antwoorden...',
-    body: `Beste Promptmate team,
+    body: `Beste Servio team,
 
 Ik wilde jullie bedanken voor de geweldige service! Sinds we jullie AI-platform gebruiken is onze klantenservice drastisch verbeterd.
 
@@ -196,7 +196,7 @@ Resultaten na 3 maanden:
 ✅ 60% minder werkdruk voor ons team
 ✅ €15.000 per maand bespaard op personeelskosten
 
-Ik kan Promptmate Desk aan iedereen aanbevelen!
+Ik kan Servio aan iedereen aanbevelen!
 
 Met dank,
 Sarah van der Meer
@@ -209,10 +209,10 @@ TechNova B.V.`,
   {
     id: 'mail_012',
     from: 'security@corp.com',
-    to: ['support@promptmate.nl'],
+    to: ['support@servio.nl'],
     subject: 'Vraag over data privacy & GDPR compliance',
     snippet: 'We hebben vragen over hoe jullie omgaan met klantdata...',
-    body: `Geachte Promptmate team,
+    body: `Geachte Servio team,
 
 Voor we een contract aangaan hebben we enkele vragen over data privacy en GDPR compliance:
 
@@ -235,10 +235,10 @@ Corp International`,
   {
     id: 'mail_013',
     from: 'startup@innovate.nl',
-    to: ['support@promptmate.nl'],
+    to: ['support@servio.nl'],
     subject: 'Studenten discount beschikbaar?',
     snippet: 'We zijn een startup en zoeken naar een betaalbare AI-oplossing...',
-    body: `Hey Promptmate team!
+    body: `Hey Servio team!
 
 We zijn een startup (5 personen) en hebben jullie AI-platform ontdekt. Het ziet er geweldig uit!
 

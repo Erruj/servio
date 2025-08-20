@@ -19,12 +19,12 @@ export function LoginForm() {
     
     const success = await login(email, password);
     if (!success) {
-      setError('Ongeldige inloggegevens. Probeer demo@promptmate.nl / demo123');
+      setError('Ongeldige inloggegevens. Probeer demo@servio.nl / demo123');
     }
   };
 
   const handleDemoLogin = () => {
-    setEmail('demo@promptmate.nl');
+    setEmail('demo@servio.nl');
     setPassword('demo123');
   };
 
@@ -38,7 +38,7 @@ export function LoginForm() {
             </div>
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold text-primary">Promptmate Desk</CardTitle>
+            <CardTitle className="text-2xl font-bold text-primary">Servio</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
               AI-klantenservice platform
             </p>
@@ -57,7 +57,7 @@ export function LoginForm() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="demo@promptmate.nl"
+                placeholder="demo@servio.nl"
                 required
                 className="shadow-subtle"
               />
@@ -123,8 +123,8 @@ export function LoginForm() {
               Demo accounts:
             </p>
             <div className="text-xs space-y-1 bg-secondary/30 p-3 rounded-lg">
-              <p><strong>Demo:</strong> demo@promptmate.nl / demo123</p>
-              <p><strong>Admin:</strong> admin@promptmate.nl / admin123</p>
+              <p><strong>Demo:</strong> demo@servio.nl / demo123</p>
+              <p><strong>Admin:</strong> admin@servio.nl / admin123</p>
             </div>
           </div>
         </CardContent>

@@ -11,7 +11,7 @@ export function Footer() {
             Demo-versie
           </Badge>
           <p className="text-sm text-muted-foreground">
-            Demo-versie van Promptmate Desk. Niet voor productie.
+            Demo-versie van Servio. Niet voor productie.
           </p>
         </div>
         <div className="flex items-center space-x-2 text-xs text-muted-foreground">

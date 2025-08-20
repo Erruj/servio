@@ -92,10 +92,10 @@ const Inbox = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-primary">
-                      🎉 Welkom bij Promptmate Desk
+                      🎉 Welkom bij Servio
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Jouw AI-klantenservice-assistent. Koppel je mailbox of laad demo-data om te starten.
+                      Welkom bij Servio — jouw AI-klantenservice-assistent. Koppel je mailbox of laad demo-data om te starten.
                     </p>
                   </div>
                   <div className="flex space-x-3">

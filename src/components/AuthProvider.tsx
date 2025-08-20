@@ -22,18 +22,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Mock users for demo
   const demoUsers = [
-    { id: '1', email: 'demo@promptmate.nl', password: 'demo123', name: 'Demo Gebruiker', role: 'demo' as const },
-    { id: '2', email: 'admin@promptmate.nl', password: 'admin123', name: 'Admin Gebruiker', role: 'admin' as const }
+    { id: '1', email: 'demo@servio.nl', password: 'demo123', name: 'Demo Gebruiker', role: 'demo' as const },
+    { id: '2', email: 'admin@servio.nl', password: 'admin123', name: 'Admin Gebruiker', role: 'admin' as const }
   ];
 
   useEffect(() => {
     // Check for existing session
-    const savedUser = localStorage.getItem('promptmate_user');
+    const savedUser = localStorage.getItem('servio_user');
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch (error) {
-        localStorage.removeItem('promptmate_user');
+        localStorage.removeItem('servio_user');
       }
     }
     setIsLoading(false);
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (foundUser) {
       const { password: _, ...userWithoutPassword } = foundUser;
       setUser(userWithoutPassword);
-      localStorage.setItem('promptmate_user', JSON.stringify(userWithoutPassword));
+      localStorage.setItem('servio_user', JSON.stringify(userWithoutPassword));
       setIsLoading(false);
       return true;
     }
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('promptmate_user');
+    localStorage.removeItem('servio_user');
   };
 
   return (

@@ -49,7 +49,7 @@ const Signup = () => {
     setTimeout(() => {
       toast({
         title: "🎉 Account aangemaakt!",
-        description: "Welkom bij Promptmate Desk. Je wordt doorgeleid naar je dashboard.",
+        description: "Welkom bij Servio. Je wordt doorgeleid naar je dashboard.",
       });
       
       setIsLoading(false);
@@ -74,7 +74,7 @@ const Signup = () => {
               <Sparkles className="h-8 w-8 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-primary">Promptmate Desk</h1>
+              <h1 className="text-2xl font-bold text-primary">Servio</h1>
               <p className="text-sm text-muted-foreground">AI-powered support</p>
             </div>
           </div>

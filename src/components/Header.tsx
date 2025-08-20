@@ -17,9 +17,9 @@ export function Header({ user, onLogout }: HeaderProps) {
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-primary">Promptmate Desk</h1>
+              <h1 className="text-2xl font-bold text-primary">Servio</h1>
               <p className="text-sm text-muted-foreground">
-                AI-klantenservice die tot 80% van je mails afhandelt
+                AI-klantenservice die tot 80% van je mails automatisch afhandelt
               </p>
             </div>
           </div>

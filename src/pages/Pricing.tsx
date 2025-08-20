@@ -84,7 +84,7 @@ const Pricing = () => {
             <div className="text-center space-y-4">
               <h1 className="text-4xl font-bold text-foreground">💰 Pricing</h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Kies het juiste plan voor jouw bedrijf. Start gratis en schaal op wanneer je groeit.
+                Kies het Servio-pakket dat bij je past. Start gratis en schaal op wanneer je groeit.
               </p>
               <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
                 30 dagen geld-terug-garantie
@@ -140,7 +140,7 @@ const Pricing = () => {
                           window.location.href = '/signup';
                         } else {
                           // Business plan - contact
-                          window.open('mailto:sales@promptmate.nl?subject=Business Plan Interesse', '_blank');
+                          window.open('mailto:sales@servio.nl?subject=Business Plan Interesse', '_blank');
                         }
                       }}
                     >
@@ -199,7 +199,7 @@ const Pricing = () => {
             <div className="text-center space-y-4 py-8">
               <h2 className="text-2xl font-bold text-foreground">🚀 Klaar om te starten?</h2>
               <p className="text-muted-foreground">
-                Probeer Promptmate Desk 30 dagen gratis. Geen creditcard vereist.
+                Probeer Servio 30 dagen gratis. Geen creditcard vereist.
               </p>
               <Button 
                 size="lg" 
