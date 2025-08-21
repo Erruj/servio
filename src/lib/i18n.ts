@@ -30,6 +30,16 @@ const resources = {
       later: 'Later',
       archive: 'Archive',
       regenerate: 'Regenerate',
+      generating: 'Generating...',
+      error: 'Error',
+      aiGenerationFailed: 'AI Generation Failed',
+      usingDemoReplies: 'Using Demo Replies',
+      demoRepliesActivated: 'Demo responses have been activated',
+      unexpectedError: 'An unexpected error occurred',
+      tryAgain: 'Try Again',
+      useDemoReply: 'Use Demo Reply',
+      generatingReplies: 'Generating AI responses...',
+      aiSuggestionsPlaceholder: 'AI will generate response suggestions here...',
       
       // AI Response types
       business: 'Business',
@@ -90,6 +100,16 @@ const resources = {
       later: 'Later',
       archive: 'Archiveer',
       regenerate: 'Regenereer',
+      generating: 'Genereren...',
+      error: 'Fout',
+      aiGenerationFailed: 'AI Genereren Mislukt',
+      usingDemoReplies: 'Demo Antwoorden Gebruiken',
+      demoRepliesActivated: 'Demo antwoorden zijn geactiveerd',
+      unexpectedError: 'Er is een onverwachte fout opgetreden',
+      tryAgain: 'Opnieuw Proberen',
+      useDemoReply: 'Demo Antwoord Gebruiken',
+      generatingReplies: 'AI antwoorden genereren...',
+      aiSuggestionsPlaceholder: 'AI zal hier antwoordsuggesties genereren...',
       
       // AI Response types
       business: 'Zakelijk',

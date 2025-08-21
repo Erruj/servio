@@ -23,9 +23,10 @@ import {
   Archive,
   Users,
   Heart,
-  FileText
+  FileText,
+  AlertTriangle
 } from 'lucide-react';
-import { generateReply, regenerateReply, detectFaq } from '@/lib/ai';
+import { safeGenerateReply, detectFaq, AI_ERROR_CODES, type AiErrorCode } from '@/lib/ai';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -53,6 +54,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const [language, setLanguage] = useState<Language>('NL');
   const [isGenerating, setIsGenerating] = useState(false);
   const [faqSuggestion, setFaqSuggestion] = useState<string | null>(null);
+  const [lastError, setLastError] = useState<{ code: AiErrorCode; message: string } | null>(null);
+  const [canRetry, setCanRetry] = useState(false);
   const { toast } = useToast();
 
   // Auto-generate suggestions when mail or analysis changes
@@ -73,63 +76,101 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
     if (!mail || !analysis) return;
 
     setIsGenerating(true);
+    setLastError(null);
+    setCanRetry(false);
+    
     try {
-      // Generate 3 different response types
-      const suggestions: AiSuggestion[] = [];
-      
-      // Business/Professional
-      const businessReply = await generateReply({
+      // Use the robust generation function
+      const result = await safeGenerateReply({
         mail,
         analysis,
         tone: 'Neutraal',
         language
       });
-      
-      suggestions.push({
-        type: 'business',
-        label: t('business'),
-        content: businessReply,
-        icon: <Users className="h-4 w-4" />
-      });
-      
-      // Empathetic
-      const empathicReply = await generateReply({
-        mail,
-        analysis,
-        tone: 'Empathisch',
-        language
-      });
-      
-      suggestions.push({
-        type: 'empathetic',
-        label: t('empathetic'),
-        content: empathicReply,
-        icon: <Heart className="h-4 w-4" />
-      });
-      
-      // Formal/Detailed
-      const formalReply = await generateReply({
-        mail,
-        analysis,
-        tone: 'Formeel',
-        language
-      });
-      
-      suggestions.push({
-        type: 'formal',
-        label: t('detailed'),
-        content: formalReply,
-        icon: <FileText className="h-4 w-4" />
-      });
 
-      setAiSuggestions(suggestions);
-      setSelectedSuggestion(suggestions[0]); // Select first suggestion by default
-      setCustomReply(suggestions[0].content);
+      if (result.success && result.suggestions) {
+        const suggestions: AiSuggestion[] = [
+          {
+            type: 'business',
+            label: t('business'),
+            content: result.suggestions[0],
+            icon: <Users className="h-4 w-4" />
+          },
+          {
+            type: 'empathetic', 
+            label: t('empathetic'),
+            content: result.suggestions[1] || result.suggestions[0],
+            icon: <Heart className="h-4 w-4" />
+          },
+          {
+            type: 'formal',
+            label: t('detailed'),
+            content: result.suggestions[2] || result.suggestions[0],
+            icon: <FileText className="h-4 w-4" />
+          }
+        ];
+
+        setAiSuggestions(suggestions);
+        setSelectedSuggestion(suggestions[0]);
+        setCustomReply(suggestions[0].content);
+
+        if (!result.success && result.error) {
+          // Show success with fallback notice
+          toast({
+            title: t('usingDemoReplies'),
+            description: result.error.message,
+            variant: "default"
+          });
+        }
+      } else if (result.error) {
+        // Error with fallback suggestions
+        setLastError(result.error);
+        setCanRetry(true);
+        
+        if (result.suggestions && result.suggestions.length > 0) {
+          const fallbackSuggestions: AiSuggestion[] = [
+            {
+              type: 'business',
+              label: t('business') + ' (demo)',
+              content: result.suggestions[0],
+              icon: <Users className="h-4 w-4" />
+            },
+            {
+              type: 'empathetic',
+              label: t('empathetic') + ' (demo)',
+              content: result.suggestions[1] || result.suggestions[0],
+              icon: <Heart className="h-4 w-4" />
+            },
+            {
+              type: 'formal',
+              label: t('detailed') + ' (demo)',
+              content: result.suggestions[2] || result.suggestions[0],
+              icon: <FileText className="h-4 w-4" />
+            }
+          ];
+
+          setAiSuggestions(fallbackSuggestions);
+          setSelectedSuggestion(fallbackSuggestions[0]);
+          setCustomReply(fallbackSuggestions[0].content);
+        }
+
+        toast({
+          title: t('aiGenerationFailed'),
+          description: result.error.message,
+          variant: "destructive"
+        });
+      }
       
     } catch (error) {
+      setLastError({
+        code: 'UNKNOWN',
+        message: t('unexpectedError')
+      });
+      setCanRetry(true);
+      
       toast({
-        title: "Error",
-        description: "Could not generate AI suggestions. Please try again.",
+        title: t('error'),
+        description: t('unexpectedError'),
         variant: "destructive"
       });
     } finally {
@@ -139,44 +180,25 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
 
   const regenerateAiSuggestions = async () => {
     if (!mail || !analysis) return;
+    
+    // Clear error state
+    setLastError(null);
+    setCanRetry(false);
+    
+    // Just call generateAiSuggestions again for simplicity
+    await generateAiSuggestions();
+  };
 
-    setIsGenerating(true);
-    try {
-      const newSuggestions = await Promise.all(
-        aiSuggestions.map(async (suggestion) => ({
-          ...suggestion,
-          content: await regenerateReply({
-            mail,
-            analysis,
-            tone: suggestion.type === 'business' ? 'Neutraal' : 
-                  suggestion.type === 'empathetic' ? 'Empathisch' : 'Formeel',
-            language
-          })
-        }))
-      );
+  const handleRetryGeneration = async () => {
+    await generateAiSuggestions();
+  };
 
-      setAiSuggestions(newSuggestions);
-      if (selectedSuggestion) {
-        const newSelected = newSuggestions.find(s => s.type === selectedSuggestion.type);
-        if (newSelected) {
-          setSelectedSuggestion(newSelected);
-          setCustomReply(newSelected.content);
-        }
-      }
-      
-      toast({
-        title: "New suggestions generated",
-        description: "AI suggestions have been refreshed with new variations."
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not regenerate suggestions. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleUseDemoReplies = () => {
+    // Force demo mode by using the fallback suggestions
+    toast({
+      title: t('usingDemoReplies'),
+      description: t('demoRepliesActivated'),
+    });
   };
 
   const checkForFaq = () => {
@@ -335,8 +357,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
                         onClick={regenerateAiSuggestions}
                         disabled={isGenerating}
                       >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        {t('regenerate')}
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                        {isGenerating ? t('generating') : t('regenerate')}
                       </Button>
                     </div>
                     
@@ -360,9 +382,50 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
                 <Textarea
                   value={customReply}
                   onChange={(e) => setCustomReply(e.target.value)}
-                  placeholder="AI will generate response suggestions here..."
+                  placeholder={isGenerating ? t('generatingReplies') : t('aiSuggestionsPlaceholder')}
                   className="min-h-48 resize-none"
+                  disabled={isGenerating}
                 />
+
+                {/* Error handling UI */}
+                {lastError && canRetry && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-2">
+                        <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-destructive">
+                            {t('aiGenerationFailed')}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {lastError.message}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2 mt-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRetryGeneration}
+                        disabled={isGenerating}
+                      >
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                        {t('tryAgain')}
+                      </Button>
+                      {aiSuggestions.length === 0 && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={handleUseDemoReplies}
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          {t('useDemoReply')}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </TabsContent>

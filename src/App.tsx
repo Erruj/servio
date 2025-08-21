@@ -19,6 +19,7 @@ import Signup from "./pages/Signup";
 import MailboxSetup from "./pages/MailboxSetup";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
+import { DebugDrawer } from "./components/DebugDrawer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +76,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AppRoutes />
+              <DebugDrawer />
             </BrowserRouter>
           </ErrorBoundary>
         </AuthProvider>

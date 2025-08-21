@@ -5,6 +5,311 @@ import { MailItem, AnalysisResult, ReplyGenerationParams, TemplateItem, Category
 import { dummyTemplates } from './dummy';
 import { sanitizeText, aiInputSchema, checkRateLimit, SecurityError, handleSecurityError } from '@/lib/security';
 
+// ============= STRUCTURED LOGGING =============
+export interface AiLog {
+  ts: string;
+  action: 'analyze' | 'generate' | 'regenerate';
+  payloadSize: number;
+  lang?: string;
+  model?: string;
+  durationMs?: number;
+  ok: boolean;
+  errorCode?: string;
+  errorMessage?: string;
+  mailId?: string;
+}
+
+// In-memory log storage (for dev/demo purposes)
+const aiLogs: AiLog[] = [];
+const MAX_LOGS = 50;
+
+export const addAiLog = (log: AiLog) => {
+  aiLogs.unshift(log);
+  if (aiLogs.length > MAX_LOGS) {
+    aiLogs.pop();
+  }
+};
+
+export const getAiLogs = (): AiLog[] => [...aiLogs];
+
+// ============= ERROR TYPES =============
+export const AI_ERROR_CODES = {
+  TIMEOUT: 'TIMEOUT',
+  RATE_LIMIT: 'RATE_LIMIT', 
+  BAD_INPUT: 'BAD_INPUT',
+  NO_API_KEY: 'NO_API_KEY',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  UNKNOWN: 'UNKNOWN'
+} as const;
+
+export type AiErrorCode = keyof typeof AI_ERROR_CODES;
+
+export class AiError extends Error {
+  constructor(
+    public code: AiErrorCode,
+    message: string,
+    public originalError?: unknown
+  ) {
+    super(message);
+    this.name = 'AiError';
+  }
+}
+
+// ============= ROBUST REPLY GENERATION =============
+export async function safeGenerateReply(params: ReplyGenerationParams): Promise<{
+  success: boolean;
+  content?: string;
+  error?: { code: AiErrorCode; message: string };
+  suggestions?: string[];
+}> {
+  const startTime = Date.now();
+  const logData: Partial<AiLog> = {
+    ts: new Date().toISOString(),
+    action: 'generate',
+    payloadSize: (params.mail.body || '').length,
+    lang: params.language,
+    mailId: params.mail.id,
+    model: 'mock-v1'
+  };
+
+  try {
+    // 1. Input validation
+    if (!params.mail.subject?.trim() || !params.mail.body?.trim()) {
+      throw new AiError('BAD_INPUT', 'E-mail onderwerp en inhoud zijn vereist');
+    }
+
+    // Trim oversized input
+    const maxLength = 8000;
+    if (params.mail.body.length > maxLength) {
+      params.mail.body = params.mail.body.substring(0, maxLength) + '...';
+    }
+
+    // 2. Rate limiting
+    if (!checkRateLimit(`safe_reply_${params.mail.id}`, 3, 60000)) {
+      throw new AiError('RATE_LIMIT', 'Te veel verzoeken. Probeer het over een minuut opnieuw.');
+    }
+
+    // 3. Generate reply with timeout and retries
+    const result = await retryWithTimeout(
+      () => generateReplyInternal(params),
+      { timeoutMs: 12000, retries: 2, backoffMs: 500 }
+    );
+
+    // 4. Generate 3 variations
+    const suggestions = await generateVariations(result, params);
+
+    logData.durationMs = Date.now() - startTime;
+    logData.ok = true;
+    addAiLog(logData as AiLog);
+
+    return {
+      success: true,
+      content: result,
+      suggestions
+    };
+
+  } catch (error) {
+    logData.durationMs = Date.now() - startTime;
+    logData.ok = false;
+    
+    let aiError: AiError;
+    if (error instanceof AiError) {
+      aiError = error;
+    } else if (error instanceof SecurityError) {
+      aiError = new AiError('RATE_LIMIT', error.message, error);
+    } else {
+      aiError = new AiError('UNKNOWN', 'Er is een onverwachte fout opgetreden', error);
+    }
+
+    logData.errorCode = aiError.code;
+    logData.errorMessage = aiError.message;
+    addAiLog(logData as AiLog);
+
+    // Generate deterministic mock fallback
+    const mockSuggestions = generateDeterministicMockReplies(params);
+
+    return {
+      success: false,
+      error: {
+        code: aiError.code,
+        message: getLocalizedErrorMessage(aiError.code, params.language)
+      },
+      suggestions: mockSuggestions
+    };
+  }
+}
+
+// ============= RETRY WITH TIMEOUT =============
+async function retryWithTimeout<T>(
+  fn: () => Promise<T>,
+  options: { timeoutMs: number; retries: number; backoffMs: number }
+): Promise<T> {
+  const { timeoutMs, retries, backoffMs } = options;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await Promise.race([
+        fn(),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new AiError('TIMEOUT', 'AI request timeout')), timeoutMs)
+        )
+      ]);
+    } catch (error) {
+      if (attempt === retries) throw error;
+      
+      // Exponential backoff for retries
+      const delay = backoffMs * Math.pow(2, attempt);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw new AiError('UNKNOWN', 'All retry attempts failed');
+}
+
+// ============= INTERNAL GENERATION =============
+async function generateReplyInternal(params: ReplyGenerationParams): Promise<string> {
+  // Validate input with Zod
+  const validatedInput = aiInputSchema.parse({
+    content: params.mail.body,
+    tone: mapToneToSchema(params.tone),
+    language: params.language || 'NL'
+  });
+
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
+
+  const { mail, analysis, tone, language, template } = params;
+  
+  let baseTemplate = template?.body || getDefaultTemplate(analysis?.category || 'Overig', language);
+  
+  // Replace placeholders
+  baseTemplate = baseTemplate
+    .replace('{{naam}}', extractName(mail.from))
+    .replace('{{order_id}}', extractOrderId(mail.body) || 'ORD123456')
+    .replace('{{bedrag}}', extractAmount(mail.body) || '50,00')
+    .replace('{{reset_link}}', 'https://servio.app/reset?token=abc123')
+    .replace('{{invoice_number}}', extractInvoiceNumber(mail.body) || 'INV-2024-001');
+  
+  // Adjust tone
+  const reply = adjustToneOfVoice(baseTemplate, tone, language);
+  
+  return sanitizeText(reply);
+}
+
+// ============= VARIATION GENERATION =============
+async function generateVariations(baseReply: string, params: ReplyGenerationParams): Promise<string[]> {
+  const variations = [baseReply];
+  
+  try {
+    // Generate empathetic variation
+    const empathetic = adjustToneOfVoice(baseReply, 'Empathisch', params.language);
+    variations.push(empathetic);
+    
+    // Generate formal variation
+    const formal = adjustToneOfVoice(baseReply, 'Formeel', params.language);
+    variations.push(formal);
+    
+    return variations;
+  } catch {
+    // Fallback to deterministic variations
+    return generateDeterministicMockReplies(params);
+  }
+}
+
+// ============= DETERMINISTIC MOCK FALLBACK =============
+function generateDeterministicMockReplies(params: ReplyGenerationParams): string[] {
+  const { mail, analysis, language } = params;
+  const customerName = extractName(mail.from);
+  
+  const templates = getLocalizedTemplates(language);
+  const category = analysis?.category || 'Overig';
+  
+  return [
+    templates.business
+      .replace('{{naam}}', customerName)
+      .replace('{{category}}', getCategoryTranslation(category, language)),
+    templates.empathetic
+      .replace('{{naam}}', customerName)
+      .replace('{{category}}', getCategoryTranslation(category, language)),
+    templates.formal
+      .replace('{{naam}}', customerName)
+      .replace('{{category}}', getCategoryTranslation(category, language))
+  ];
+}
+
+// ============= LOCALIZATION HELPERS =============
+function getLocalizedErrorMessage(code: AiErrorCode, language?: string): string {
+  const messages = {
+    NL: {
+      TIMEOUT: 'De AI deed er te lang over. Probeer opnieuw of gebruik demo-antwoord.',
+      RATE_LIMIT: 'Te veel verzoeken. Even wachten en nogmaals proberen.',
+      BAD_INPUT: 'Onvolledige e-mail. Voeg onderwerp/tekst toe en probeer opnieuw.',
+      NO_API_KEY: 'Geen AI-sleutel geconfigureerd → demo-antwoorden geactiveerd.',
+      NETWORK_ERROR: 'Netwerkfout. Controleer je verbinding en probeer opnieuw.',
+      UNKNOWN: 'Onverwachte fout. Probeer opnieuw. (Details gelogd)'
+    },
+    EN: {
+      TIMEOUT: 'AI took too long. Try again or use demo response.',
+      RATE_LIMIT: 'Too many requests. Please wait and try again.',
+      BAD_INPUT: 'Incomplete email. Add subject/content and try again.',
+      NO_API_KEY: 'No AI key configured → demo responses activated.',
+      NETWORK_ERROR: 'Network error. Check your connection and try again.',
+      UNKNOWN: 'Unexpected error. Please try again. (Details logged)'
+    }
+  };
+  
+  return messages[language as keyof typeof messages]?.[code] || messages.NL[code];
+}
+
+function getLocalizedTemplates(language?: string) {
+  const templates = {
+    NL: {
+      business: 'Beste {{naam}},\n\nDank je voor je bericht betreffende {{category}}. We pakken dit direct voor je op.\n\nMet vriendelijke groet,\nServio Klantenservice',
+      empathetic: 'Beste {{naam}},\n\nIk begrijp je situatie en dank je voor je geduld. We helpen je graag verder met {{category}}.\n\nHartelijke groet,\nServio Klantenservice',
+      formal: 'Geachte {{naam}},\n\nWij hebben uw verzoek betreffende {{category}} in goede orde ontvangen en zullen dit met de grootst mogelijke zorg behandelen.\n\nHoogachtend,\nServio Klantenservice'
+    },
+    EN: {
+      business: 'Dear {{naam}},\n\nThank you for your message regarding {{category}}. We will handle this immediately.\n\nBest regards,\nServio Customer Service',
+      empathetic: 'Dear {{naam}},\n\nI understand your situation and appreciate your patience. We are happy to help you with {{category}}.\n\nKind regards,\nServio Customer Service',
+      formal: 'Dear {{naam}},\n\nWe have received your request regarding {{category}} and will handle it with the utmost care.\n\nSincerely,\nServio Customer Service'
+    }
+  };
+  
+  return templates[language as keyof typeof templates] || templates.NL;
+}
+
+function getCategoryTranslation(category: Category, language?: string): string {
+  const translations = {
+    NL: {
+      'Retour': 'retour',
+      'Klacht': 'klacht', 
+      'Factuur': 'factuur',
+      'Vraag': 'vraag',
+      'Technisch': 'technisch probleem',
+      'Overig': 'algemene vraag'
+    },
+    EN: {
+      'Retour': 'return',
+      'Klacht': 'complaint',
+      'Factuur': 'invoice', 
+      'Vraag': 'question',
+      'Technisch': 'technical issue',
+      'Overig': 'general inquiry'
+    }
+  };
+  
+  return translations[language as keyof typeof translations]?.[category] || 
+         translations.NL[category];
+}
+
+function mapToneToSchema(tone?: string): 'professional' | 'friendly' | 'formal' {
+  switch (tone) {
+    case 'Empathisch': return 'friendly';
+    case 'Formeel': return 'formal';
+    default: return 'professional';
+  }
+}
+
 /**
  * Mock function to analyze email content and generate insights
  * TODO: Replace with actual AI analysis using OpenAI/Claude/etc
