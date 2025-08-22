@@ -26,16 +26,13 @@ import {
   FileText,
   AlertTriangle
 } from 'lucide-react';
-import { safeGenerateReply, detectFaq, AI_ERROR_CODES, type AiErrorCode } from '@/lib/ai';
+import { detectFaq, addAiLog, getAiLogs } from '@/lib/ai';
+import { generateSmartReplies, getLocalizedErrorMessage, AiError } from '@/lib/ai/orchestrator';
+import type { ReplyVariant } from '@/lib/ai/providers';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
-interface AiSuggestion {
-  type: 'business' | 'empathetic' | 'formal';
-  label: string;
-  content: string;
-  icon: React.ReactNode;
-}
+// Using ReplyVariant from providers instead of local interface
 
 interface EnhancedReplyEditorProps {
   mail: MailItem | null;
@@ -46,15 +43,15 @@ interface EnhancedReplyEditorProps {
 export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReplyEditorProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'ai' | 'manual'>('ai');
-  const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
-  const [selectedSuggestion, setSelectedSuggestion] = useState<AiSuggestion | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<ReplyVariant[]>([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<ReplyVariant | null>(null);
   const [customReply, setCustomReply] = useState('');
   const [manualReply, setManualReply] = useState('');
   const [tone, setTone] = useState<ToneOfVoice>('Neutraal');
   const [language, setLanguage] = useState<Language>('NL');
   const [isGenerating, setIsGenerating] = useState(false);
   const [faqSuggestion, setFaqSuggestion] = useState<string | null>(null);
-  const [lastError, setLastError] = useState<{ code: AiErrorCode; message: string } | null>(null);
+  const [lastError, setLastError] = useState<string | null>(null);
   const [canRetry, setCanRetry] = useState(false);
   const { toast } = useToast();
 
@@ -73,106 +70,39 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   }, [mail, analysis]);
 
   const generateAiSuggestions = async () => {
-    if (!mail || !analysis) return;
+    if (!mail) return;
 
     setIsGenerating(true);
     setLastError(null);
     setCanRetry(false);
-    
+
     try {
-      // Use the robust generation function
-      const result = await safeGenerateReply({
+      const result = await generateSmartReplies({
         mail,
-        analysis,
-        tone: 'Neutraal',
-        language
+        tone: tone || 'Zakelijk',
+        language: language || 'NL',
+        analysis
       });
 
-      if (result.success && result.suggestions) {
-        const suggestions: AiSuggestion[] = [
-          {
-            type: 'business',
-            label: t('business'),
-            content: result.suggestions[0],
-            icon: <Users className="h-4 w-4" />
-          },
-          {
-            type: 'empathetic', 
-            label: t('empathetic'),
-            content: result.suggestions[1] || result.suggestions[0],
-            icon: <Heart className="h-4 w-4" />
-          },
-          {
-            type: 'formal',
-            label: t('detailed'),
-            content: result.suggestions[2] || result.suggestions[0],
-            icon: <FileText className="h-4 w-4" />
-          }
-        ];
-
-        setAiSuggestions(suggestions);
-        setSelectedSuggestion(suggestions[0]);
-        setCustomReply(suggestions[0].content);
-
-        if (!result.success && result.error) {
-          // Show success with fallback notice
-          toast({
-            title: t('usingDemoReplies'),
-            description: result.error.message,
-            variant: "default"
-          });
-        }
-      } else if (result.error) {
-        // Error with fallback suggestions
-        setLastError(result.error);
+      if (result.success && result.variants) {
+        setAiSuggestions(result.variants);
+        setSelectedSuggestion(result.variants[0]);
+        setCustomReply(result.variants[0].content);
+        setCanRetry(false);
+      }
+    } catch (error) {
+      console.error('Reply generation failed:', error);
+      
+      if (error instanceof AiError) {
+        setLastError(getLocalizedErrorMessage(error.code, language));
+        setCanRetry(error.code !== 'BAD_INPUT'); // Don't retry bad input
+      } else {
+        setLastError(t('replyEditor.errors.unknown'));
         setCanRetry(true);
-        
-        if (result.suggestions && result.suggestions.length > 0) {
-          const fallbackSuggestions: AiSuggestion[] = [
-            {
-              type: 'business',
-              label: t('business') + ' (demo)',
-              content: result.suggestions[0],
-              icon: <Users className="h-4 w-4" />
-            },
-            {
-              type: 'empathetic',
-              label: t('empathetic') + ' (demo)',
-              content: result.suggestions[1] || result.suggestions[0],
-              icon: <Heart className="h-4 w-4" />
-            },
-            {
-              type: 'formal',
-              label: t('detailed') + ' (demo)',
-              content: result.suggestions[2] || result.suggestions[0],
-              icon: <FileText className="h-4 w-4" />
-            }
-          ];
-
-          setAiSuggestions(fallbackSuggestions);
-          setSelectedSuggestion(fallbackSuggestions[0]);
-          setCustomReply(fallbackSuggestions[0].content);
-        }
-
-        toast({
-          title: t('aiGenerationFailed'),
-          description: result.error.message,
-          variant: "destructive"
-        });
       }
       
-    } catch (error) {
-      setLastError({
-        code: 'UNKNOWN',
-        message: t('unexpectedError')
-      });
-      setCanRetry(true);
-      
-      toast({
-        title: t('error'),
-        description: t('unexpectedError'),
-        variant: "destructive"
-      });
+      // Generate demo replies as ultimate fallback
+      handleUseDemoReplies();
     } finally {
       setIsGenerating(false);
     }
@@ -194,10 +124,38 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   };
 
   const handleUseDemoReplies = () => {
-    // Force demo mode by using the fallback suggestions
+    if (!mail) return;
+
+    const customerName = mail.from.split(' ')[0] || 'klant';
+    const demoSuggestions: ReplyVariant[] = [
+      {
+        type: 'Zakelijk',
+        label: 'Zakelijk',
+        content: `Beste ${customerName},\n\nDank je voor je bericht. We pakken dit direct voor je op.\n\nMet vriendelijke groet,\nServio Klantenservice`,
+        icon: '💼'
+      },
+      {
+        type: 'Empathisch',
+        label: 'Empathisch',
+        content: `Beste ${customerName},\n\nIk begrijp je situatie en dank je voor je geduld. We helpen je graag verder.\n\nHartelijke groet,\nServio Klantenservice`,
+        icon: '💝'
+      },
+      {
+        type: 'Uitgebreid',
+        label: 'Uitgebreid',
+        content: `Geachte ${customerName},\n\nWij hebben uw verzoek in goede orde ontvangen en zullen dit met de grootst mogelijke zorg behandelen.\n\nWe streven ernaar binnen 24 uur te reageren.\n\nHoogachtend,\nServio Klantenservice`,
+        icon: '📋'
+      }
+    ];
+    
+    setAiSuggestions(demoSuggestions);
+    setSelectedSuggestion(demoSuggestions[0]);
+    setCustomReply(demoSuggestions[0].content);
+    setLastError(null);
+
     toast({
-      title: t('usingDemoReplies'),
-      description: t('demoRepliesActivated'),
+      title: t('replyEditor.demoReplies'),
+      description: t('replyEditor.demoRepliesActivated'),
     });
   };
 
@@ -208,7 +166,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
     setFaqSuggestion(faqKey);
   };
 
-  const handleSuggestionSelect = (suggestion: AiSuggestion) => {
+  const handleSuggestionSelect = (suggestion: ReplyVariant) => {
     setSelectedSuggestion(suggestion);
     setCustomReply(suggestion.content);
   };
@@ -371,8 +329,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
                           className="flex items-center justify-center text-xs"
                           onClick={() => handleSuggestionSelect(suggestion)}
                         >
-                          {suggestion.icon}
-                          <span className="ml-1">{suggestion.label}</span>
+                          <span className="mr-1">{suggestion.icon}</span>
+                          <span>{suggestion.label}</span>
                         </Button>
                       ))}
                     </div>
@@ -395,10 +353,10 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
                         <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                         <div>
                           <p className="text-sm font-medium text-destructive">
-                            {t('aiGenerationFailed')}
+                            {t('replyEditor.errors.generationFailed')}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {lastError.message}
+                            {lastError}
                           </p>
                         </div>
                       </div>
@@ -411,7 +369,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
                         disabled={isGenerating}
                       >
                         <RefreshCw className="h-3 w-3 mr-1" />
-                        {t('tryAgain')}
+                        {t('replyEditor.actions.tryAgain')}
                       </Button>
                       {aiSuggestions.length === 0 && (
                         <Button
@@ -420,7 +378,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
                           onClick={handleUseDemoReplies}
                         >
                           <Sparkles className="h-3 w-3 mr-1" />
-                          {t('useDemoReply')}
+                          {t('replyEditor.actions.useDemoReply')}
                         </Button>
                       )}
                     </div>
