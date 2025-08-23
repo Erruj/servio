@@ -67,10 +67,10 @@ const MailboxSetup = () => {
 
   const handleDemoMode = () => {
     toast({
-      title: "📧 Demo-modus geactiveerd",
+      title: "✅ Demo-modus geactiveerd",
       description: "Je kunt nu de demo-functionaliteit gebruiken met voorbeeldmails.",
     });
-    navigate('/');
+    navigate('/inbox');
   };
 
   return (

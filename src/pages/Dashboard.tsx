@@ -150,7 +150,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 hover:bg-primary/10 transition-colors cursor-pointer"
-                     onClick={() => window.location.href = '/'}>
+                     onClick={() => window.location.href = '/inbox'}>
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-primary rounded-lg">
                       <AlertTriangle className="h-5 w-5 text-primary-foreground" />

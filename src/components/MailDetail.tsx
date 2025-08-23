@@ -24,7 +24,8 @@ import {
   Brain,
   Mail as MailIcon
 } from 'lucide-react';
-import { analyzeEmail, generateReply } from '@/lib/ai';
+import { generateSmartReplies } from '@/lib/ai/orchestrator';
+import { analyzeEmail } from '@/lib/ai';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeHtml, SecurityError, handleSecurityError } from '@/lib/security';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -84,25 +85,31 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   };
 
   const generateAiReply = async () => {
-    if (!mail || !analysis) return;
+    if (!mail) return;
 
     setIsGeneratingReply(true);
     try {
-      const generatedReply = await generateReply({
+      const result = await generateSmartReplies({
         mail,
-        analysis,
         tone,
-        language
+        language,
+        analysis
       });
-      setReply(generatedReply);
+      
+      if (result.success && result.variants && result.variants.length > 0) {
+        setReply(result.variants[0].content);
+        toast({
+          title: "✅ AI antwoord gegenereerd",
+          description: `Antwoord gegenereerd met ${result.provider} (${result.model})`,
+        });
+      } else {
+        throw new Error('No variants generated');
+      }
     } catch (error) {
-      const errorMessage = error instanceof SecurityError 
-        ? error.message 
-        : handleSecurityError(error);
       console.error('Reply generation failed:', error);
       toast({
         title: "Antwoord genereren mislukt",
-        description: errorMessage,
+        description: "Er is een fout opgetreden bij het genereren van het antwoord. Probeer het opnieuw.",
         variant: "destructive"
       });
     } finally {

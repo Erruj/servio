@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
-import { Topbar } from '@/components/Topbar';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,10 +41,12 @@ import {
   Search
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/components/AuthProvider';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 const Templates = () => {
+  const { user, logout } = useAuth();
   const [templates, setTemplates] = useState<TemplateItem[]>(dummyTemplates);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -201,13 +204,14 @@ const Templates = () => {
   };
 
   return (
-    <div className="h-screen flex bg-background">
-      <Sidebar />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header user={user} onLogout={logout} />
       
-      <div className="flex-1 flex flex-col">
-        <Topbar />
+      <div className="flex-1 flex">
+        <Sidebar />
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-8 space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -328,8 +332,11 @@ const Templates = () => {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
+      
+      <Footer />
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

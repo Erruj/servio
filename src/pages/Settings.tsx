@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
-import { Topbar } from '@/components/Topbar';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,8 +35,10 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/components/AuthProvider';
 
 const Settings = () => {
+  const { user, logout } = useAuth();
   const [autoReplySettings, setAutoReplySettings] = useState({
     'Retour': false,
     'Klacht': false,
@@ -122,13 +127,14 @@ const Settings = () => {
   ];
 
   return (
-    <div className="h-screen flex bg-background">
-      <Sidebar />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header user={user} onLogout={logout} />
       
-      <div className="flex-1 flex flex-col">
-        <Topbar />
+      <div className="flex-1 flex">
+        <Sidebar />
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-8 space-y-8">
           {/* Header */}
           <div>
             <h1 className="text-2xl font-bold text-foreground">Instellingen</h1>
@@ -390,8 +396,11 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };
