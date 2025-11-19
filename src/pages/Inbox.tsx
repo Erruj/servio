@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
 
 const Inbox = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [mails, setMails] = useState<MailItem[]>([]);
@@ -70,7 +70,7 @@ const Inbox = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={logout} />
+      <Header user={user} onLogout={signOut} />
       
       <div className="flex-1 flex">
         {/* Sidebar */}

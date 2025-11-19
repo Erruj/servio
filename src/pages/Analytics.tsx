@@ -19,7 +19,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 
 const Analytics = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const categoryStats = [
@@ -42,7 +42,7 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={logout} />
+      <Header user={user} onLogout={signOut} />
       
       <div className="flex-1 flex">
         <Sidebar />

@@ -8,7 +8,7 @@ import { Check, Star, Zap, Crown } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 
 const Pricing = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   const plans = [
     {
@@ -73,7 +73,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={logout} />
+      <Header user={user} onLogout={signOut} />
       
       <div className="flex-1 flex">
         <Sidebar />

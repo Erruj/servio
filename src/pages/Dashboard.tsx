@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const latestStats = dummyStats[0];
   
   // Calculate urgent emails count (mock data)
@@ -26,7 +26,7 @@ const Dashboard = () => {
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={logout} />
+      <Header user={user} onLogout={signOut} />
       
       <div className="flex-1 flex">
         <Sidebar />
