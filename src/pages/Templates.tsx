@@ -46,7 +46,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 const Templates = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const [templates, setTemplates] = useState<TemplateItem[]>(dummyTemplates);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -205,7 +205,7 @@ const Templates = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={logout} />
+      <Header user={user} onLogout={signOut} />
       
       <div className="flex-1 flex">
         <Sidebar />

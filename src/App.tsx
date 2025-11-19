@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
-import { LoginForm } from "@/components/LoginForm";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useLanguagePersistence } from "@/hooks/useLanguagePersistence";
 import "@/lib/i18n";
@@ -19,6 +18,7 @@ import Signup from "./pages/Signup";
 import MailboxSetup from "./pages/MailboxSetup";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 import { DebugDrawer } from "./components/DebugDrawer";
 
 const queryClient = new QueryClient({
@@ -46,7 +46,7 @@ function AppRoutes() {
   }
 
   if (!user) {
-    return <LoginForm />;
+    return <Auth />;
   }
 
   return (

@@ -1,12 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sparkles, LogOut, User } from 'lucide-react';
+import { Sparkles, LogOut, User as UserIcon } from 'lucide-react';
+import { User } from '@supabase/supabase-js';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
-  user?: { name: string; email: string } | null;
+  user?: User | null;
   onLogout?: () => void;
 }
 
@@ -40,7 +41,9 @@ export function Header({ user, onLogout }: HeaderProps) {
           {user && (
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-foreground">{user.name}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {user.user_metadata?.full_name || user.email}
+                </p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
               <Button variant="outline" size="sm" onClick={onLogout}>

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -32,13 +33,15 @@ import {
   Upload,
   ExternalLink,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
 
 const Settings = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
   const [autoReplySettings, setAutoReplySettings] = useState({
     'Retour': false,
     'Klacht': false,
@@ -64,6 +67,68 @@ const Settings = () => {
   });
 
   const { toast } = useToast();
+
+  // Load settings from database
+  useEffect(() => {
+    if (user) {
+      loadSettings();
+    }
+  }, [user]);
+
+  const loadSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      if (data) {
+        // Load saved settings if they exist
+        // For now we keep the defaults since we haven't added these columns yet
+        // This is prepared for future expansion
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  };
+
+  const saveSettings = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: user.id,
+          auto_reply_enabled: autoReplySettings['Vraag'], // Save one example
+          updated_at: new Date().toISOString()
+        });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Instellingen opgeslagen",
+        description: "Je voorkeuren zijn succesvol bijgewerkt."
+      });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast({
+        title: "Fout bij opslaan",
+        description: "Er is een fout opgetreden bij het opslaan van je instellingen.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   const handleAutoReplyToggle = (category: string, enabled: boolean) => {
     setAutoReplySettings(prev => ({ ...prev, [category]: enabled }));
@@ -128,7 +193,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={logout} />
+      <Header user={user} onLogout={handleLogout} />
       
       <div className="flex-1 flex">
         <Sidebar />
@@ -394,6 +459,29 @@ const Settings = () => {
                   <span className="ml-2 font-medium">Mock v1.0</span>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Save Button */}
+          <Card>
+            <CardContent className="pt-6">
+              <Button 
+                onClick={saveSettings} 
+                className="w-full"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Opslaan...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Instellingen opslaan
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
           </div>

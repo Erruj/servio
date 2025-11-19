@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const MailboxSetup = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
 
@@ -75,7 +75,7 @@ const MailboxSetup = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={logout} />
+      <Header user={user} onLogout={signOut} />
       
       <div className="flex-1 flex">
         <Sidebar />
