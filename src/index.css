@@ -133,29 +133,29 @@ All colors MUST be HSL.
     @apply bg-success;
   }
 
-  /* Category colors - Updated per user specification */
+  /* Category colors - Using semantic tokens for theme consistency */
   .category-retour {
-    @apply bg-blue-50 text-blue-700 border-blue-200;
+    @apply bg-primary/10 text-primary border-primary/20;
   }
 
   .category-klacht {
-    @apply bg-red-50 text-red-700 border-red-200;
+    @apply bg-destructive/10 text-destructive border-destructive/20;
   }
 
   .category-factuur {
-    @apply bg-purple-50 text-purple-700 border-purple-200;
+    @apply bg-accent/10 text-accent border-accent/20;
   }
 
   .category-vraag {
-    @apply bg-green-50 text-green-700 border-green-200;
+    @apply bg-success/10 text-success border-success/20;
   }
 
   .category-technisch {
-    @apply bg-orange-50 text-orange-700 border-orange-200;
+    @apply bg-warning/10 text-warning border-warning/20;
   }
 
   .category-overig {
-    @apply bg-gray-50 text-gray-700 border-gray-200;
+    @apply bg-muted text-muted-foreground border-border;
   }
 
   /* Avatar placeholder styles */

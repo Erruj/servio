@@ -1,7 +1,8 @@
 // AI Orchestrator - Smart Provider Selection & Fallback Logic
 // Handles OpenAI → Fallback → Mock progression
 
-import { OpenAIProvider, FallbackProvider, MockProvider, GenerateRepliesParams, GenerateRepliesResult } from './providers';
+import { OpenAIProvider, FallbackProvider, MockProvider, GenerateRepliesParams, GenerateRepliesResult, AIProvider } from './providers';
+import { sanitizeText, validateInput, checkRateLimit } from '@/lib/security';
 import { addAiLog, AiLog } from '../ai';
 
 // ============= ERROR CODES =============
@@ -41,6 +42,18 @@ export async function generateSmartReplies(params: GenerateRepliesParams): Promi
   // Input validation
   if (!params.mail.subject?.trim() || !params.mail.body?.trim()) {
     const error = new AiError('BAD_INPUT', 'E-mail onderwerp en inhoud zijn vereist');
+    logError(logData, error, startTime);
+    throw error;
+  }
+
+  // Rate limiting check (50 requests per minute)
+  const rateLimitKey = `ai_generation_${params.mail.id || Date.now()}`;
+  if (!checkRateLimit(rateLimitKey, 50, 60000)) {
+    const error = new AiError(
+      'RATE_LIMIT',
+      'Te veel AI verzoeken. Wacht even en probeer opnieuw.',
+      null
+    );
     logError(logData, error, startTime);
     throw error;
   }

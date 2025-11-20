@@ -70,9 +70,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
+      // Rate limiting for signup attempts (5 per 5 minutes per email)
+      const rateLimitKey = `signup_${email}`;
+      const { checkRateLimit } = await import('@/lib/security');
+      
+      if (!checkRateLimit(rateLimitKey, 5, 300000)) {
+        return { error: new Error('Te veel registratie pogingen. Probeer over 5 minuten opnieuw.') };
+      }
+
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -83,7 +91,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
       
-      return { error };
+      if (error) return { error };
+
+      // Owner role is automatically assigned via database trigger (handle_new_user)
+      // Verify role assignment after a brief delay and add fallback
+      if (data.user) {
+        setTimeout(async () => {
+          try {
+            const { data: roleData, error: roleError } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', data.user!.id)
+              .maybeSingle();
+            
+            if (roleError || !roleData) {
+              console.warn('Role not found, inserting owner role as fallback');
+              // Fallback: manually insert owner role
+              await supabase.from('user_roles').insert({
+                user_id: data.user!.id,
+                role: 'owner'
+              });
+            }
+          } catch (e) {
+            console.error('Failed to verify/insert role:', e);
+          }
+        }, 1500);
+      }
+      
+      return { error: null };
     } catch (error) {
       return { error: error as Error };
     }
@@ -91,6 +126,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Rate limiting for login attempts (10 per 5 minutes per email)
+      const rateLimitKey = `login_${email}`;
+      const { checkRateLimit } = await import('@/lib/security');
+      
+      if (!checkRateLimit(rateLimitKey, 10, 300000)) {
+        return { error: new Error('Te veel inlogpogingen. Probeer over 5 minuten opnieuw.') };
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
