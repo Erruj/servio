@@ -38,14 +38,18 @@ export class OpenAIProvider implements AIProvider {
   name = 'OpenAI';
   private apiKey: string | null = null;
 
-  constructor() {
-    // TODO(prod): Read from env/secrets
-    this.apiKey = this.getApiKey();
+  constructor(apiKey?: string) {
+    // Read from localStorage for now (development only)
+    // Production: use Supabase Edge Function with secret
+    this.apiKey = apiKey || this.getApiKeyFromStorage();
   }
 
-  private getApiKey(): string | null {
-    // TODO(prod): Replace with actual env variable
-    return process.env.OPENAI_API_KEY || null;
+  private getApiKeyFromStorage(): string | null {
+    try {
+      return localStorage.getItem('OPENAI_API_KEY');
+    } catch {
+      return null;
+    }
   }
 
   isAvailable(): boolean {
