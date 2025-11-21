@@ -20,6 +20,10 @@ import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { DebugDrawer } from "./components/DebugDrawer";
+import FinancialOverview from "./pages/administration/FinancialOverview";
+import Invoices from "./pages/administration/Invoices";
+import Receipts from "./pages/administration/Receipts";
+import Documents from "./pages/administration/Documents";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +64,13 @@ function AppRoutes() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/mailbox-setup" element={<MailboxSetup />} />
       <Route path="/analytics" element={<Analytics />} />
+      
+      {/* Administration Routes */}
+      <Route path="/administration/overview" element={<FinancialOverview />} />
+      <Route path="/administration/invoices" element={<Invoices />} />
+      <Route path="/administration/receipts" element={<Receipts />} />
+      <Route path="/administration/documents" element={<Documents />} />
+      
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
