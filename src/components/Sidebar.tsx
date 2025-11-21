@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Euro } from 'lucide-react';
+import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Euro, Wallet, Receipt, Upload, FileBox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -16,10 +16,18 @@ const getNavigation = (t: any) => [
   { name: t('settings'), href: '/settings', icon: Settings },
 ];
 
+const getAdministrationNavigation = (t: any) => [
+  { name: t('financialOverview'), href: '/administration/overview', icon: Wallet },
+  { name: t('invoices'), href: '/administration/invoices', icon: Receipt },
+  { name: t('receipts'), href: '/administration/receipts', icon: Upload },
+  { name: t('documents'), href: '/administration/documents', icon: FileBox },
+];
+
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
   const { t } = useTranslation();
   const navigation = getNavigation(t);
+  const adminNavigation = getAdministrationNavigation(t);
 
   return (
     <div className={cn('w-64 bg-card border-r border-border flex flex-col shadow-card', className)}>
@@ -37,25 +45,53 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-6 space-y-3">
-        {navigation.map((item) => {
-          const isActive = location.pathname === item.href;
-          return (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={cn(
-                'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-card'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-              )}
-            >
-              <item.icon className="mr-3 h-5 w-5" />
-              {item.name}
-            </NavLink>
-          );
-        })}
+      <nav className="flex-1 p-6 space-y-6 overflow-y-auto">
+        {/* Main Navigation */}
+        <div className="space-y-3">
+          {navigation.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={cn(
+                  'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
+                  isActive
+                    ? 'bg-primary text-primary-foreground shadow-card'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                )}
+              >
+                <item.icon className="mr-3 h-5 w-5" />
+                {item.name}
+              </NavLink>
+            );
+          })}
+        </div>
+
+        {/* Administration Section */}
+        <div className="space-y-3">
+          <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            {t('administration')}
+          </h3>
+          {adminNavigation.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={cn(
+                  'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
+                  isActive
+                    ? 'bg-primary text-primary-foreground shadow-card'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                )}
+              >
+                <item.icon className="mr-3 h-5 w-5" />
+                {item.name}
+              </NavLink>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Footer */}

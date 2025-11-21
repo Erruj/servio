@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          ai_key_points: Json | null
+          ai_risks: Json | null
+          ai_summary: string | null
+          created_at: string | null
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_path: string
+          id: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_key_points?: Json | null
+          ai_risks?: Json | null
+          ai_summary?: string | null
+          created_at?: string | null
+          document_type: Database["public"]["Enums"]["document_type"]
+          file_path: string
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_key_points?: Json | null
+          ai_risks?: Json | null
+          ai_summary?: string | null
+          created_at?: string | null
+          document_type?: Database["public"]["Enums"]["document_type"]
+          file_path?: string
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          ai_summary: string | null
+          amount: number | null
+          category: Database["public"]["Enums"]["transaction_category"] | null
+          created_at: string | null
+          due_date: string | null
+          file_path: string
+          id: string
+          invoice_date: string | null
+          invoice_number: string | null
+          status: string | null
+          supplier: string | null
+          updated_at: string | null
+          user_id: string
+          vat_amount: number | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          amount?: number | null
+          category?: Database["public"]["Enums"]["transaction_category"] | null
+          created_at?: string | null
+          due_date?: string | null
+          file_path: string
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          status?: string | null
+          supplier?: string | null
+          updated_at?: string | null
+          user_id: string
+          vat_amount?: number | null
+        }
+        Update: {
+          ai_summary?: string | null
+          amount?: number | null
+          category?: Database["public"]["Enums"]["transaction_category"] | null
+          created_at?: string | null
+          due_date?: string | null
+          file_path?: string
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          status?: string | null
+          supplier?: string | null
+          updated_at?: string | null
+          user_id?: string
+          vat_amount?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           company_name: string | null
@@ -38,6 +161,84 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      receipts: {
+        Row: {
+          ai_summary: string | null
+          amount: number | null
+          category: Database["public"]["Enums"]["transaction_category"] | null
+          created_at: string | null
+          file_path: string
+          id: string
+          merchant: string | null
+          receipt_date: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          amount?: number | null
+          category?: Database["public"]["Enums"]["transaction_category"] | null
+          created_at?: string | null
+          file_path: string
+          id?: string
+          merchant?: string | null
+          receipt_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_summary?: string | null
+          amount?: number | null
+          category?: Database["public"]["Enums"]["transaction_category"] | null
+          created_at?: string | null
+          file_path?: string
+          id?: string
+          merchant?: string | null
+          receipt_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: Database["public"]["Enums"]["transaction_category"]
+          created_at: string | null
+          date: string
+          description: string | null
+          id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: Database["public"]["Enums"]["transaction_category"]
+          created_at?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: Database["public"]["Enums"]["transaction_category"]
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -110,6 +311,20 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "admin" | "agent" | "finance" | "viewer"
+      document_type: "invoice" | "receipt" | "contract" | "offer" | "other"
+      transaction_category:
+        | "marketing"
+        | "software"
+        | "hardware"
+        | "office"
+        | "travel"
+        | "food"
+        | "utilities"
+        | "salary"
+        | "tax"
+        | "insurance"
+        | "other"
+      transaction_type: "income" | "expense"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -238,6 +453,21 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "agent", "finance", "viewer"],
+      document_type: ["invoice", "receipt", "contract", "offer", "other"],
+      transaction_category: [
+        "marketing",
+        "software",
+        "hardware",
+        "office",
+        "travel",
+        "food",
+        "utilities",
+        "salary",
+        "tax",
+        "insurance",
+        "other",
+      ],
+      transaction_type: ["income", "expense"],
     },
   },
 } as const

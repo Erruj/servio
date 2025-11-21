@@ -12,6 +12,67 @@ const resources = {
       pricing: 'Pricing',
       settings: 'Settings',
       
+      // Administration
+      administration: 'Administration',
+      financialOverview: 'Financial Overview',
+      financialOverviewDescription: 'View your financial situation at a glance',
+      invoices: 'Invoices',
+      invoicesDescription: 'Manage all your invoices in one place',
+      receipts: 'Receipts',
+      receiptsDescription: 'Upload and manage your receipts',
+      documents: 'Documents',
+      documentsDescription: 'Contracts, offers and other documents',
+      
+      // Financial terms
+      totalIncome: 'Total Income',
+      totalExpenses: 'Total Expenses',
+      profit: 'Profit',
+      income: 'Income',
+      expenses: 'Expenses',
+      thisMonth: 'This Month',
+      last6Months: 'Last 6 Months',
+      monthlyTrend: 'Monthly Trend',
+      topExpenseCategories: 'Top Expense Categories',
+      aiFinancialInsight: 'AI Financial Insight',
+      aiFinancialSummary: 'You have a healthy profit margin of 43% this month. Expenses are stable, with the largest costs in software and marketing.',
+      
+      // Invoice management
+      allInvoices: 'All Invoices',
+      manageYourInvoices: 'Manage and analyze your invoices',
+      uploadInvoice: 'Upload Invoice',
+      uploading: 'Uploading...',
+      searchInvoices: 'Search invoices...',
+      noInvoices: 'No invoices yet',
+      invoiceNumber: 'Invoice Number',
+      supplier: 'Supplier',
+      date: 'Date',
+      amount: 'Amount',
+      category: 'Category',
+      status: 'Status',
+      actions: 'Actions',
+      unknown: 'Unknown',
+      
+      // Receipt management
+      allReceipts: 'All Receipts',
+      manageYourReceipts: 'Manage and categorize your receipts',
+      uploadReceipt: 'Upload Receipt',
+      noReceipts: 'No receipts yet',
+      uploadReceiptsToStart: 'Upload receipts to get started',
+      unknownMerchant: 'Unknown merchant',
+      
+      // Document management
+      allDocuments: 'All Documents',
+      manageYourDocuments: 'Manage and analyze your documents',
+      uploadDocument: 'Upload Document',
+      searchDocuments: 'Search documents...',
+      noDocuments: 'No documents yet',
+      contracts: 'Contracts',
+      offers: 'Offers',
+      other: 'Other',
+      all: 'All',
+      analysisInProgress: 'Analysis in progress',
+      onlyPdfAllowed: 'Only PDF files are allowed',
+      
       // Header
       tagline: 'AI customer service that automatically handles up to 80% of your emails',
       logout: 'Logout',
@@ -60,12 +121,23 @@ const resources = {
       invoice: 'Invoice',
       question: 'Question',
       technical: 'Technical',
-      other: 'Other',
       
       // Common
       loading: 'Loading...',
       noEmails: 'No new emails.',
       selectEmail: 'Select an email to reply',
+      success: 'Success',
+      invalidFileType: 'Invalid file type',
+      fileTooLarge: 'File is too large',
+      invoiceUploaded: 'Invoice uploaded successfully',
+      receiptUploaded: 'Receipt uploaded successfully',
+      documentUploaded: 'Document uploaded successfully',
+      errorLoadingInvoices: 'Error loading invoices',
+      errorLoadingReceipts: 'Error loading receipts',
+      errorLoadingDocuments: 'Error loading documents',
+      errorUploadingInvoice: 'Error uploading invoice',
+      errorUploadingReceipt: 'Error uploading receipt',
+      errorUploadingDocument: 'Error uploading document',
       
       // Footer
       footerText: 'Demo version of Servio. Not for production use.',
@@ -79,8 +151,69 @@ const resources = {
       dashboard: 'Dashboard',
       statistics: 'Statistieken',
       templates: 'Templates',
-      pricing: 'Pricing',
+      pricing: 'Prijzen',
       settings: 'Instellingen',
+      
+      // Administration
+      administration: 'Administratie',
+      financialOverview: 'Financieel Overzicht',
+      financialOverviewDescription: 'Bekijk je financiële situatie in één oogopslag',
+      invoices: 'Facturen',
+      invoicesDescription: 'Beheer al je facturen op één plek',
+      receipts: 'Bonnetjes',
+      receiptsDescription: 'Upload en beheer je bonnetjes',
+      documents: 'Documenten',
+      documentsDescription: 'Contracten, offertes en andere documenten',
+      
+      // Financial terms
+      totalIncome: 'Totale Inkomsten',
+      totalExpenses: 'Totale Uitgaven',
+      profit: 'Winst',
+      income: 'Inkomsten',
+      expenses: 'Uitgaven',
+      thisMonth: 'Deze maand',
+      last6Months: 'Laatste 6 maanden',
+      monthlyTrend: 'Maandelijkse Trend',
+      topExpenseCategories: 'Top Uitgavencategorieën',
+      aiFinancialInsight: 'AI Financieel Inzicht',
+      aiFinancialSummary: 'Je hebt deze maand een gezonde winstmarge van 43%. Uitgaven zijn stabiel, met de grootste kosten in software en marketing.',
+      
+      // Invoice management
+      allInvoices: 'Alle Facturen',
+      manageYourInvoices: 'Beheer en analyseer je facturen',
+      uploadInvoice: 'Factuur Uploaden',
+      uploading: 'Uploaden...',
+      searchInvoices: 'Zoek facturen...',
+      noInvoices: 'Nog geen facturen',
+      invoiceNumber: 'Factuurnummer',
+      supplier: 'Leverancier',
+      date: 'Datum',
+      amount: 'Bedrag',
+      category: 'Categorie',
+      status: 'Status',
+      actions: 'Acties',
+      unknown: 'Onbekend',
+      
+      // Receipt management
+      allReceipts: 'Alle Bonnetjes',
+      manageYourReceipts: 'Beheer en categoriseer je bonnetjes',
+      uploadReceipt: 'Bonnetje Uploaden',
+      noReceipts: 'Nog geen bonnetjes',
+      uploadReceiptsToStart: 'Upload bonnetjes om te beginnen',
+      unknownMerchant: 'Onbekende winkel',
+      
+      // Document management
+      allDocuments: 'Alle Documenten',
+      manageYourDocuments: 'Beheer en analyseer je documenten',
+      uploadDocument: 'Document Uploaden',
+      searchDocuments: 'Zoek documenten...',
+      noDocuments: 'Nog geen documenten',
+      contracts: 'Contracten',
+      offers: 'Offertes',
+      other: 'Overig',
+      all: 'Alles',
+      analysisInProgress: 'Analyse in behandeling',
+      onlyPdfAllowed: 'Alleen PDF bestanden zijn toegestaan',
       
       // Header
       tagline: 'AI-klantenservice die tot 80% van je mails automatisch afhandelt',
@@ -130,196 +263,27 @@ const resources = {
       invoice: 'Factuur',
       question: 'Vraag',
       technical: 'Technisch',
-      other: 'Overig',
       
       // Common
       loading: 'Laden...',
       noEmails: 'Geen nieuwe mails.',
       selectEmail: 'Selecteer een email om te antwoorden',
+      success: 'Succes',
+      invalidFileType: 'Ongeldig bestandstype',
+      fileTooLarge: 'Bestand is te groot',
+      invoiceUploaded: 'Factuur succesvol geüpload',
+      receiptUploaded: 'Bonnetje succesvol geüpload',
+      documentUploaded: 'Document succesvol geüpload',
+      errorLoadingInvoices: 'Fout bij laden van facturen',
+      errorLoadingReceipts: 'Fout bij laden van bonnetjes',
+      errorLoadingDocuments: 'Fout bij laden van documenten',
+      errorUploadingInvoice: 'Fout bij uploaden van factuur',
+      errorUploadingReceipt: 'Fout bij uploaden van bonnetje',
+      errorUploadingDocument: 'Fout bij uploaden van document',
       
       // Footer
       footerText: 'Demo-versie van Servio. Niet voor productie.',
       version: 'Versie'
-    }
-  },
-  de: {
-    translation: {
-      // Navigation
-      inbox: 'Posteingang',
-      dashboard: 'Dashboard',
-      statistics: 'Statistiken',
-      templates: 'Vorlagen',
-      pricing: 'Preise',
-      settings: 'Einstellungen',
-      
-      // Header
-      tagline: 'KI-Kundenservice, der bis zu 80% Ihrer E-Mails automatisch bearbeitet',
-      logout: 'Abmelden',
-      demo: 'Demo',
-      
-      // Welcome
-      welcome: 'Willkommen bei Servio — Ihr KI-Kundenservice-Assistent',
-      loadDemoData: 'Demo-Daten laden',
-      connectMailbox: 'Postfach verbinden',
-      
-      // Mail interface
-      reply: 'Antworten',
-      send: 'Senden',
-      draft: 'Entwurf',
-      markAsResolved: 'Als erledigt markieren',
-      later: 'Später',
-      archive: 'Archivieren',
-      regenerate: 'Regenerieren',
-      
-      // AI Response types
-      business: 'Geschäftlich',
-      empathetic: 'Empathisch',
-      formal: 'Förmlich',
-      detailed: 'Detailliert',
-      
-      // Languages
-      dutch: 'Niederländisch',
-      english: 'Englisch',
-      german: 'Deutsch',
-      french: 'Französisch',
-      spanish: 'Spanisch',
-      
-      // Categories
-      return: 'Rücksendung',
-      complaint: 'Beschwerde',
-      invoice: 'Rechnung',
-      question: 'Frage',
-      technical: 'Technisch',
-      other: 'Sonstiges',
-      
-      // Common
-      loading: 'Laden...',
-      noEmails: 'Keine neuen E-Mails.',
-      selectEmail: 'Wählen Sie eine E-Mail zum Antworten aus',
-      
-      // Footer
-      footerText: 'Demo-Version von Servio. Nicht für den Produktiveinsatz.',
-      version: 'Version'
-    }
-  },
-  fr: {
-    translation: {
-      // Navigation
-      inbox: 'Boîte de réception',
-      dashboard: 'Tableau de bord',
-      statistics: 'Statistiques',
-      templates: 'Modèles',
-      pricing: 'Tarifs',
-      settings: 'Paramètres',
-      
-      // Header
-      tagline: 'Service client IA qui traite automatiquement jusqu\'à 80% de vos e-mails',
-      logout: 'Déconnexion',
-      demo: 'Démo',
-      
-      // Welcome
-      welcome: 'Bienvenue chez Servio — votre assistant de service client IA',
-      loadDemoData: 'Charger les données de démonstration',
-      connectMailbox: 'Connecter la boîte aux lettres',
-      
-      // Mail interface
-      reply: 'Répondre',
-      send: 'Envoyer',
-      draft: 'Brouillon',
-      markAsResolved: 'Marquer comme résolu',
-      later: 'Plus tard',
-      archive: 'Archiver',
-      regenerate: 'Régénérer',
-      
-      // AI Response types
-      business: 'Professionnel',
-      empathetic: 'Empathique',
-      formal: 'Formel',
-      detailed: 'Détaillé',
-      
-      // Languages
-      dutch: 'Néerlandais',
-      english: 'Anglais',
-      german: 'Allemand',
-      french: 'Français',
-      spanish: 'Espagnol',
-      
-      // Categories
-      return: 'Retour',
-      complaint: 'Plainte',
-      invoice: 'Facture',
-      question: 'Question',
-      technical: 'Technique',
-      other: 'Autre',
-      
-      // Common
-      loading: 'Chargement...',
-      noEmails: 'Aucun nouvel e-mail.',
-      selectEmail: 'Sélectionnez un e-mail pour répondre',
-      
-      // Footer
-      footerText: 'Version de démonstration de Servio. Non destinée à la production.',
-      version: 'Version'
-    }
-  },
-  es: {
-    translation: {
-      // Navigation
-      inbox: 'Bandeja de entrada',
-      dashboard: 'Panel de control',
-      statistics: 'Estadísticas',
-      templates: 'Plantillas',
-      pricing: 'Precios',
-      settings: 'Configuración',
-      
-      // Header
-      tagline: 'Servicio al cliente con IA que maneja automáticamente hasta el 80% de tus correos',
-      logout: 'Cerrar sesión',
-      demo: 'Demo',
-      
-      // Welcome
-      welcome: 'Bienvenido a Servio — tu asistente de servicio al cliente con IA',
-      loadDemoData: 'Cargar datos de demostración',
-      connectMailbox: 'Conectar buzón',
-      
-      // Mail interface
-      reply: 'Responder',
-      send: 'Enviar',
-      draft: 'Borrador',
-      markAsResolved: 'Marcar como resuelto',
-      later: 'Más tarde',
-      archive: 'Archivar',
-      regenerate: 'Regenerar',
-      
-      // AI Response types
-      business: 'Profesional',
-      empathetic: 'Empático',
-      formal: 'Formal',
-      detailed: 'Detallado',
-      
-      // Languages
-      dutch: 'Holandés',
-      english: 'Inglés',
-      german: 'Alemán',
-      french: 'Francés',
-      spanish: 'Español',
-      
-      // Categories
-      return: 'Devolución',
-      complaint: 'Queja',
-      invoice: 'Factura',
-      question: 'Pregunta',
-      technical: 'Técnico',
-      other: 'Otro',
-      
-      // Common
-      loading: 'Cargando...',
-      noEmails: 'No hay correos nuevos.',
-      selectEmail: 'Selecciona un correo para responder',
-      
-      // Footer
-      footerText: 'Versión de demostración de Servio. No para uso en producción.',
-      version: 'Versión'
     }
   }
 };
@@ -328,7 +292,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en',
+    lng: 'nl',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
