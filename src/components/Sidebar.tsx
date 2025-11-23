@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Euro, Wallet, Receipt, Upload, FileBox } from 'lucide-react';
+import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Euro, Wallet, Receipt, Upload, FileBox, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -18,9 +18,11 @@ const getNavigation = (t: any) => [
 
 const getAdministrationNavigation = (t: any) => [
   { name: t('financialOverview'), href: '/administration/overview', icon: Wallet },
+  { name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain },
   { name: t('invoices'), href: '/administration/invoices', icon: Receipt },
   { name: t('receipts'), href: '/administration/receipts', icon: Upload },
   { name: t('documents'), href: '/administration/documents', icon: FileBox },
+  { name: t('exports'), href: '/administration/exports', icon: Upload },
 ];
 
 export function Sidebar({ className }: SidebarProps) {

@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_insights: {
+        Row: {
+          answer: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          query: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          query?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          query?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string | null
@@ -266,30 +296,42 @@ export type Database = {
       user_settings: {
         Row: {
           ai_tone: string | null
+          auto_categorize: boolean | null
           auto_reply_enabled: boolean | null
+          auto_vat_calculation: boolean | null
           created_at: string
           id: string
           language: string | null
+          monthly_summary: boolean | null
+          tag_suggestions: boolean | null
           theme: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           ai_tone?: string | null
+          auto_categorize?: boolean | null
           auto_reply_enabled?: boolean | null
+          auto_vat_calculation?: boolean | null
           created_at?: string
           id?: string
           language?: string | null
+          monthly_summary?: boolean | null
+          tag_suggestions?: boolean | null
           theme?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           ai_tone?: string | null
+          auto_categorize?: boolean | null
           auto_reply_enabled?: boolean | null
+          auto_vat_calculation?: boolean | null
           created_at?: string
           id?: string
           language?: string | null
+          monthly_summary?: boolean | null
+          tag_suggestions?: boolean | null
           theme?: string | null
           updated_at?: string
           user_id?: string

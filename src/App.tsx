@@ -21,9 +21,11 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { DebugDrawer } from "./components/DebugDrawer";
 import FinancialOverview from "./pages/administration/FinancialOverview";
+import AIAssistant from "./pages/administration/AIAssistant";
 import Invoices from "./pages/administration/Invoices";
 import Receipts from "./pages/administration/Receipts";
 import Documents from "./pages/administration/Documents";
+import Exports from "./pages/administration/Exports";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,10 +68,12 @@ function AppRoutes() {
       <Route path="/analytics" element={<Analytics />} />
       
       {/* Administration Routes */}
-      <Route path="/administration/overview" element={<FinancialOverview />} />
-      <Route path="/administration/invoices" element={<Invoices />} />
-      <Route path="/administration/receipts" element={<Receipts />} />
-      <Route path="/administration/documents" element={<Documents />} />
+            <Route path="/administration/overview" element={<FinancialOverview />} />
+            <Route path="/administration/ai-assistant" element={<AIAssistant />} />
+            <Route path="/administration/invoices" element={<Invoices />} />
+            <Route path="/administration/receipts" element={<Receipts />} />
+            <Route path="/administration/documents" element={<Documents />} />
+            <Route path="/administration/exports" element={<Exports />} />
       
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
