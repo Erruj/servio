@@ -1,6 +1,37 @@
 import DOMPurify from 'dompurify';
 import { z } from 'zod';
 
+// File upload security
+const DANGEROUS_EXTENSIONS = [
+  'exe', 'bat', 'cmd', 'com', 'pif', 'scr', 'vbs', 'js', 'jar',
+  'msi', 'app', 'deb', 'rpm', 'dmg', 'pkg', 'sh', 'bash', 'ps1'
+];
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
+export const validateFileUpload = (file: File): { isValid: boolean; error?: string } => {
+  if (!file) {
+    return { isValid: false, error: 'Geen bestand geselecteerd' };
+  }
+
+  // Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    return { isValid: false, error: 'Bestand is te groot (max 20MB)' };
+  }
+
+  // Check file extension
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  if (!extension) {
+    return { isValid: false, error: 'Ongeldig bestandstype' };
+  }
+
+  if (DANGEROUS_EXTENSIONS.includes(extension)) {
+    return { isValid: false, error: 'Dit bestandstype is niet toegestaan om veiligheidsredenen' };
+  }
+
+  return { isValid: true };
+};
+
 // Input sanitization
 export const sanitizeHtml = (html: string): string => {
   return DOMPurify.sanitize(html, {
@@ -21,6 +52,15 @@ export const sanitizeText = (text: string): string => {
       default: return char;
     }
   });
+};
+
+export const sanitizeFilename = (filename: string): string => {
+  // Remove path traversal attempts
+  return filename
+    .replace(/\.\./g, '')
+    .replace(/[\/\\]/g, '')
+    .replace(/[<>:"|?*]/g, '_')
+    .substring(0, 255);
 };
 
 // Input validation helper
@@ -79,24 +119,55 @@ export const aiInputSchema = z.object({
 });
 
 // Rate limiting (simple in-memory implementation)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const rateLimitMap = new Map<string, { count: number; resetTime: number; blocked: boolean; blockUntil?: number }>();
 
-export const checkRateLimit = (identifier: string, maxRequests = 50, windowMs = 60000): boolean => {
+export const checkRateLimit = (
+  identifier: string, 
+  maxRequests = 50, 
+  windowMs = 60000,
+  blockDuration = 300000 // 5 minutes block
+): boolean => {
   const now = Date.now();
   const record = rateLimitMap.get(identifier);
   
+  // Check if blocked
+  if (record?.blocked && record.blockUntil) {
+    if (now < record.blockUntil) {
+      return false; // Still blocked
+    }
+    // Block expired, reset
+    rateLimitMap.delete(identifier);
+  }
+  
   if (!record || now > record.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
+    rateLimitMap.set(identifier, { 
+      count: 1, 
+      resetTime: now + windowMs,
+      blocked: false
+    });
     return true;
   }
   
   if (record.count >= maxRequests) {
+    // Block the identifier
+    record.blocked = true;
+    record.blockUntil = now + blockDuration;
     return false;
   }
   
   record.count++;
   return true;
 };
+
+// Cleanup old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitMap.entries()) {
+    if (now > value.resetTime && (!value.blocked || (value.blockUntil && now > value.blockUntil))) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, 60000); // Cleanup every minute
 
 // Error handling
 export class SecurityError extends Error {

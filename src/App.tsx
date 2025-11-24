@@ -26,6 +26,8 @@ import Invoices from "./pages/administration/Invoices";
 import Receipts from "./pages/administration/Receipts";
 import Documents from "./pages/administration/Documents";
 import Exports from "./pages/administration/Exports";
+import TeamManagement from "./pages/administration/TeamManagement";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,23 +59,80 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<Inbox />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/stats" element={<Statistics />} />
-      <Route path="/templates" element={<Templates />} />
-      <Route path="/settings" element={<Settings />} />
+      <Route path="/" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'agent']}>
+          <Inbox />
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/stats" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance', 'viewer']}>
+          <Statistics />
+        </ProtectedRoute>
+      } />
+      <Route path="/templates" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'agent']}>
+          <Templates />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin']}>
+          <Settings />
+        </ProtectedRoute>
+      } />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/mailbox-setup" element={<MailboxSetup />} />
-      <Route path="/analytics" element={<Analytics />} />
+      <Route path="/mailbox-setup" element={
+        <ProtectedRoute>
+          <MailboxSetup />
+        </ProtectedRoute>
+      } />
+      <Route path="/analytics" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance', 'viewer']}>
+          <Analytics />
+        </ProtectedRoute>
+      } />
+      <Route path="/team" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin']}>
+          <TeamManagement />
+        </ProtectedRoute>
+      } />
       
       {/* Administration Routes */}
-            <Route path="/administration/overview" element={<FinancialOverview />} />
-            <Route path="/administration/ai-assistant" element={<AIAssistant />} />
-            <Route path="/administration/invoices" element={<Invoices />} />
-            <Route path="/administration/receipts" element={<Receipts />} />
-            <Route path="/administration/documents" element={<Documents />} />
-            <Route path="/administration/exports" element={<Exports />} />
+      <Route path="/administration/overview" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <FinancialOverview />
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/ai-assistant" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <AIAssistant />
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/invoices" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <Invoices />
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/receipts" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <Receipts />
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/documents" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <Documents />
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/exports" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <Exports />
+        </ProtectedRoute>
+      } />
       
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
