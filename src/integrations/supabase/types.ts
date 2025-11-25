@@ -369,8 +369,15 @@ export type Database = {
           id: string
           language: string | null
           monthly_summary: boolean | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_current_period_end: string | null
+          subscription_product_id: string | null
+          subscription_status: string | null
           tag_suggestions: boolean | null
           theme: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
           updated_at: string
           user_id: string
         }
@@ -383,8 +390,15 @@ export type Database = {
           id?: string
           language?: string | null
           monthly_summary?: boolean | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
           tag_suggestions?: boolean | null
           theme?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
           user_id: string
         }
@@ -397,8 +411,15 @@ export type Database = {
           id?: string
           language?: string | null
           monthly_summary?: boolean | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_current_period_end?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
           tag_suggestions?: boolean | null
           theme?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
           user_id?: string
         }
