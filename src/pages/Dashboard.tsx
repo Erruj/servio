@@ -2,6 +2,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Topbar } from '@/components/Topbar';
+import { SubscriptionBanner } from '@/components/SubscriptionBanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { dummyStats } from '@/lib/dummy';
@@ -33,15 +34,18 @@ const Dashboard = () => {
         
         <div className="flex-1 flex flex-col">
           <Topbar />
-        
-        <div className="flex-1 overflow-y-auto p-8 space-y-8">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">📊 Dashboard</h1>
-            <p className="text-lg text-muted-foreground">
-              Overzicht van je support activiteiten vandaag
-            </p>
-          </div>
+          
+          <div className="flex-1 overflow-y-auto p-8 space-y-8">
+            {/* Subscription Banner */}
+            <SubscriptionBanner />
+            
+            {/* Header */}
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">📊 Dashboard</h1>
+              <p className="text-lg text-muted-foreground">
+                Overzicht van je support activiteiten vandaag
+              </p>
+            </div>
 
           {/* Key Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

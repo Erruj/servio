@@ -4,72 +4,71 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Star, Zap, Crown } from 'lucide-react';
+import { Check, Star, Zap, Crown, Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { useSubscription, SUBSCRIPTION_TIERS } from '@/hooks/useSubscription';
+import { toast } from 'sonner';
 
 const Pricing = () => {
   const { user, signOut } = useAuth();
+  const { subscriptionStatus, createCheckoutSession, getCurrentTier, openCustomerPortal, isLoading } = useSubscription();
 
   const plans = [
     {
-      name: 'Free',
-      price: '€0',
+      name: 'Starter',
+      price: '€9,99',
       period: '/maand',
-      description: 'Perfect om te starten',
+      description: 'Perfect voor freelancers',
       icon: <Star className="h-6 w-6" />,
-      features: [
-        '50 AI antwoorden per maand',
-        'Basis email analyse',
-        '3 aangepaste templates',
-        'Email ondersteuning',
-        'Dashboard analytics'
-      ],
-      buttonText: 'Gratis starten',
+      features: SUBSCRIPTION_TIERS.starter.features,
+      buttonText: 'Start Starter',
       variant: 'outline' as const,
-      popular: false
+      popular: false,
+      priceId: SUBSCRIPTION_TIERS.starter.price_id,
+      productId: SUBSCRIPTION_TIERS.starter.product_id,
     },
     {
       name: 'Pro',
-      price: '€49',
+      price: '€29,99',
       period: '/maand',
       description: 'Voor groeiende bedrijven',
       icon: <Zap className="h-6 w-6" />,
-      features: [
-        '1.000 AI antwoorden per maand',
-        'Geavanceerde AI analyse',
-        'Onbeperkte templates',
-        'Prioriteit ondersteuning',
-        'Geavanceerde analytics',
-        'API toegang',
-        'Integraties (Gmail, Outlook)',
-        'Custom branding'
-      ],
-      buttonText: 'Pro proberen',
+      features: SUBSCRIPTION_TIERS.pro.features,
+      buttonText: 'Kies Pro',
       variant: 'default' as const,
-      popular: true
+      popular: true,
+      priceId: SUBSCRIPTION_TIERS.pro.price_id,
+      productId: SUBSCRIPTION_TIERS.pro.product_id,
     },
     {
       name: 'Business',
-      price: '€149',
+      price: '€79,99',
       period: '/maand',
       description: 'Voor grote organisaties',
       icon: <Crown className="h-6 w-6" />,
-      features: [
-        'Onbeperkte AI antwoorden',
-        'AI training op je data',
-        'White-label oplossing',
-        'Dedicated account manager',
-        'SLA garantie (99.9% uptime)',
-        'Advanced security features',
-        'Custom integraties',
-        'Team management',
-        'Bulk operations'
-      ],
-      buttonText: 'Contact opnemen',
+      features: SUBSCRIPTION_TIERS.business.features,
+      buttonText: 'Kies Business',
       variant: 'outline' as const,
-      popular: false
+      popular: false,
+      priceId: SUBSCRIPTION_TIERS.business.price_id,
+      productId: SUBSCRIPTION_TIERS.business.product_id,
     }
   ];
+
+  const handleSubscribe = async (priceId: string, planName: string) => {
+    if (!user) {
+      toast.error('Log eerst in om te abonneren');
+      window.location.href = '/auth';
+      return;
+    }
+    
+    toast.info(`Checkout sessie wordt geopend voor ${planName}...`);
+    await createCheckoutSession(priceId);
+  };
+
+  const isCurrentPlan = (productId: string) => {
+    return subscriptionStatus?.product_id === productId;
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -82,13 +81,25 @@ const Pricing = () => {
           <div className="p-8 space-y-8">
             {/* Header */}
             <div className="text-center space-y-4">
-              <h1 className="text-4xl font-bold text-foreground">💰 Pricing</h1>
+              <h1 className="text-4xl font-bold text-foreground">💰 Servio Pakketten</h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Kies het Servio-pakket dat bij je past. Start gratis en schaal op wanneer je groeit.
+                Kies het Servio-pakket dat bij je past. Start met 14 dagen gratis trial.
               </p>
-              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                30 dagen geld-terug-garantie
-              </Badge>
+              <div className="flex gap-2 justify-center flex-wrap">
+                <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                  ✓ 14 dagen gratis trial
+                </Badge>
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                  ✓ Direct opzegbaar
+                </Badge>
+              </div>
+              {subscriptionStatus?.subscription_status === 'active' && (
+                <div className="mt-4">
+                  <Button onClick={openCustomerPortal} variant="outline">
+                    Beheer Abonnement
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Pricing Cards */}
@@ -98,12 +109,21 @@ const Pricing = () => {
                   key={index}
                   className={`relative shadow-card hover:shadow-elevated transition-all duration-200 ${
                     plan.popular ? 'border-primary/50 ring-1 ring-primary/20' : ''
+                  } ${
+                    isCurrentPlan(plan.productId) ? 'ring-2 ring-success bg-success/5' : ''
                   }`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <Badge className="bg-primary text-primary-foreground shadow-card">
                         🌟 Meest Populair
+                      </Badge>
+                    </div>
+                  )}
+                  {isCurrentPlan(plan.productId) && (
+                    <div className="absolute -top-3 right-4">
+                      <Badge className="bg-success text-white shadow-card">
+                        ✓ Jouw Pakket
                       </Badge>
                     </div>
                   )}
@@ -128,23 +148,21 @@ const Pricing = () => {
                     </div>
                     
                     <Button 
-                      variant={plan.variant}
+                      variant={isCurrentPlan(plan.productId) ? 'outline' : plan.variant}
                       size="lg" 
                       className={`w-full shadow-card ${
-                        plan.popular ? 'bg-primary hover:bg-primary/90' : ''
+                        plan.popular && !isCurrentPlan(plan.productId) ? 'bg-primary hover:bg-primary/90' : ''
                       }`}
-                      onClick={() => {
-                        if (plan.name === 'Free') {
-                          window.location.href = '/signup';
-                        } else if (plan.name === 'Pro') {
-                          window.location.href = '/signup';
-                        } else {
-                          // Business plan - contact
-                          window.open('mailto:sales@servio.nl?subject=Business Plan Interesse', '_blank');
-                        }
-                      }}
+                      onClick={() => handleSubscribe(plan.priceId, plan.name)}
+                      disabled={isCurrentPlan(plan.productId) || isLoading}
                     >
-                      {plan.buttonText}
+                      {isLoading ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Laden...</>
+                      ) : isCurrentPlan(plan.productId) ? (
+                        '✓ Actief Abonnement'
+                      ) : (
+                        plan.buttonText
+                      )}
                     </Button>
                   </CardHeader>
                   
@@ -169,20 +187,20 @@ const Pricing = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
                   {
+                    q: 'Hoe werkt de gratis trial?',
+                    a: 'Je krijgt 14 dagen gratis toegang tot alle functies. Geen creditcard nodig tijdens de trial.'
+                  },
+                  {
                     q: 'Kan ik upgraden of downgraden?',
-                    a: 'Ja, je kunt op elk moment van plan wisselen. Wijzigingen gaan in vanaf de volgende facturatieperiode.'
+                    a: 'Ja, je kunt op elk moment van plan wisselen via het abonnementsbeheer. Wijzigingen gaan direct in.'
                   },
                   {
-                    q: 'Hoe werkt de AI-training?',
-                    a: 'In het Business plan kunnen we de AI trainen op jouw specifieke bedrijfsdata en tone-of-voice.'
+                    q: 'Kan ik direct opzeggen?',
+                    a: 'Ja, je kunt je abonnement op elk moment opzeggen. Er zijn geen verplichte looptijden.'
                   },
                   {
-                    q: 'Welke integraties zijn beschikbaar?',
-                    a: 'We ondersteunen Gmail, Outlook, Zapier, Slack en vele andere populaire tools.'
-                  },
-                  {
-                    q: 'Is er een setup fee?',
-                    a: 'Nee, er zijn geen setup kosten. Je betaalt alleen je maandelijkse abonnement.'
+                    q: 'Welke betaalmethodes accepteren jullie?',
+                    a: 'We accepteren alle gangbare betaalmethodes via Stripe: creditcards, iDEAL, Bancontact en meer.'
                   }
                 ].map((faq, index) => (
                   <Card key={index} className="shadow-subtle">
@@ -199,15 +217,21 @@ const Pricing = () => {
             <div className="text-center space-y-4 py-8">
               <h2 className="text-2xl font-bold text-foreground">🚀 Klaar om te starten?</h2>
               <p className="text-muted-foreground">
-                Probeer Servio 30 dagen gratis. Geen creditcard vereist.
+                Start vandaag nog met 14 dagen gratis trial. Geen creditcard vereist.
               </p>
-              <Button 
-                size="lg" 
-                className="shadow-card"
-                onClick={() => window.location.href = '/signup'}
-              >
-                Start je gratis trial
-              </Button>
+              {!user ? (
+                <Button 
+                  size="lg" 
+                  className="shadow-card"
+                  onClick={() => window.location.href = '/auth'}
+                >
+                  Start je gratis trial
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Kies hierboven een pakket om te starten
+                </p>
+              )}
             </div>
           </div>
         </div>
