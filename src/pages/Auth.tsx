@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Loader2, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, Mail, Lock, User, AlertCircle, Check, X } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
@@ -30,6 +30,13 @@ const resetSchema = z.object({
   email: z.string().email('Ongeldig e-mailadres').max(255)
 });
 
+// Password requirements checker
+const checkPasswordRequirements = (password: string) => ({
+  minLength: password.length >= 6,
+  hasNumber: /\d/.test(password),
+  hasLetter: /[a-zA-Z]/.test(password),
+});
+
 export default function Auth() {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup' | 'reset'>('signin');
   const [signInData, setSignInData] = useState({ email: '', password: '' });
@@ -39,6 +46,18 @@ export default function Auth() {
   const { signIn, signUp, resetPassword, isLoading, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Clear errors when switching tabs
+  const handleTabChange = (tab: string) => {
+    setErrors({});
+    setActiveTab(tab as 'signin' | 'signup' | 'reset');
+  };
+
+  // Password requirements for signup
+  const passwordRequirements = useMemo(() => 
+    checkPasswordRequirements(signUpData.password), 
+    [signUpData.password]
+  );
 
   // Redirect if already logged in
   if (user) {
@@ -137,36 +156,49 @@ export default function Auth() {
     }
   };
 
+  const PasswordRequirementIndicator = ({ met, text }: { met: boolean; text: string }) => (
+    <div className={`flex items-center gap-2 text-xs ${met ? 'text-success' : 'text-muted-foreground'}`}>
+      {met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      <span>{text}</span>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-elevated">
-        <CardHeader className="text-center space-y-4">
+        <CardHeader className="text-center space-y-4 pb-2">
           <div className="flex justify-center">
             <div className="p-3 bg-primary/20 rounded-xl">
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <div>
+          <div className="space-y-2">
             <CardTitle className="text-2xl font-bold text-primary">Servio</CardTitle>
-            <CardDescription>
-              AI-klantenservice platform
+            <CardDescription className="text-base leading-relaxed">
+              Jouw AI-klantenservice assistent. Beheer e-mails, automatiseer antwoorden en houd overzicht over je administratie.
             </CardDescription>
           </div>
         </CardHeader>
         
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="signin">Inloggen</TabsTrigger>
-              <TabsTrigger value="signup">Registreren</TabsTrigger>
-              <TabsTrigger value="reset">Reset</TabsTrigger>
+        <CardContent className="pt-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Inloggen
+              </TabsTrigger>
+              <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Registreren
+              </TabsTrigger>
+              <TabsTrigger value="reset" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Reset
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin">
+            <TabsContent value="signin" className="space-y-4">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">
-                    <Mail className="h-4 w-4 inline mr-2" />
+                  <Label htmlFor="signin-email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
                     E-mailadres
                   </Label>
                   <Input
@@ -175,6 +207,7 @@ export default function Auth() {
                     value={signInData.email}
                     onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
                     placeholder="naam@bedrijf.nl"
+                    className="h-11"
                     required
                   />
                   {errors.email && (
@@ -183,8 +216,8 @@ export default function Auth() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">
-                    <Lock className="h-4 w-4 inline mr-2" />
+                  <Label htmlFor="signin-password" className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
                     Wachtwoord
                   </Label>
                   <Input
@@ -193,6 +226,7 @@ export default function Auth() {
                     value={signInData.password}
                     onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
                     placeholder="••••••••"
+                    className="h-11"
                     required
                   />
                   {errors.password && (
@@ -207,7 +241,7 @@ export default function Auth() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11" disabled={isLoading}>
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
@@ -218,11 +252,11 @@ export default function Auth() {
               </form>
             </TabsContent>
 
-            <TabsContent value="signup">
+            <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">
-                    <User className="h-4 w-4 inline mr-2" />
+                  <Label htmlFor="signup-name" className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
                     Volledige naam
                   </Label>
                   <Input
@@ -231,6 +265,7 @@ export default function Auth() {
                     value={signUpData.fullName}
                     onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
                     placeholder="Jan Jansen"
+                    className="h-11"
                     required
                   />
                   {errors.fullName && (
@@ -239,8 +274,8 @@ export default function Auth() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">
-                    <Mail className="h-4 w-4 inline mr-2" />
+                  <Label htmlFor="signup-email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
                     E-mailadres
                   </Label>
                   <Input
@@ -249,6 +284,7 @@ export default function Auth() {
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                     placeholder="naam@bedrijf.nl"
+                    className="h-11"
                     required
                   />
                   {errors.email && (
@@ -257,8 +293,8 @@ export default function Auth() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">
-                    <Lock className="h-4 w-4 inline mr-2" />
+                  <Label htmlFor="signup-password" className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
                     Wachtwoord
                   </Label>
                   <Input
@@ -267,16 +303,24 @@ export default function Auth() {
                     value={signUpData.password}
                     onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                     placeholder="••••••••"
+                    className="h-11"
                     required
                   />
+                  {/* Password requirements - always visible */}
+                  <div className="mt-2 p-3 bg-muted/50 rounded-lg space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Wachtwoord vereisten:</p>
+                    <PasswordRequirementIndicator met={passwordRequirements.minLength} text="Minimaal 6 karakters" />
+                    <PasswordRequirementIndicator met={passwordRequirements.hasLetter} text="Minstens 1 letter" />
+                    <PasswordRequirementIndicator met={passwordRequirements.hasNumber} text="Minstens 1 cijfer (aanbevolen)" />
+                  </div>
                   {errors.password && (
                     <p className="text-sm text-destructive">{errors.password}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-confirm">
-                    <Lock className="h-4 w-4 inline mr-2" />
+                  <Label htmlFor="signup-confirm" className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
                     Bevestig wachtwoord
                   </Label>
                   <Input
@@ -285,6 +329,7 @@ export default function Auth() {
                     value={signUpData.confirmPassword}
                     onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
                     placeholder="••••••••"
+                    className="h-11"
                     required
                   />
                   {errors.confirmPassword && (
@@ -299,7 +344,7 @@ export default function Auth() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11" disabled={isLoading}>
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
@@ -310,11 +355,14 @@ export default function Auth() {
               </form>
             </TabsContent>
 
-            <TabsContent value="reset">
+            <TabsContent value="reset" className="space-y-4">
               <form onSubmit={handlePasswordReset} className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Voer je e-mailadres in en we sturen je een link om je wachtwoord te resetten.
+                </p>
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email">
-                    <Mail className="h-4 w-4 inline mr-2" />
+                  <Label htmlFor="reset-email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
                     E-mailadres
                   </Label>
                   <Input
@@ -323,6 +371,7 @@ export default function Auth() {
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     placeholder="naam@bedrijf.nl"
+                    className="h-11"
                     required
                   />
                   {errors.email && (
@@ -337,7 +386,7 @@ export default function Auth() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11" disabled={isLoading}>
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (

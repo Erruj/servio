@@ -9,14 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Globe, Palette, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags } from 'lucide-react';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
   const { user, signOut } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [settings, setSettings] = useState({
     language: 'nl',
     theme: 'light',
@@ -67,6 +69,8 @@ const Settings = () => {
     if (!user) return;
 
     setIsSaving(true);
+    setSaveSuccess(false);
+    
     try {
       const { error } = await supabase
         .from('user_settings')
@@ -86,10 +90,19 @@ const Settings = () => {
       if (error) throw error;
 
       i18n.changeLanguage(settings.language);
-      toast.success(t('success'));
+      setSaveSuccess(true);
+      toast.success('Instellingen succesvol opgeslagen!', {
+        description: 'Je voorkeuren zijn bijgewerkt.',
+        icon: <Check className="h-4 w-4" />,
+      });
+      
+      // Reset success state after animation
+      setTimeout(() => setSaveSuccess(false), 2000);
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error(t('error'));
+      toast.error('Fout bij opslaan', {
+        description: 'Probeer het opnieuw.',
+      });
     } finally {
       setIsSaving(false);
     }
@@ -99,6 +112,34 @@ const Settings = () => {
     await signOut();
   };
 
+  // Setting item component for consistency
+  const SettingItem = ({ 
+    icon: Icon, 
+    label, 
+    description, 
+    children 
+  }: { 
+    icon: React.ElementType; 
+    label: string; 
+    description: string; 
+    children: React.ReactNode 
+  }) => (
+    <div className="flex items-center justify-between py-4">
+      <div className="flex items-start gap-3 flex-1 min-w-0">
+        <div className="mt-0.5 p-2 bg-muted rounded-lg">
+          <Icon className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="space-y-0.5 flex-1 min-w-0">
+          <Label className="text-sm font-medium">{label}</Label>
+          <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+        </div>
+      </div>
+      <div className="ml-4 flex-shrink-0">
+        {children}
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header user={user} onLogout={handleLogout} />
@@ -107,149 +148,220 @@ const Settings = () => {
         <Sidebar />
 
         <div className="flex-1 overflow-y-auto">
-          <div className="p-8 space-y-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">{t('settings')}</h1>
-              <p className="text-muted-foreground">{t('settingsDescription') || 'Configureer je voorkeuren'}</p>
+          <div className="p-4 md:p-8 space-y-6 max-w-4xl">
+            {/* Header */}
+            <div className="space-y-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+                <Cog className="h-7 w-7 text-primary" />
+                Instellingen
+              </h1>
+              <p className="text-muted-foreground">
+                Beheer je voorkeuren, taal en automatiseringen
+              </p>
             </div>
 
-            {/* Language & Theme */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('languageAndTheme') || 'Taal & Thema'}</CardTitle>
-                <CardDescription>{t('languageAndThemeDesc') || 'Pas de interface aan je voorkeur aan'}</CardDescription>
+            {/* Language & Theme Section */}
+            <Card className="shadow-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">Taal & Weergave</CardTitle>
+                </div>
+                <CardDescription>
+                  Pas de taal en het thema van de interface aan naar jouw voorkeur
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>{t('language') || 'Taal'}</Label>
-                  <Select value={settings.language} onValueChange={(value) => setSettings({ ...settings, language: value })}>
-                    <SelectTrigger>
+              <CardContent className="space-y-0">
+                <SettingItem
+                  icon={Languages}
+                  label="Taal"
+                  description="Selecteer de taal voor de interface en AI-antwoorden"
+                >
+                  <Select 
+                    value={settings.language} 
+                    onValueChange={(value) => setSettings({ ...settings, language: value })}
+                  >
+                    <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="nl">{t('dutch')}</SelectItem>
-                      <SelectItem value="en">{t('english')}</SelectItem>
-                      <SelectItem value="de">{t('german')}</SelectItem>
-                      <SelectItem value="fr">{t('french')}</SelectItem>
-                      <SelectItem value="es">{t('spanish')}</SelectItem>
+                      <SelectItem value="nl">🇳🇱 Nederlands</SelectItem>
+                      <SelectItem value="en">🇬🇧 English</SelectItem>
+                      <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
+                      <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                      <SelectItem value="es">🇪🇸 Español</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </SettingItem>
 
-                <div className="space-y-2">
-                  <Label>{t('theme') || 'Thema'}</Label>
-                  <Select value={settings.theme} onValueChange={(value) => setSettings({ ...settings, theme: value })}>
-                    <SelectTrigger>
+                <Separator />
+
+                <SettingItem
+                  icon={settings.theme === 'dark' ? Moon : Sun}
+                  label="Thema"
+                  description="Kies tussen een licht of donker kleurenschema"
+                >
+                  <Select 
+                    value={settings.theme} 
+                    onValueChange={(value) => setSettings({ ...settings, theme: value })}
+                  >
+                    <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">{t('light') || 'Licht'}</SelectItem>
-                      <SelectItem value="dark">{t('dark') || 'Donker'}</SelectItem>
+                      <SelectItem value="light">
+                        <span className="flex items-center gap-2">
+                          <Sun className="h-4 w-4" /> Licht
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="dark">
+                        <span className="flex items-center gap-2">
+                          <Moon className="h-4 w-4" /> Donker
+                        </span>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </SettingItem>
               </CardContent>
             </Card>
 
-            {/* AI Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('aiSettings') || 'AI Instellingen'}</CardTitle>
-                <CardDescription>{t('aiSettingsDesc') || 'Configureer het AI gedrag'}</CardDescription>
+            {/* AI Settings Section */}
+            <Card className="shadow-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">AI Instellingen</CardTitle>
+                </div>
+                <CardDescription>
+                  Configureer hoe de AI-assistent communiceert en reageert op e-mails
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>{t('aiTone') || 'AI Toon'}</Label>
-                  <Select value={settings.aiTone} onValueChange={(value) => setSettings({ ...settings, aiTone: value })}>
-                    <SelectTrigger>
+              <CardContent className="space-y-0">
+                <SettingItem
+                  icon={MessageSquare}
+                  label="Communicatiestijl"
+                  description="Bepaal de toon van AI-gegenereerde antwoorden"
+                >
+                  <Select 
+                    value={settings.aiTone} 
+                    onValueChange={(value) => setSettings({ ...settings, aiTone: value })}
+                  >
+                    <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="neutral">{t('neutral') || 'Neutraal'}</SelectItem>
-                      <SelectItem value="empathetic">{t('empathetic')}</SelectItem>
-                      <SelectItem value="formal">{t('formal')}</SelectItem>
-                      <SelectItem value="detailed">{t('detailed')}</SelectItem>
+                      <SelectItem value="neutral">Neutraal</SelectItem>
+                      <SelectItem value="empathetic">Empathisch</SelectItem>
+                      <SelectItem value="formal">Formeel</SelectItem>
+                      <SelectItem value="detailed">Gedetailleerd</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </SettingItem>
 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>{t('autoReply') || 'Automatisch Antwoorden'}</Label>
-                    <p className="text-sm text-muted-foreground">{t('autoReplyDesc') || 'Stuur automatisch antwoorden op basis van AI'}</p>
-                  </div>
+                <Separator />
+
+                <SettingItem
+                  icon={Bot}
+                  label="Automatisch Antwoorden"
+                  description="Laat de AI automatisch antwoorden versturen op standaard vragen"
+                >
                   <Switch
                     checked={settings.autoReply}
                     onCheckedChange={(checked) => setSettings({ ...settings, autoReply: checked })}
                   />
-                </div>
+                </SettingItem>
               </CardContent>
             </Card>
 
-            {/* Automations */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('automations')}</CardTitle>
-                <CardDescription>{t('automationsDescription')}</CardDescription>
+            {/* Automations Section */}
+            <Card className="shadow-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Cog className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">Automatiseringen</CardTitle>
+                </div>
+                <CardDescription>
+                  Schakel automatische functies in voor efficiënter werken
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>{t('autoCategorize')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('autoCategorizeDesc')}</p>
-                  </div>
+              <CardContent className="space-y-0">
+                <SettingItem
+                  icon={FolderKanban}
+                  label="Automatisch Categoriseren"
+                  description="Sorteer inkomende e-mails automatisch in categorieën"
+                >
                   <Switch
                     checked={settings.autoCategorize}
                     onCheckedChange={(checked) => setSettings({ ...settings, autoCategorize: checked })}
                   />
-                </div>
+                </SettingItem>
 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>{t('autoVatCalculation')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('autoVatCalculationDesc')}</p>
-                  </div>
+                <Separator />
+
+                <SettingItem
+                  icon={Calculator}
+                  label="BTW Berekening"
+                  description="Bereken automatisch BTW-bedragen bij facturen en bonnetjes"
+                >
                   <Switch
                     checked={settings.autoVatCalculation}
                     onCheckedChange={(checked) => setSettings({ ...settings, autoVatCalculation: checked })}
                   />
-                </div>
+                </SettingItem>
 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>{t('monthlySummary')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('monthlySummaryDesc')}</p>
-                  </div>
+                <Separator />
+
+                <SettingItem
+                  icon={FileText}
+                  label="Maandelijkse Samenvatting"
+                  description="Ontvang elke maand een AI-gegenereerd financieel overzicht"
+                >
                   <Switch
                     checked={settings.monthlySummary}
                     onCheckedChange={(checked) => setSettings({ ...settings, monthlySummary: checked })}
                   />
-                </div>
+                </SettingItem>
 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>{t('tagSuggestions')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('tagSuggestionsDesc')}</p>
-                  </div>
+                <Separator />
+
+                <SettingItem
+                  icon={Tags}
+                  label="Tag Suggesties"
+                  description="Ontvang AI-suggesties voor tags bij nieuwe items"
+                >
                   <Switch
                     checked={settings.tagSuggestions}
                     onCheckedChange={(checked) => setSettings({ ...settings, tagSuggestions: checked })}
                   />
-                </div>
+                </SettingItem>
               </CardContent>
             </Card>
 
             {/* Save Button */}
-            <Button onClick={saveSettings} disabled={isSaving} className="w-full" size="lg">
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('loading')}
-                </>
-              ) : (
-                t('save') || 'Opslaan'
-              )}
-            </Button>
+            <div className="sticky bottom-4 pt-2">
+              <Button 
+                onClick={saveSettings} 
+                disabled={isSaving} 
+                className={`w-full h-12 text-base font-semibold shadow-elevated transition-all duration-300 ${
+                  saveSuccess ? 'bg-success hover:bg-success' : ''
+                }`}
+                size="lg"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Opslaan...
+                  </>
+                ) : saveSuccess ? (
+                  <>
+                    <Check className="mr-2 h-5 w-5" />
+                    Opgeslagen!
+                  </>
+                ) : (
+                  'Instellingen Opslaan'
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
