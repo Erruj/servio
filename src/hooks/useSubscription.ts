@@ -62,13 +62,22 @@ export const useSubscription = () => {
       setIsLoading(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
-      if (error) throw error;
+      if (error) {
+        // Check if this is a user-not-found error (happens after DB restore)
+        const errorBody = await error.context?.json?.() || {};
+        if (errorBody?.error?.includes('does not exist') || errorBody?.error?.includes('User from sub claim')) {
+          console.warn('User session invalid, signing out');
+          await supabase.auth.signOut();
+          return null;
+        }
+        throw error;
+      }
       
       setSubscriptionStatus(data);
       return data;
     } catch (error) {
       console.error('Error checking subscription:', error);
-      toast.error('Kon abonnementsstatus niet ophalen');
+      // Don't show toast for auth errors - user will be redirected to login
       return null;
     } finally {
       setIsLoading(false);
