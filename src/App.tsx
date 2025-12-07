@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -19,6 +20,7 @@ import MailboxSetup from "./pages/MailboxSetup";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import { DebugDrawer } from "./components/DebugDrawer";
 import FinancialOverview from "./pages/administration/FinancialOverview";
 import AIAssistant from "./pages/administration/AIAssistant";
@@ -53,17 +55,17 @@ function AppRoutes() {
     );
   }
 
-  if (!user) {
-    return <Auth />;
-  }
-
   return (
     <Routes>
-      <Route path="/" element={
+      {/* Public landing page */}
+      <Route path="/home" element={<Landing />} />
+      
+      {/* Auth gate - show auth page if not logged in, else show inbox */}
+      <Route path="/" element={user ? (
         <ProtectedRoute requiredRoles={['owner', 'admin', 'agent']}>
           <Inbox />
         </ProtectedRoute>
-      } />
+      ) : <Auth />} />
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
@@ -141,22 +143,24 @@ function AppRoutes() {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <AuthProvider>
-          <ErrorBoundary>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppRoutes />
-              <DebugDrawer />
-            </BrowserRouter>
-          </ErrorBoundary>
-        </AuthProvider>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <ErrorBoundary>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppRoutes />
+                <DebugDrawer />
+              </BrowserRouter>
+            </ErrorBoundary>
+          </AuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
