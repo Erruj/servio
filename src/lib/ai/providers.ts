@@ -33,167 +33,26 @@ export interface AIProvider {
   isAvailable(): boolean;
 }
 
-// ============= OPENAI PROVIDER (PRIMARY) =============
+// ============= OPENAI PROVIDER (DEPRECATED - USE EDGE FUNCTIONS) =============
+// SECURITY NOTE: Direct OpenAI API calls from the client are deprecated.
+// All AI functionality should go through Supabase Edge Functions (ai-assistant)
+// which securely stores the API key as a secret.
 export class OpenAIProvider implements AIProvider {
   name = 'OpenAI';
-  private apiKey: string | null = null;
 
-  constructor(apiKey?: string) {
-    // Read from localStorage for now (development only)
-    // Production: use Supabase Edge Function with secret
-    this.apiKey = apiKey || this.getApiKeyFromStorage();
-  }
-
-  private getApiKeyFromStorage(): string | null {
-    try {
-      return localStorage.getItem('OPENAI_API_KEY');
-    } catch {
-      return null;
-    }
+  constructor() {
+    // No longer accepts or stores API keys client-side for security
+    console.warn('OpenAIProvider: Direct API calls are deprecated. Use edge functions instead.');
   }
 
   isAvailable(): boolean {
-    return !!this.apiKey;
+    // Always return false - AI calls should go through edge functions
+    return false;
   }
 
   async generateReplies(params: GenerateRepliesParams): Promise<GenerateRepliesResult> {
-    if (!this.isAvailable()) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    try {
-      const { mail, language = 'NL', analysis } = params;
-
-      // Build context-aware prompt
-      const prompt = this.buildPrompt(mail, language, analysis);
-      
-      // Call OpenAI API
-      const response = await this.callOpenAI(prompt, language);
-      
-      // Parse and structure the response into 3 variants
-      const variants = this.parseOpenAIResponse(response, mail);
-
-      return {
-        variants,
-        provider: 'OpenAI',
-        model: 'gpt-4',
-        success: true
-      };
-
-    } catch (error) {
-      console.error('OpenAI generation failed:', error);
-      throw error;
-    }
-  }
-
-  private buildPrompt(mail: MailItem, language: string, analysis?: AnalysisResult | null): string {
-    const customerName = this.extractName(mail.from);
-    const category = analysis?.category || 'Algemeen';
-    
-    const promptTemplates = {
-      NL: `Je bent een professionele klantenservice medewerker van Servio. 
-Schrijf 3 verschillende antwoorden op deze e-mail:
-
-Van: ${mail.from}
-Onderwerp: ${mail.subject}
-Inhoud: ${mail.body}
-
-Categorie: ${category}
-Klant: ${customerName}
-
-Geef 3 varianten:
-1. ZAKELIJK: Kort, direct, professioneel
-2. EMPATHISCH: Begrip tonen, menselijk, warm
-3. UITGEBREID: Volledige uitleg, stappen, voorwaarden
-
-Format als JSON:
-{
-  "zakelijk": "...",
-  "empathisch": "...", 
-  "uitgebreid": "..."
-}
-
-Regels:
-- Altijd in het ${language}
-- Begin met "Beste ${customerName},"
-- Eindigen met "Met vriendelijke groet, Servio Klantenservice"
-- Concrete acties waar mogelijk
-- Geen placeholders zoals {{...}}`,
-
-      EN: `You are a professional customer service representative for Servio.
-Write 3 different responses to this email:
-
-From: ${mail.from}
-Subject: ${mail.subject}
-Content: ${mail.body}
-
-Category: ${category}
-Customer: ${customerName}
-
-Provide 3 variants:
-1. BUSINESS: Short, direct, professional
-2. EMPATHETIC: Show understanding, human, warm
-3. DETAILED: Full explanation, steps, conditions
-
-Format as JSON:
-{
-  "zakelijk": "...",
-  "empathetic": "...",
-  "detailed": "..."
-}
-
-Rules:
-- Always in ${language}
-- Start with "Dear ${customerName},"
-- End with "Best regards, Servio Customer Service"
-- Concrete actions where possible
-- No placeholders like {{...}}`
-    };
-
-    return promptTemplates[language as keyof typeof promptTemplates] || promptTemplates.NL;
-  }
-
-  private async callOpenAI(prompt: string, language: string): Promise<any> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
-
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a helpful customer service AI that always responds in valid JSON format.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 1000
-        })
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0]?.message?.content;
-
-    } finally {
-      clearTimeout(timeoutId);
-    }
+    // This provider is deprecated - throw error directing to edge functions
+    throw new Error('Direct OpenAI API calls are deprecated. Use the ai-assistant edge function instead.');
   }
 
   private parseOpenAIResponse(response: string, mail: MailItem): ReplyVariant[] {
