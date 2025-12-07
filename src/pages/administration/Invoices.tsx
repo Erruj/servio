@@ -46,7 +46,7 @@ export default function Invoices() {
   const [showNewSupplierDialog, setShowNewSupplierDialog] = useState(false);
   const [newSupplierName, setNewSupplierName] = useState('');
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
-  const [bulkCategory, setBulkCategory] = useState('');
+  const [bulkCategory, setBulkCategory] = useState<TransactionCategory | ''>('');
   const categories: TransactionCategory[] = ['software', 'marketing', 'office', 'travel', 'utilities', 'food', 'hardware', 'insurance', 'salary', 'tax', 'other'];
 
   useEffect(() => {
@@ -206,7 +206,7 @@ export default function Invoices() {
     }
   };
 
-  const updateInvoiceCategory = async (invoiceId: string, category: string) => {
+const updateInvoiceCategory = async (invoiceId: string, category: TransactionCategory) => {
     try {
       await supabase
         .from('invoices')
@@ -431,7 +431,7 @@ export default function Invoices() {
                         <DialogTitle>Categorie wijzigen</DialogTitle>
                         <DialogDescription>Wijzig de categorie voor {selectedInvoices.size} facturen</DialogDescription>
                       </DialogHeader>
-                      <Select value={bulkCategory} onValueChange={setBulkCategory}>
+                      <Select value={bulkCategory} onValueChange={(v) => setBulkCategory(v as TransactionCategory)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Kies categorie" />
                         </SelectTrigger>
@@ -546,7 +546,7 @@ export default function Invoices() {
                     <TableCell>
                       <Select
                         value={invoice.category || 'other'}
-                        onValueChange={(v) => updateInvoiceCategory(invoice.id, v)}
+                        onValueChange={(v) => updateInvoiceCategory(invoice.id, v as TransactionCategory)}
                       >
                         <SelectTrigger className="h-8 w-28">
                           <SelectValue />
