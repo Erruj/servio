@@ -31,27 +31,27 @@ export function FAQSection() {
   return (
     <section className="py-24 md:py-32 bg-muted/30">
       <div className="container mx-auto px-6">
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4">
+        <div className="max-w-xl mx-auto text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             Veelgestelde vragen
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-muted-foreground">
             Heb je een andere vraag? Neem contact op met ons support team.
           </p>
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-2">
             {faqs.map((faq, index) => (
               <AccordionItem 
                 key={index} 
                 value={`item-${index}`}
-                className="bg-card border border-border/50 rounded-xl px-6 data-[state=open]:shadow-md transition-shadow"
+                className="bg-card border border-border/40 rounded-xl px-5 data-[state=open]:border-border transition-all duration-200"
               >
-                <AccordionTrigger className="text-left font-medium hover:no-underline py-4">
+                <AccordionTrigger className="text-left text-[15px] font-medium hover:no-underline py-4 text-foreground">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-4">
+                <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
