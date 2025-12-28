@@ -3,27 +3,28 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const plans = [
   {
     name: 'Starter',
     price: '9,99',
-    description: 'Perfect om te starten',
+    description: 'Voor startende ondernemers',
     features: [
       'Tot 100 e-mails per maand',
       '50 AI-calls per maand',
       '1 gebruiker',
-      'Basis rapportages',
+      'Basis financieel dashboard',
       'E-mail support',
     ],
     popular: false,
+    cta: 'Probeer 14 dagen gratis',
   },
   {
     name: 'Pro',
     price: '29,99',
-    description: 'Meest gekozen door ondernemers',
+    description: 'Meest gekozen door ZZP\'ers',
     features: [
       'Onbeperkte e-mails',
       'Onbeperkte AI-calls',
@@ -34,21 +35,23 @@ const plans = [
       'Prioriteit support',
     ],
     popular: true,
+    cta: 'Start gratis proefperiode',
   },
   {
     name: 'Business',
     price: '79,99',
-    description: 'Voor groeiende bedrijven',
+    description: 'Voor groeiende MKB\'s',
     features: [
       'Alles uit Pro',
       'Onbeperkte gebruikers',
       'Priority SLA (4 uur)',
       'Geavanceerde automatiseringen',
-      'Custom integraties',
+      'API-toegang & integraties',
       'Dedicated accountmanager',
-      'On-boarding training',
+      'Op-maat onboarding',
     ],
     popular: false,
+    cta: 'Neem contact op',
   },
 ];
 
@@ -58,8 +61,21 @@ export default function MarketingPricing() {
   return (
     <>
       <Helmet>
-        <title>Prijzen - Servio</title>
-        <meta name="description" content="Eenvoudige, transparante prijzen. Kies het plan dat bij jou past. Altijd 14 dagen gratis proberen." />
+        <title>Prijzen - Betaalbare AI Software voor ZZP & MKB | Servio</title>
+        <meta 
+          name="description" 
+          content="Transparante prijzen voor elke ondernemer. Vanaf €9,99/maand. 14 dagen gratis proberen, geen creditcard nodig. Kies Starter, Pro of Business." 
+        />
+        <meta 
+          name="keywords" 
+          content="bedrijfssoftware prijzen, boekhoudsoftware kosten, AI klantenservice prijs, ZZP software, MKB administratie software" 
+        />
+        <link rel="canonical" href="https://servio.nl/pricing" />
+        
+        <meta property="og:title" content="Prijzen - Betaalbare AI Software voor ZZP & MKB | Servio" />
+        <meta property="og:description" content="Vanaf €9,99/maand. 14 dagen gratis, geen creditcard nodig." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://servio.nl/pricing" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
@@ -67,17 +83,33 @@ export default function MarketingPricing() {
         
         <main>
           {/* Hero */}
-          <section className="pt-32 pb-20 md:pt-44 md:pb-28">
+          <section className="pt-32 pb-16 md:pt-44 md:pb-20">
             <div className="container mx-auto px-6">
               <div className="max-w-3xl mx-auto text-center">
+                <span className="text-sm font-medium text-primary mb-4 block">Prijzen</span>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
-                  Eenvoudige,
+                  Betaalbaar voor elke
                   <br />
-                  <span className="text-primary">transparante prijzen.</span>
+                  <span className="text-primary">ondernemer.</span>
                 </h1>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-                  Kies het plan dat bij jou past. Altijd 14 dagen gratis proberen, geen creditcard nodig.
+                <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
+                  Geen verrassingen, geen verborgen kosten. 
+                  Kies het plan dat bij jou past en start vandaag nog gratis.
                 </p>
+                
+                {/* Trust indicators */}
+                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+                  {[
+                    '14 dagen gratis proberen',
+                    'Geen creditcard nodig',
+                    'Maandelijks opzegbaar',
+                  ].map((item, i) => (
+                    <span key={i} className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-success" />
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </section>
@@ -87,7 +119,7 @@ export default function MarketingPricing() {
             <div className="container mx-auto px-6">
               <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 {plans.map((plan, index) => (
-                  <div 
+                  <article 
                     key={index}
                     className={`relative rounded-2xl p-8 transition-all duration-300 ${
                       plan.popular 
@@ -103,14 +135,14 @@ export default function MarketingPricing() {
                       </div>
                     )}
 
-                    <div className="mb-6">
-                      <h3 className={`text-xl font-semibold mb-1 ${plan.popular ? 'text-background' : 'text-foreground'}`}>
+                    <header className="mb-6">
+                      <h2 className={`text-xl font-semibold mb-1 ${plan.popular ? 'text-background' : 'text-foreground'}`}>
                         {plan.name}
-                      </h3>
+                      </h2>
                       <p className={`text-sm ${plan.popular ? 'text-background/70' : 'text-muted-foreground'}`}>
                         {plan.description}
                       </p>
-                    </div>
+                    </header>
 
                     <div className="mb-6">
                       <span className={`text-4xl font-semibold ${plan.popular ? 'text-background' : 'text-foreground'}`}>
@@ -119,20 +151,10 @@ export default function MarketingPricing() {
                       <span className={`text-sm ${plan.popular ? 'text-background/70' : 'text-muted-foreground'}`}>/maand</span>
                     </div>
 
-                    {/* Trial badge */}
-                    <div className={`mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${
-                      plan.popular 
-                        ? 'bg-background/20 text-background' 
-                        : 'bg-success/10 text-success'
-                    }`}>
-                      <Check className="w-4 h-4" />
-                      14 dagen gratis proberen
-                    </div>
-
                     <ul className="space-y-3 mb-8">
                       {plan.features.map((feature, i) => (
                         <li key={i} className="flex items-start gap-3 text-sm">
-                          <Check className={`w-4 h-4 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-background/70' : 'text-primary'}`} />
+                          <Check className={`w-4 h-4 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-background/70' : 'text-success'}`} />
                           <span className={plan.popular ? 'text-background/90' : 'text-foreground'}>{feature}</span>
                         </li>
                       ))}
@@ -144,20 +166,29 @@ export default function MarketingPricing() {
                           ? 'bg-background text-foreground hover:bg-background/90' 
                           : ''
                       }`}
-                      variant={plan.popular ? 'secondary' : 'outline'}
+                      variant={plan.popular ? 'secondary' : 'default'}
                       onClick={() => navigate('/signup')}
                     >
-                      Start Gratis
+                      {plan.cta}
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                  </div>
+                  </article>
                 ))}
               </div>
 
               {/* Enterprise callout */}
-              <div className="mt-12 max-w-2xl mx-auto text-center">
-                <p className="text-muted-foreground">
-                  Grotere organisatie? <a href="mailto:sales@servio.nl" className="text-primary hover:underline">Neem contact op</a> voor maatwerk.
-                </p>
+              <div className="mt-16 max-w-2xl mx-auto">
+                <div className="rounded-xl border border-border/40 bg-muted/30 p-8 text-center">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    Enterprise oplossing nodig?
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Voor grotere organisaties bieden we maatwerk met dedicated support, SLA en custom integraties.
+                  </p>
+                  <Button variant="outline" onClick={() => window.location.href = 'mailto:sales@servio.nl'}>
+                    Neem contact op
+                  </Button>
+                </div>
               </div>
             </div>
           </section>

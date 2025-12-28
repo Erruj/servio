@@ -1,35 +1,33 @@
-import { Clock, FileCheck, Eye, Headphones, Sparkles, Wallet } from 'lucide-react';
+import { Clock, FileX, PieChart, Shield } from 'lucide-react';
 
 const benefits = [
   {
     icon: Clock,
-    title: 'Tijdsbesparing',
-    description: 'Bespaar uren per week op repetitieve taken.',
+    title: 'Uren per week terug',
+    description: 'Geen eindeloos mailen of handmatig boekhouden. Servio doet het zware werk.',
+    stat: '8+ uur',
+    statLabel: 'besparing per week',
   },
   {
-    icon: FileCheck,
-    title: 'Minder administratie',
-    description: 'Automatische verwerking van facturen en bonnetjes.',
+    icon: FileX,
+    title: 'Chaos wordt overzicht',
+    description: 'Alle facturen, bonnetjes en mails op één plek. Automatisch gecategoriseerd.',
+    stat: '100%',
+    statLabel: 'georganiseerd',
   },
   {
-    icon: Eye,
-    title: 'Overzicht & duidelijkheid',
-    description: 'Altijd inzicht in je financiële situatie.',
+    icon: PieChart,
+    title: 'Financieel inzicht',
+    description: 'Weet altijd wat je omzet, uitgaven en winst is. Realtime, niet achteraf.',
+    stat: '24/7',
+    statLabel: 'actueel dashboard',
   },
   {
-    icon: Headphones,
-    title: 'Professionele klantenservice',
-    description: 'AI-ondersteunde antwoorden van hoge kwaliteit.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Betrouwbare AI',
-    description: 'Slimme suggesties die je kunt vertrouwen.',
-  },
-  {
-    icon: Wallet,
-    title: "Betaalbaar voor ZZP'ers",
-    description: 'Professionele tools voor een eerlijke prijs.',
+    icon: Shield,
+    title: 'Veilig & betrouwbaar',
+    description: 'Je data is versleuteld en blijft van jou. GDPR-compliant en beveiligd.',
+    stat: '256-bit',
+    statLabel: 'encryptie',
   },
 ];
 
@@ -37,31 +35,38 @@ export function BenefitsSection() {
   return (
     <section className="py-24 md:py-32 bg-muted/30">
       <div className="container mx-auto px-6">
-        <div className="max-w-xl mx-auto text-center mb-16">
+        <div className="max-w-2xl mx-auto text-center mb-16">
+          <span className="text-sm font-medium text-primary mb-4 block">Waarom Servio</span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
-            Voordelen voor ondernemers
+            De problemen die we oplossen
           </h2>
-          <p className="text-muted-foreground">
-            Waarom duizenden ondernemers kiezen voor Servio.
+          <p className="text-lg text-muted-foreground">
+            Gebouwd voor ZZP'ers en kleine bedrijven die meer willen bereiken met minder gedoe.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {benefits.map((benefit, index) => (
             <div 
               key={index}
-              className="flex items-start gap-4 group"
+              className="group p-8 rounded-xl bg-card border border-border/40 hover:border-border hover:shadow-elevated transition-all duration-300"
             >
-              <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors duration-300">
-                <benefit.icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors duration-300" strokeWidth={1.5} />
-              </div>
-              <div>
-                <h3 className="font-medium text-foreground mb-1">
-                  {benefit.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {benefit.description}
-                </p>
+              <div className="flex items-start gap-5">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors duration-300">
+                  <benefit.icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    {benefit.description}
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-primary">{benefit.stat}</span>
+                    <span className="text-sm text-muted-foreground">{benefit.statLabel}</span>
+                  </div>
+                </div>
               </div>
             </div>
           ))}

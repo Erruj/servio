@@ -1,15 +1,23 @@
+import { Mail, BarChart3, FileText } from 'lucide-react';
+
 const products = [
   {
-    title: 'Inbox met AI',
-    description: 'Automatische reply-suggesties, sentiment analyse en slimme categorisering.',
+    icon: Mail,
+    title: 'Slimme Inbox',
+    description: 'AI leest, categoriseert en beantwoordt je mails. Jij keurt alleen nog goed.',
+    metrics: ['80% minder typewerk', 'Auto-categorisatie', 'Sentiment analyse'],
   },
   {
+    icon: BarChart3,
     title: 'Financieel Dashboard',
-    description: 'Real-time inzicht in inkomsten, uitgaven en winstmarges.',
+    description: 'Realtime inzicht in omzet, uitgaven en winst. Nooit meer verrast worden.',
+    metrics: ['Live omzet tracking', 'Uitgaven analyse', 'Winst prognose'],
   },
   {
+    icon: FileText,
     title: 'Factuurverwerking',
-    description: 'Upload facturen en laat AI de details automatisch extraheren.',
+    description: 'Upload een factuur, AI doet de rest. Bedragen, btw en categorie automatisch.',
+    metrics: ['OCR herkenning', 'Auto-categorisatie', 'BTW extractie'],
   },
 ];
 
@@ -17,12 +25,13 @@ export function ProductSection() {
   return (
     <section className="py-24 md:py-32">
       <div className="container mx-auto px-6">
-        <div className="max-w-xl mx-auto text-center mb-16">
+        <div className="max-w-2xl mx-auto text-center mb-16">
+          <span className="text-sm font-medium text-primary mb-4 block">Producten</span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
-            Gebouwd voor productiviteit
+            Alles wat je nodig hebt, niets dat je niet nodig hebt
           </h2>
-          <p className="text-muted-foreground">
-            Krachtige tools die samenwerken om je bedrijf te stroomlijnen.
+          <p className="text-lg text-muted-foreground">
+            Drie krachtige tools die samenwerken om je bedrijf te runnen.
           </p>
         </div>
 
@@ -32,9 +41,8 @@ export function ProductSection() {
               key={index}
               className="group rounded-xl border border-border/40 overflow-hidden bg-card hover:border-border hover:shadow-elevated transition-all duration-500"
             >
-              {/* Product mockup - Clean and abstract */}
+              {/* Product mockup */}
               <div className="aspect-[4/3] bg-muted/30 p-5 relative overflow-hidden">
-                {/* Subtle pattern */}
                 <div className="absolute inset-0 opacity-50">
                   <div className="absolute inset-0" style={{
                     backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--border)) 1px, transparent 0)',
@@ -42,36 +50,26 @@ export function ProductSection() {
                   }} />
                 </div>
                 
-                {/* Mockup card */}
-                <div className="relative h-full rounded-lg bg-card border border-border/60 p-4 shadow-card transform group-hover:translate-y-[-2px] transition-transform duration-500">
-                  {/* Header bar */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 rounded-full bg-primary/40" />
-                    <div className="h-2 w-12 bg-muted rounded" />
+                <div className="relative h-full rounded-lg bg-card border border-border/60 p-4 shadow-card transform group-hover:translate-y-[-2px] transition-transform duration-500 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                    <product.icon className="w-8 h-8 text-primary" strokeWidth={1.5} />
                   </div>
-                  
-                  {/* Content lines */}
-                  <div className="space-y-2 mb-4">
-                    <div className="h-1.5 w-full bg-muted/60 rounded" />
-                    <div className="h-1.5 w-4/5 bg-muted/60 rounded" />
-                    <div className="h-1.5 w-3/5 bg-muted/60 rounded" />
-                  </div>
-                  
-                  {/* Bottom element */}
-                  <div className="absolute bottom-3 right-3 left-3">
-                    <div className="h-8 rounded bg-primary/10 flex items-center justify-center">
-                      <div className="w-8 h-1.5 bg-primary/30 rounded" />
-                    </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {product.metrics.map((metric, i) => (
+                      <span key={i} className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
+                        {metric}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
               
               {/* Product info */}
-              <div className="p-5">
-                <h3 className="text-[15px] font-medium text-foreground mb-1.5">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   {product.title}
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed">
                   {product.description}
                 </p>
               </div>
