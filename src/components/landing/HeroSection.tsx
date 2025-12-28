@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function HeroSection() {
@@ -13,90 +13,105 @@ export function HeroSection() {
       
       <div className="container mx-auto px-6 relative">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Badge - Linear style */}
+          {/* Social proof badge */}
           <div 
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-background text-sm text-muted-foreground mb-8 animate-fade-in"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-background text-sm text-muted-foreground mb-8 animate-fade-in"
             style={{ animationDelay: '0ms' }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-subtle" />
-            Nu beschikbaar voor ondernemers
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            <span className="font-medium text-foreground">500+</span> ondernemers besparen wekelijks 8+ uur
           </div>
 
-          {/* Headline - Larger, tighter tracking */}
+          {/* Headline - Problem + Solution focused */}
           <h1 
-            className="text-[2.75rem] md:text-6xl lg:text-[4.5rem] font-semibold tracking-[-0.02em] text-foreground mb-6 leading-[1.08] animate-fade-in-up"
+            className="text-[2.75rem] md:text-6xl lg:text-[4.5rem] font-semibold tracking-[-0.02em] text-foreground mb-6 leading-[1.08] animate-fade-in"
             style={{ animationDelay: '50ms' }}
           >
-            De slimme bedrijfsassistent
+            Stop met administratie.
             <br />
-            <span className="text-primary">voor ondernemers.</span>
+            <span className="text-primary">Start met ondernemen.</span>
           </h1>
 
-          {/* Subheading - Refined */}
+          {/* Subheading - Concrete benefits */}
           <p 
-            className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed animate-fade-in-up"
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed animate-fade-in"
             style={{ animationDelay: '100ms' }}
           >
-            Automatiseer je klantenservice, beheer je facturen en krijg realtime financiële inzichten — allemaal op één plek.
+            Servio automatiseert tot 80% van je e-mails, verwerkt facturen automatisch 
+            en geeft je realtime inzicht in je financiën — zodat jij kunt focussen op groeien.
           </p>
 
-          {/* CTAs - Linear style buttons */}
+          {/* Key value props */}
           <div 
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in-up"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 text-sm animate-fade-in"
+            style={{ animationDelay: '125ms' }}
+          >
+            {[
+              'Automatische e-mailreacties',
+              'AI-factuurverwerking',
+              'Financieel dashboard',
+            ].map((item, i) => (
+              <span key={i} className="flex items-center gap-2 text-muted-foreground">
+                <CheckCircle2 className="w-4 h-4 text-success" />
+                {item}
+              </span>
+            ))}
+          </div>
+
+          {/* CTAs */}
+          <div 
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in"
             style={{ animationDelay: '150ms' }}
           >
             <Button 
               size="lg" 
-              className="h-11 px-6 text-[15px] font-medium rounded-lg transition-smooth glow-primary hover:glow"
+              className="h-12 px-8 text-[15px] font-medium rounded-lg transition-smooth glow-primary hover:glow"
               onClick={() => navigate('/signup')}
             >
-              Start Gratis
+              Start 14 dagen gratis
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="lg" 
-              className="h-11 px-6 text-[15px] font-medium text-muted-foreground hover:text-foreground rounded-lg"
+              className="h-12 px-8 text-[15px] font-medium rounded-lg"
             >
-              <Play className="mr-2 h-4 w-4 fill-current" />
-              Bekijk Demo
+              <Play className="mr-2 h-4 w-4" />
+              Bekijk demo (2 min)
             </Button>
           </div>
 
-          {/* Trust indicators - Minimal */}
+          {/* Trust indicators */}
           <div 
-            className="flex items-center justify-center gap-8 mt-14 text-sm text-muted-foreground animate-fade-in"
+            className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-muted-foreground animate-fade-in"
             style={{ animationDelay: '200ms' }}
           >
             <span className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-              14 dagen gratis
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
               Geen creditcard nodig
             </span>
-            <span className="hidden sm:flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-              Direct aan de slag
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-success" />
+              In 2 minuten actief
+            </span>
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-success" />
+              Annuleren wanneer je wilt
             </span>
           </div>
         </div>
 
-        {/* Hero mockup - Clean, abstract, Linear-style */}
+        {/* Hero mockup */}
         <div 
-          className="mt-20 md:mt-28 relative animate-fade-in-scale"
+          className="mt-20 md:mt-28 relative animate-fade-in"
           style={{ animationDelay: '250ms' }}
         >
-          {/* Gradient fade at bottom */}
           <div className="absolute -bottom-1 inset-x-0 h-32 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
           
-          {/* Main mockup container */}
           <div className="relative mx-auto max-w-5xl rounded-xl border border-border/60 bg-card shadow-xl-soft overflow-hidden">
-            {/* Top glow line */}
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
             
-            {/* Browser chrome - minimal */}
+            {/* Browser chrome */}
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/30">
               <div className="flex gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-border" />
@@ -108,10 +123,10 @@ export function HeroSection() {
                   app.servio.nl
                 </div>
               </div>
-              <div className="w-16" /> {/* Spacer for balance */}
+              <div className="w-16" />
             </div>
             
-            {/* Dashboard preview - Abstract and clean */}
+            {/* Dashboard preview */}
             <div className="aspect-[16/10] bg-muted/20 p-6 md:p-8">
               <div className="grid grid-cols-5 gap-4 h-full">
                 {/* Sidebar mock */}
@@ -129,10 +144,10 @@ export function HeroSection() {
                   {/* Stats row */}
                   <div className="grid grid-cols-4 gap-3">
                     {[
-                      { label: 'Omzet', value: '€12.450' },
-                      { label: 'Facturen', value: '24' },
-                      { label: 'Inbox', value: '8' },
-                      { label: 'AI-acties', value: '156' },
+                      { label: 'Tijd bespaard', value: '12 uur/week' },
+                      { label: 'Afgehandelde mails', value: '156' },
+                      { label: 'Facturen verwerkt', value: '24' },
+                      { label: 'Omzet inzicht', value: '€12.450' },
                     ].map((stat, i) => (
                       <div key={i} className="bg-card rounded-lg p-4 shadow-subtle border border-border/30">
                         <div className="text-[10px] text-muted-foreground mb-1">{stat.label}</div>
