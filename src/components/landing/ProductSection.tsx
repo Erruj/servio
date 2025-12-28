@@ -2,17 +2,14 @@ const products = [
   {
     title: 'Inbox met AI',
     description: 'Automatische reply-suggesties, sentiment analyse en slimme categorisering.',
-    gradient: 'from-blue-500/20 to-purple-500/20',
   },
   {
     title: 'Financieel Dashboard',
     description: 'Real-time inzicht in inkomsten, uitgaven en winstmarges.',
-    gradient: 'from-emerald-500/20 to-cyan-500/20',
   },
   {
     title: 'Factuurverwerking',
     description: 'Upload facturen en laat AI de details automatisch extraheren.',
-    gradient: 'from-orange-500/20 to-rose-500/20',
   },
 ];
 
@@ -20,41 +17,61 @@ export function ProductSection() {
   return (
     <section className="py-24 md:py-32">
       <div className="container mx-auto px-6">
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4">
+        <div className="max-w-xl mx-auto text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             Gebouwd voor productiviteit
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-muted-foreground">
             Krachtige tools die samenwerken om je bedrijf te stroomlijnen.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {products.map((product, index) => (
             <div 
               key={index}
-              className="group rounded-2xl border border-border/50 overflow-hidden bg-card hover:shadow-xl transition-all duration-500"
+              className="group rounded-xl border border-border/40 overflow-hidden bg-card hover:border-border hover:shadow-elevated transition-all duration-500"
             >
-              {/* Product mockup */}
-              <div className={`aspect-[4/3] bg-gradient-to-br ${product.gradient} p-6 relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]" />
-                <div className="relative h-full rounded-lg bg-card/90 backdrop-blur-sm border border-border/50 p-4 shadow-lg transform group-hover:scale-[1.02] transition-transform duration-500">
-                  <div className="h-3 w-16 bg-muted rounded mb-3" />
-                  <div className="space-y-2">
-                    <div className="h-2 w-full bg-muted/50 rounded" />
-                    <div className="h-2 w-3/4 bg-muted/50 rounded" />
-                    <div className="h-2 w-1/2 bg-muted/50 rounded" />
+              {/* Product mockup - Clean and abstract */}
+              <div className="aspect-[4/3] bg-muted/30 p-5 relative overflow-hidden">
+                {/* Subtle pattern */}
+                <div className="absolute inset-0 opacity-50">
+                  <div className="absolute inset-0" style={{
+                    backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--border)) 1px, transparent 0)',
+                    backgroundSize: '24px 24px'
+                  }} />
+                </div>
+                
+                {/* Mockup card */}
+                <div className="relative h-full rounded-lg bg-card border border-border/60 p-4 shadow-card transform group-hover:translate-y-[-2px] transition-transform duration-500">
+                  {/* Header bar */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 rounded-full bg-primary/40" />
+                    <div className="h-2 w-12 bg-muted rounded" />
                   </div>
-                  <div className="absolute bottom-4 right-4 w-12 h-12 rounded-lg bg-primary/20" />
+                  
+                  {/* Content lines */}
+                  <div className="space-y-2 mb-4">
+                    <div className="h-1.5 w-full bg-muted/60 rounded" />
+                    <div className="h-1.5 w-4/5 bg-muted/60 rounded" />
+                    <div className="h-1.5 w-3/5 bg-muted/60 rounded" />
+                  </div>
+                  
+                  {/* Bottom element */}
+                  <div className="absolute bottom-3 right-3 left-3">
+                    <div className="h-8 rounded bg-primary/10 flex items-center justify-center">
+                      <div className="w-8 h-1.5 bg-primary/30 rounded" />
+                    </div>
+                  </div>
                 </div>
               </div>
               
               {/* Product info */}
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-2">
+              <div className="p-5">
+                <h3 className="text-[15px] font-medium text-foreground mb-1.5">
                   {product.title}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {product.description}
                 </p>
               </div>

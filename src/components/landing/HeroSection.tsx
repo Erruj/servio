@@ -6,111 +6,177 @@ export function HeroSection() {
   const navigate = useNavigate();
 
   return (
-    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden">
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+    <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden">
+      {/* Ultra-subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-muted/40 via-background to-background pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/[0.03] rounded-full blur-3xl pointer-events-none" />
       
       <div className="container mx-auto px-6 relative">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 animate-fade-in">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          {/* Badge - Linear style */}
+          <div 
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-background text-sm text-muted-foreground mb-8 animate-fade-in"
+            style={{ animationDelay: '0ms' }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-subtle" />
             Nu beschikbaar voor ondernemers
           </div>
 
-          {/* Headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground mb-6 leading-[1.1]">
+          {/* Headline - Larger, tighter tracking */}
+          <h1 
+            className="text-[2.75rem] md:text-6xl lg:text-[4.5rem] font-semibold tracking-[-0.02em] text-foreground mb-6 leading-[1.08] animate-fade-in-up"
+            style={{ animationDelay: '50ms' }}
+          >
             De slimme bedrijfsassistent
             <br />
             <span className="text-primary">voor ondernemers.</span>
           </h1>
 
-          {/* Subheading */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+          {/* Subheading - Refined */}
+          <p 
+            className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed animate-fade-in-up"
+            style={{ animationDelay: '100ms' }}
+          >
             Automatiseer je klantenservice, beheer je facturen en krijg realtime financiële inzichten — allemaal op één plek.
           </p>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* CTAs - Linear style buttons */}
+          <div 
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in-up"
+            style={{ animationDelay: '150ms' }}
+          >
             <Button 
               size="lg" 
-              className="h-12 px-8 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+              className="h-11 px-6 text-[15px] font-medium rounded-lg transition-smooth glow-primary hover:glow"
               onClick={() => navigate('/signup')}
             >
               Start Gratis
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="lg" 
-              className="h-12 px-8 text-base font-medium bg-background/50 backdrop-blur-sm"
+              className="h-11 px-6 text-[15px] font-medium text-muted-foreground hover:text-foreground rounded-lg"
             >
-              <Play className="mr-2 h-4 w-4" />
+              <Play className="mr-2 h-4 w-4 fill-current" />
               Bekijk Demo
             </Button>
           </div>
 
-          {/* Trust indicators */}
-          <div className="flex items-center justify-center gap-6 mt-12 text-sm text-muted-foreground">
+          {/* Trust indicators - Minimal */}
+          <div 
+            className="flex items-center justify-center gap-8 mt-14 text-sm text-muted-foreground animate-fade-in"
+            style={{ animationDelay: '200ms' }}
+          >
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
               14 dagen gratis
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
               Geen creditcard nodig
             </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+            <span className="hidden sm:flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
               Direct aan de slag
             </span>
           </div>
         </div>
 
-        {/* Hero mockup */}
-        <div className="mt-16 md:mt-24 relative">
-          <div className="absolute -inset-4 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
-          <div className="relative mx-auto max-w-5xl rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-2xl overflow-hidden">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-            <div className="p-1">
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-destructive/60" />
-                  <div className="w-3 h-3 rounded-full bg-warning/60" />
-                  <div className="w-3 h-3 rounded-full bg-success/60" />
-                </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground">
-                    app.servio.nl
-                  </div>
+        {/* Hero mockup - Clean, abstract, Linear-style */}
+        <div 
+          className="mt-20 md:mt-28 relative animate-fade-in-scale"
+          style={{ animationDelay: '250ms' }}
+        >
+          {/* Gradient fade at bottom */}
+          <div className="absolute -bottom-1 inset-x-0 h-32 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
+          
+          {/* Main mockup container */}
+          <div className="relative mx-auto max-w-5xl rounded-xl border border-border/60 bg-card shadow-xl-soft overflow-hidden">
+            {/* Top glow line */}
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            
+            {/* Browser chrome - minimal */}
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/30">
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-border" />
+                <div className="w-2.5 h-2.5 rounded-full bg-border" />
+                <div className="w-2.5 h-2.5 rounded-full bg-border" />
+              </div>
+              <div className="flex-1 flex justify-center">
+                <div className="px-8 py-1 rounded-md bg-muted text-xs text-muted-foreground font-medium">
+                  app.servio.nl
                 </div>
               </div>
-              {/* Dashboard preview */}
-              <div className="aspect-[16/9] bg-gradient-to-br from-muted/30 to-muted/10 p-8">
-                <div className="grid grid-cols-4 gap-4 h-full">
-                  {/* Sidebar mock */}
-                  <div className="col-span-1 bg-card/80 rounded-xl p-4 space-y-3">
-                    <div className="h-8 w-24 bg-primary/20 rounded-md" />
-                    <div className="space-y-2 mt-6">
-                      {[1,2,3,4,5].map(i => (
-                        <div key={i} className={`h-8 rounded-md ${i === 1 ? 'bg-primary/30' : 'bg-muted/50'}`} />
+              <div className="w-16" /> {/* Spacer for balance */}
+            </div>
+            
+            {/* Dashboard preview - Abstract and clean */}
+            <div className="aspect-[16/10] bg-muted/20 p-6 md:p-8">
+              <div className="grid grid-cols-5 gap-4 h-full">
+                {/* Sidebar mock */}
+                <div className="col-span-1 bg-card rounded-lg p-4 shadow-subtle border border-border/30">
+                  <div className="h-6 w-16 bg-primary/20 rounded mb-6" />
+                  <div className="space-y-2">
+                    {[1,2,3,4,5].map(i => (
+                      <div key={i} className={`h-7 rounded ${i === 1 ? 'bg-primary/10 border border-primary/20' : 'bg-muted/50'}`} />
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Main content mock */}
+                <div className="col-span-4 space-y-4">
+                  {/* Stats row */}
+                  <div className="grid grid-cols-4 gap-3">
+                    {[
+                      { label: 'Omzet', value: '€12.450' },
+                      { label: 'Facturen', value: '24' },
+                      { label: 'Inbox', value: '8' },
+                      { label: 'AI-acties', value: '156' },
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-card rounded-lg p-4 shadow-subtle border border-border/30">
+                        <div className="text-[10px] text-muted-foreground mb-1">{stat.label}</div>
+                        <div className="text-sm font-semibold text-foreground">{stat.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Chart area */}
+                  <div className="bg-card rounded-lg p-4 shadow-subtle border border-border/30 flex-1 h-32 md:h-44">
+                    <div className="h-3 w-20 bg-muted rounded mb-4" />
+                    <div className="h-full flex items-end gap-2 pb-4">
+                      {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 88].map((h, i) => (
+                        <div 
+                          key={i} 
+                          className="flex-1 bg-primary/20 rounded-sm transition-all duration-300"
+                          style={{ height: `${h}%` }}
+                        />
                       ))}
                     </div>
                   </div>
-                  {/* Main content mock */}
-                  <div className="col-span-3 space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      {[1,2,3].map(i => (
-                        <div key={i} className="bg-card/80 rounded-xl p-4 h-24">
-                          <div className="h-4 w-16 bg-muted/50 rounded mb-2" />
-                          <div className="h-6 w-20 bg-primary/20 rounded" />
-                        </div>
-                      ))}
+                  
+                  {/* Bottom row */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-card rounded-lg p-4 shadow-subtle border border-border/30">
+                      <div className="h-3 w-16 bg-muted rounded mb-3" />
+                      <div className="space-y-2">
+                        {[1,2,3].map(i => (
+                          <div key={i} className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded bg-muted/50" />
+                            <div className="h-2 flex-1 bg-muted/30 rounded" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="bg-card/80 rounded-xl p-4 flex-1 h-48">
-                      <div className="h-4 w-24 bg-muted/50 rounded mb-4" />
-                      <div className="h-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-lg" />
+                    <div className="bg-card rounded-lg p-4 shadow-subtle border border-border/30">
+                      <div className="h-3 w-16 bg-muted rounded mb-3" />
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 rounded-lg bg-primary/10" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-2 w-full bg-muted/30 rounded" />
+                          <div className="h-2 w-3/4 bg-muted/30 rounded" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

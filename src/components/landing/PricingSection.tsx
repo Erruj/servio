@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Check, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const plans = [
@@ -51,66 +51,75 @@ export function PricingSection() {
   return (
     <section className="py-24 md:py-32" id="pricing">
       <div className="container mx-auto px-6">
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4">
+        <div className="max-w-xl mx-auto text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             Eenvoudige, transparante prijzen
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-muted-foreground">
             Kies het plan dat bij jou past. Altijd 14 dagen gratis proberen.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
           {plans.map((plan, index) => (
             <div 
               key={index}
-              className={`relative rounded-2xl p-8 ${
+              className={`relative rounded-xl p-6 transition-all duration-300 ${
                 plan.popular 
-                  ? 'bg-card border-2 border-primary shadow-xl scale-105' 
-                  : 'bg-card border border-border/50'
+                  ? 'bg-foreground text-background border-2 border-foreground shadow-xl scale-[1.02]' 
+                  : 'bg-card border border-border/40 hover:border-border hover:shadow-elevated'
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-medium shadow-lg">
-                    <Sparkles className="w-4 h-4" />
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
                     Meest populair
                   </span>
                 </div>
               )}
 
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold text-foreground mb-1">
+              <div className="mb-5">
+                <h3 className={`text-lg font-medium mb-0.5 ${plan.popular ? 'text-background' : 'text-foreground'}`}>
                   {plan.name}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className={`text-sm ${plan.popular ? 'text-background/70' : 'text-muted-foreground'}`}>
                   {plan.description}
                 </p>
               </div>
 
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-foreground">€{plan.price}</span>
-                <span className="text-muted-foreground">/maand</span>
+              <div className="mb-5">
+                <span className={`text-3xl font-semibold ${plan.popular ? 'text-background' : 'text-foreground'}`}>
+                  €{plan.price}
+                </span>
+                <span className={`text-sm ${plan.popular ? 'text-background/70' : 'text-muted-foreground'}`}>/maand</span>
               </div>
 
               {/* Trial badge */}
-              <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 text-success text-sm font-medium">
-                <Check className="w-4 h-4" />
+              <div className={`mb-5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
+                plan.popular 
+                  ? 'bg-background/20 text-background' 
+                  : 'bg-success/10 text-success'
+              }`}>
+                <Check className="w-3 h-3" />
                 14 dagen gratis
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-2.5 mb-6">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm">
-                    <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                    <span className="text-muted-foreground">{feature}</span>
+                  <li key={i} className="flex items-center gap-2.5 text-sm">
+                    <Check className={`w-3.5 h-3.5 flex-shrink-0 ${plan.popular ? 'text-background/70' : 'text-muted-foreground'}`} />
+                    <span className={plan.popular ? 'text-background/90' : 'text-muted-foreground'}>{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <Button 
-                className="w-full" 
-                variant={plan.popular ? 'default' : 'outline'}
+                className={`w-full h-10 rounded-lg text-sm font-medium ${
+                  plan.popular 
+                    ? 'bg-background text-foreground hover:bg-background/90' 
+                    : ''
+                }`}
+                variant={plan.popular ? 'secondary' : 'outline'}
                 onClick={() => navigate('/signup')}
               >
                 Start Gratis
