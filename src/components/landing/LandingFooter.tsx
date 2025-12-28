@@ -22,8 +22,9 @@ export function LandingFooter() {
           <div>
             <h4 className="font-medium text-foreground mb-4 text-sm">Product</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link to="/#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
-              <li><Link to="/#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Prijzen</Link></li>
+              <li><Link to="/features" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
+              <li><Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Prijzen</Link></li>
+              <li><Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">Over ons</Link></li>
               <li><Link to="/signup" className="text-muted-foreground hover:text-foreground transition-colors">Aanmelden</Link></li>
             </ul>
           </div>

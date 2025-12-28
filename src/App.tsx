@@ -20,7 +20,6 @@ import MailboxSetup from "./pages/MailboxSetup";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
-import Landing from "./pages/Landing";
 import { DebugDrawer } from "./components/DebugDrawer";
 import FinancialOverview from "./pages/administration/FinancialOverview";
 import AIAssistant from "./pages/administration/AIAssistant";
@@ -30,6 +29,12 @@ import Documents from "./pages/administration/Documents";
 import Exports from "./pages/administration/Exports";
 import TeamManagement from "./pages/administration/TeamManagement";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+
+// Marketing website pages
+import MarketingHome from "./pages/marketing/Home";
+import MarketingFeatures from "./pages/marketing/Features";
+import MarketingPricing from "./pages/marketing/Pricing";
+import MarketingAbout from "./pages/marketing/About";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,11 +62,15 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public landing page */}
-      <Route path="/home" element={<Landing />} />
+      {/* Marketing website - public, no auth */}
+      <Route path="/" element={<MarketingHome />} />
+      <Route path="/features" element={<MarketingFeatures />} />
+      <Route path="/pricing" element={<MarketingPricing />} />
+      <Route path="/about" element={<MarketingAbout />} />
       
-      {/* Auth gate - show auth page if not logged in, else show inbox */}
-      <Route path="/" element={user ? (
+      {/* App login */}
+      <Route path="/login" element={<Auth />} />
+      <Route path="/app" element={user ? (
         <ProtectedRoute requiredRoles={['owner', 'admin', 'agent']}>
           <Inbox />
         </ProtectedRoute>
