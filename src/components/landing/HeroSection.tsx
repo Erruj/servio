@@ -75,9 +75,10 @@ export function HeroSection() {
               variant="outline" 
               size="lg" 
               className="h-12 px-8 text-[15px] font-medium rounded-lg"
+              onClick={() => navigate('/features')}
             >
               <Play className="mr-2 h-4 w-4" />
-              Bekijk demo (2 min)
+              Bekijk hoe het werkt
             </Button>
           </div>
 

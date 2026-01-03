@@ -36,6 +36,12 @@ import MarketingFeatures from "./pages/marketing/Features";
 import MarketingPricing from "./pages/marketing/Pricing";
 import MarketingAbout from "./pages/marketing/About";
 
+// Legal pages
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import Terms from "./pages/legal/Terms";
+import Cookies from "./pages/legal/Cookies";
+import Contact from "./pages/legal/Contact";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -68,13 +74,22 @@ function AppRoutes() {
       <Route path="/pricing" element={<MarketingPricing />} />
       <Route path="/about" element={<MarketingAbout />} />
       
-      {/* App login */}
+      {/* Legal pages - public */}
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/cookies" element={<Cookies />} />
+      <Route path="/contact" element={<Contact />} />
+      
+      {/* Auth pages */}
       <Route path="/login" element={<Auth />} />
-      <Route path="/app" element={user ? (
+      <Route path="/signup" element={<Signup />} />
+      
+      {/* Protected app routes */}
+      <Route path="/app" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'agent']}>
           <Inbox />
         </ProtectedRoute>
-      ) : <Auth />} />
+      } />
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
@@ -95,8 +110,6 @@ function AppRoutes() {
           <Settings />
         </ProtectedRoute>
       } />
-      <Route path="/pricing" element={<Pricing />} />
-      <Route path="/signup" element={<Signup />} />
       <Route path="/mailbox-setup" element={
         <ProtectedRoute>
           <MailboxSetup />
@@ -145,7 +158,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      {/* Catch-all for 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
