@@ -25,7 +25,7 @@ export function LandingFooter() {
               <li><Link to="/features" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
               <li><Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Prijzen</Link></li>
               <li><Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">Over ons</Link></li>
-              <li><Link to="/signup" className="text-muted-foreground hover:text-foreground transition-colors">Aanmelden</Link></li>
+              <li><Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">Inloggen</Link></li>
             </ul>
           </div>
 
@@ -33,9 +33,8 @@ export function LandingFooter() {
           <div>
             <h4 className="font-medium text-foreground mb-4 text-sm">Support</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Help Center</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Contact</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Status</a></li>
+              <li><Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
+              <li><Link to="/signup" className="text-muted-foreground hover:text-foreground transition-colors">Account aanmaken</Link></li>
             </ul>
           </div>
 
@@ -43,9 +42,9 @@ export function LandingFooter() {
           <div>
             <h4 className="font-medium text-foreground mb-4 text-sm">Juridisch</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Algemene Voorwaarden</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Cookiebeleid</a></li>
+              <li><Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">Algemene Voorwaarden</Link></li>
+              <li><Link to="/cookies" className="text-muted-foreground hover:text-foreground transition-colors">Cookiebeleid</Link></li>
             </ul>
           </div>
         </div>
