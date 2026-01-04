@@ -25,7 +25,7 @@ export function ProductSection() {
   return (
     <section className="py-24 md:py-32">
       <div className="container mx-auto px-6">
-        <div className="max-w-2xl mx-auto text-center mb-16">
+        <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in-up">
           <span className="text-sm font-medium text-primary mb-4 block">Producten</span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             Alles wat je nodig hebt, niets dat je niet nodig hebt
@@ -39,7 +39,8 @@ export function ProductSection() {
           {products.map((product, index) => (
             <div 
               key={index}
-              className="group rounded-xl border border-border/40 overflow-hidden bg-card hover:border-border hover:shadow-elevated transition-all duration-500"
+              className="group rounded-xl border border-border/40 overflow-hidden bg-card hover:border-border hover:shadow-elevated transition-all duration-500 animate-fade-in-up"
+              style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
               {/* Product mockup */}
               <div className="aspect-[4/3] bg-muted/30 p-5 relative overflow-hidden">
@@ -50,8 +51,8 @@ export function ProductSection() {
                   }} />
                 </div>
                 
-                <div className="relative h-full rounded-lg bg-card border border-border/60 p-4 shadow-card transform group-hover:translate-y-[-2px] transition-transform duration-500 flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <div className="relative h-full rounded-lg bg-card border border-border/60 p-4 shadow-card transform group-hover:translate-y-[-4px] group-hover:shadow-elevated transition-all duration-500 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                     <product.icon className="w-8 h-8 text-primary" strokeWidth={1.5} />
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center">

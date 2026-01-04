@@ -29,7 +29,7 @@ export function TestimonialsSection() {
   return (
     <section className="py-24 md:py-32">
       <div className="container mx-auto px-6">
-        <div className="max-w-xl mx-auto text-center mb-16">
+        <div className="max-w-xl mx-auto text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             Vertrouwd door ondernemers
           </h2>
@@ -42,13 +42,14 @@ export function TestimonialsSection() {
           {testimonials.map((testimonial, index) => (
             <div 
               key={index}
-              className="p-6 rounded-xl bg-card border border-border/40 hover:border-border transition-colors duration-300"
+              className="p-6 rounded-xl bg-card border border-border/40 hover:border-border hover:shadow-elevated transition-all duration-300 animate-fade-in-up group"
+              style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
               <p className="text-foreground mb-5 leading-relaxed text-[15px]">
                 "{testimonial.quote}"
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-medium text-xs">
+                <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium text-xs group-hover:bg-primary/20 transition-colors duration-300">
                   {testimonial.initials}
                 </div>
                 <div>

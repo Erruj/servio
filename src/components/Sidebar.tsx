@@ -9,11 +9,10 @@ interface SidebarProps {
 }
 
 const getNavigation = (t: any) => [
-  { name: t('inbox'), href: '/', icon: Mail },
+  { name: t('inbox'), href: '/app', icon: Mail },
   { name: t('dashboard'), href: '/dashboard', icon: PieChart },
   { name: t('statistics'), href: '/stats', icon: BarChart3 },
   { name: t('templates'), href: '/templates', icon: FileText },
-  { name: t('pricing'), href: '/pricing', icon: Euro },
   { name: t('settings'), href: '/settings', icon: Settings },
 ];
 
@@ -52,9 +51,9 @@ export function Sidebar({ className }: SidebarProps) {
       <nav className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Main Navigation */}
         <div className="space-y-3">
-          {navigation.filter(item => {
+        {navigation.filter(item => {
             // Filter based on permissions
-            if (item.href === '/' && !permissions.canAccessInbox) return false;
+            if (item.href === '/app' && !permissions.canAccessInbox) return false;
             if (item.href === '/stats' && !permissions.canAccessStatistics) return false;
             if (item.href === '/templates' && !permissions.canAccessTemplates) return false;
             if (item.href === '/settings' && !permissions.canAccessSettings) return false;

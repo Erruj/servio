@@ -195,7 +195,7 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   className="h-auto p-4 flex items-center justify-start gap-3 bg-destructive/5 border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30 transition-all"
-                  onClick={() => navigate('/inbox?filter=urgent')}
+                  onClick={() => navigate('/app')}
                 >
                   <div className="p-2 bg-destructive rounded-lg flex-shrink-0">
                     <AlertTriangle className="h-5 w-5 text-destructive-foreground" />
@@ -225,7 +225,7 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   className="h-auto p-4 flex items-center justify-start gap-3 bg-primary/5 border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                  onClick={() => navigate('/statistics')}
+                  onClick={() => navigate('/stats')}
                 >
                   <div className="p-2 bg-primary rounded-lg flex-shrink-0">
                     <BarChart3 className="h-5 w-5 text-primary-foreground" />
@@ -248,7 +248,7 @@ const Dashboard = () => {
                   <Clock className="h-5 w-5 text-primary" />
                   Recente Activiteit
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/inbox')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/app')}>
                   Bekijk alles
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -265,7 +265,7 @@ const Dashboard = () => {
                   <div 
                     key={index} 
                     className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => navigate('/inbox')}
+                    onClick={() => navigate('/app')}
                   >
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                       activity.type === 'success' ? 'bg-success' :

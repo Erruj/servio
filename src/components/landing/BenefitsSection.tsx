@@ -35,7 +35,7 @@ export function BenefitsSection() {
   return (
     <section className="py-24 md:py-32 bg-muted/30">
       <div className="container mx-auto px-6">
-        <div className="max-w-2xl mx-auto text-center mb-16">
+        <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in-up">
           <span className="text-sm font-medium text-primary mb-4 block">Waarom Servio</span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             De problemen die we oplossen
@@ -49,10 +49,11 @@ export function BenefitsSection() {
           {benefits.map((benefit, index) => (
             <div 
               key={index}
-              className="group p-8 rounded-xl bg-card border border-border/40 hover:border-border hover:shadow-elevated transition-all duration-300"
+              className="group p-8 rounded-xl bg-card border border-border/40 hover:border-border hover:shadow-elevated transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
               <div className="flex items-start gap-5">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors duration-300">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
                   <benefit.icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1">
