@@ -9,22 +9,22 @@ export function CTASection() {
     <section className="py-24 md:py-32">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="relative rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border border-primary/20 p-10 md:p-16 text-center overflow-hidden">
+          <div className="relative rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border border-primary/20 p-10 md:p-16 text-center overflow-hidden animate-scale-in">
             {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
             
             <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-[-0.02em] text-foreground mb-6">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-[-0.02em] text-foreground mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 Klaar om tijd terug te winnen?
               </h2>
-              <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+              <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto animate-fade-in-up" style={{ animationDelay: '150ms' }}>
                 Sluit je aan bij 500+ ondernemers die hun administratie hebben geautomatiseerd 
                 en nu focussen op wat écht telt.
               </p>
               
               {/* Trust points */}
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 text-sm">
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 text-sm animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                 {[
                   '14 dagen gratis',
                   'Geen creditcard nodig',
@@ -37,10 +37,10 @@ export function CTASection() {
                 ))}
               </div>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
                 <Button 
                   size="lg" 
-                  className="h-14 px-10 text-base font-medium rounded-xl transition-smooth glow-primary hover:glow"
+                  className="h-14 px-10 text-base font-medium rounded-xl transition-all duration-300 glow-primary hover:scale-[1.02] hover:shadow-xl"
                   onClick={() => navigate('/signup')}
                 >
                   Start mijn gratis proefperiode
@@ -48,8 +48,8 @@ export function CTASection() {
                 </Button>
               </div>
               
-              <p className="mt-6 text-sm text-muted-foreground">
-                Of <button onClick={() => navigate('/features')} className="text-primary hover:underline font-medium">bekijk eerst alle features</button>
+              <p className="mt-6 text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                Of <button onClick={() => navigate('/features')} className="text-primary hover:underline font-medium transition-colors duration-200">bekijk eerst alle features</button>
               </p>
             </div>
           </div>

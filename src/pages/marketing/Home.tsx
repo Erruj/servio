@@ -33,6 +33,40 @@ export default function MarketingHome() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Servio - AI Bedrijfsassistent voor ZZP & MKB" />
         <meta name="twitter:description" content="Automatiseer je administratie en bespaar 8+ uur per week." />
+
+        {/* Structured Data - FAQ */}
+        <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Hoe werkt de AI?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Servio gebruikt geavanceerde AI-modellen om je e-mails te analyseren en intelligente antwoordsuggesties te geven. De AI leert van je bedrijfscontext en past zich aan je communicatiestijl aan."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is mijn data veilig?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Absoluut. We gebruiken enterprise-grade encryptie voor alle data. Je gegevens worden opgeslagen in beveiligde datacenters binnen de EU en we voldoen aan alle AVG/GDPR-vereisten."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Heb ik een gratis proefperiode?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ja, je krijgt 14 dagen gratis toegang tot alle functies zonder creditcard. Na de proefperiode kun je kiezen voor een betaald abonnement of gewoon stoppen zonder verplichtingen."
+                }
+              }
+            ]
+          }
+        `}</script>
       </Helmet>
       
       <div className="min-h-screen bg-background">

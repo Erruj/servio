@@ -51,7 +51,7 @@ export function PricingSection() {
   return (
     <section className="py-24 md:py-32" id="pricing">
       <div className="container mx-auto px-6">
-        <div className="max-w-xl mx-auto text-center mb-16">
+        <div className="max-w-xl mx-auto text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             Eenvoudige, transparante prijzen
           </h2>
@@ -64,15 +64,16 @@ export function PricingSection() {
           {plans.map((plan, index) => (
             <div 
               key={index}
-              className={`relative rounded-xl p-6 transition-all duration-300 ${
+              className={`relative rounded-xl p-6 transition-all duration-300 animate-fade-in-up group ${
                 plan.popular 
                   ? 'bg-foreground text-background border-2 border-foreground shadow-xl scale-[1.02]' 
                   : 'bg-card border border-border/40 hover:border-border hover:shadow-elevated'
               }`}
+              style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                  <span className="inline-flex px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium animate-pulse">
                     Meest populair
                   </span>
                 </div>
@@ -114,10 +115,10 @@ export function PricingSection() {
               </ul>
 
               <Button 
-                className={`w-full h-10 rounded-lg text-sm font-medium ${
+                className={`w-full h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
                   plan.popular 
-                    ? 'bg-background text-foreground hover:bg-background/90' 
-                    : ''
+                    ? 'bg-background text-foreground hover:bg-background/90 hover:scale-[1.02]' 
+                    : 'hover:scale-[1.02]'
                 }`}
                 variant={plan.popular ? 'secondary' : 'outline'}
                 onClick={() => navigate('/signup')}
