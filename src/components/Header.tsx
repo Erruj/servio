@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sparkles, LogOut, User as UserIcon } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
@@ -29,9 +28,6 @@ export function Header({ user, onLogout }: HeaderProps) {
               </p>
             </div>
           </div>
-          <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
-            {t('demo')}
-          </Badge>
         </div>
 
         <div className="flex items-center space-x-3">

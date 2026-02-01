@@ -78,7 +78,7 @@ export function HeroSection() {
               onClick={() => navigate('/features')}
             >
               <Play className="mr-2 h-4 w-4" />
-              Bekijk hoe het werkt
+              Ontdek alle features
             </Button>
           </div>
 
