@@ -133,7 +133,7 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="p-6 border-t border-border">
         <div className="text-xs text-muted-foreground">
           <p>{t('version')} 2.0.1</p>
-          <p className="mt-1">© 2024 Servio</p>
+          <p className="mt-1">© {new Date().getFullYear()} Servio</p>
         </div>
       </div>
     </div>

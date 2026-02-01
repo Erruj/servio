@@ -165,15 +165,38 @@ const Inbox = () => {
             </div>
           </div>
 
-          {/* Mobile layout placeholder */}
-          <div className="lg:hidden flex-1 p-8">
-            <div className="text-center text-muted-foreground">
-              <div className="p-8 bg-secondary/30 rounded-2xl shadow-card">
-                <h2 className="text-xl font-bold mb-2">📱 Mobiele versie</h2>
-                <p className="mb-4">De mobiele versie wordt binnenkort toegevoegd</p>
-                <p className="text-sm">Gebruik een desktop voor de volledige ervaring</p>
+          {/* Mobile layout - simplified mail list */}
+          <div className="lg:hidden flex-1 flex flex-col overflow-hidden">
+            {selectedMail ? (
+              <div className="flex-1 flex flex-col">
+                <div className="p-4 border-b border-border">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setSelectedMail(null)}
+                    className="mb-2"
+                  >
+                    ← Terug naar inbox
+                  </Button>
+                </div>
+                <Suspense fallback={
+                  <div className="h-full bg-card flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                }>
+                  <MailDetail mail={selectedMail} className="flex-1" />
+                </Suspense>
               </div>
-            </div>
+            ) : (
+              <MailList
+                mails={mails}
+                selectedMailId={selectedMail?.id}
+                onSelectMail={handleMailSelect}
+                searchQuery={searchQuery}
+                filter={filter}
+                className="flex-1"
+              />
+            )}
           </div>
           </div>
         </div>

@@ -397,6 +397,16 @@ export default function Auth() {
               </form>
             </TabsContent>
           </Tabs>
+          
+          <div className="mt-4 text-center">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/')}
+              className="text-muted-foreground hover:text-foreground text-sm"
+            >
+              ← Terug naar home
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
