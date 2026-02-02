@@ -11,3 +11,18 @@ verify_jwt = true
 
 [functions.customer-portal]
 verify_jwt = true
+
+[functions.gmail-oauth]
+verify_jwt = true
+
+[functions.gmail-callback]
+verify_jwt = false
+
+[functions.outlook-oauth]
+verify_jwt = true
+
+[functions.outlook-callback]
+verify_jwt = false
+
+[functions.sync-emails]
+verify_jwt = false
