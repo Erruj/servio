@@ -30,20 +30,8 @@ export interface Email {
   created_at: string;
 }
 
-// Convert database email to MailItem format for existing components
-export interface MailItem {
-  id: string;
-  from: string;
-  fromEmail: string;
-  subject: string;
-  snippet: string;
-  body: string;
-  date: string;
-  unread: boolean;
-  tags: string[];
-  priority: 'high' | 'medium' | 'low';
-  category: 'support' | 'sales' | 'billing' | 'general';
-}
+// Re-export MailItem from the canonical types
+import type { MailItem } from '@/types/index';
 
 export function emailToMailItem(email: Email): MailItem {
   // Determine priority based on labels

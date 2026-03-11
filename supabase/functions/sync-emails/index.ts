@@ -1,9 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+const allowedOrigins = [
+  'https://servio.lovable.app',
+  'https://avtzjxknxnajzutcoayl.lovableproject.com',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:8080',
+];
+
+const getCorsHeaders = (req: Request) => {
+  const origin = req.headers.get('origin') || '';
+  const allowedOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
 };
 
 // Refresh Google access token
@@ -50,7 +62,6 @@ async function refreshMicrosoftToken(refreshToken: string): Promise<{ access_tok
 
 // Fetch Gmail messages
 async function fetchGmailMessages(accessToken: string, maxResults = 50) {
-  // Get message list
   const listResponse = await fetch(
     `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxResults}&labelIds=INBOX`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -63,7 +74,6 @@ async function fetchGmailMessages(accessToken: string, maxResults = 50) {
   const listData = await listResponse.json();
   const messages = listData.messages || [];
 
-  // Fetch full message details in parallel (batch of 10)
   const detailedMessages = [];
   for (let i = 0; i < messages.length; i += 10) {
     const batch = messages.slice(i, i + 10);
@@ -106,7 +116,6 @@ function parseGmailMessage(msg: any) {
   const fromHeader = getHeader("From") || "";
   const fromMatch = fromHeader.match(/^(.+?)\s*<(.+?)>$/) || [null, fromHeader, fromHeader];
 
-  // Extract body
   let bodyText = "";
   let bodyHtml = "";
 
@@ -167,6 +176,8 @@ function parseOutlookMessage(msg: any) {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -175,28 +186,37 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+    // Authenticate the caller via JWT
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create a client with the user's token to verify identity
+    const userClient = createClient(SUPABASE_URL!, Deno.env.get("SUPABASE_ANON_KEY") || SUPABASE_SERVICE_ROLE_KEY!);
+    const { data: { user }, error: authError } = await userClient.auth.getUser(authHeader.replace("Bearer ", ""));
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Force userId to authenticated user — never trust client input
+    const userId = user.id;
+
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Parse request body for optional user_id filter
-    let userId: string | null = null;
-    try {
-      const body = await req.json();
-      userId = body.user_id || null;
-    } catch {
-      // No body or invalid JSON, sync all users
-    }
-
-    // Get all active connections (or specific user's connections)
-    let query = supabase
+    // Get only this user's active connections
+    const { data: connections, error: connError } = await supabase
       .from("email_connections")
       .select("*")
-      .eq("is_active", true);
-
-    if (userId) {
-      query = query.eq("user_id", userId);
-    }
-
-    const { data: connections, error: connError } = await query;
+      .eq("is_active", true)
+      .eq("user_id", userId);
 
     if (connError) {
       throw new Error(`Failed to fetch connections: ${connError.message}`);
@@ -211,7 +231,6 @@ serve(async (req) => {
         // Check if token needs refresh
         const tokenExpiry = new Date(connection.token_expires_at);
         if (tokenExpiry < new Date(Date.now() + 5 * 60 * 1000)) {
-          // Refresh if expires within 5 minutes
           console.log(`Refreshing token for ${connection.email_address}`);
 
           let newTokens;
@@ -222,7 +241,6 @@ serve(async (req) => {
           }
 
           if (!newTokens) {
-            // Mark connection as having an error
             await supabase
               .from("email_connections")
               .update({
@@ -317,10 +335,10 @@ serve(async (req) => {
   } catch (error) {
     console.error("Sync emails error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An error occurred during email sync" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   }
