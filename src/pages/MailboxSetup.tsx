@@ -50,16 +50,11 @@ const MailboxSetup = () => {
     }
   }, [searchParams, toast, navigate]);
 
-  const handleConnect = async (provider: 'gmail' | 'outlook') => {
-    setConnectingProvider(provider);
+  const handleConnect = async () => {
+    setConnectingProvider('gmail');
     try {
-      if (provider === 'gmail') {
-        await startGmailOAuth();
-      } else {
-        await startOutlookOAuth();
-      }
+      await startGmailOAuth();
     } finally {
-      // Note: If OAuth redirect happens, this won't run
       setConnectingProvider(null);
     }
   };
