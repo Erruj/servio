@@ -59,24 +59,13 @@ const MailboxSetup = () => {
     }
   };
 
-  const providers = [
-    {
-      id: 'gmail',
-      name: 'Gmail',
-      icon: '📧',
-      description: 'Koppel je Google Gmail account',
-      features: ['Auto-sync', 'Real-time updates', 'Volledige integratie'],
-      color: 'bg-red-500/10 text-red-600',
-    },
-    {
-      id: 'outlook',
-      name: 'Microsoft Outlook',
-      icon: '📨',
-      description: 'Koppel je Outlook/Office 365 account',
-      features: ['Enterprise support', 'Advanced security', 'Team sync'],
-      color: 'bg-blue-500/10 text-blue-600',
-    },
-  ];
+  const gmailProvider = {
+    id: 'gmail',
+    name: 'Gmail',
+    icon: '📧',
+    description: 'Koppel je Google Gmail account',
+    features: ['Auto-sync', 'Real-time updates', 'Volledige integratie'],
+  };
 
   const getConnectionForProvider = (providerId: string) => {
     return connections.find(c => c.provider === providerId);
