@@ -169,20 +169,19 @@ const MailboxSetup = () => {
             {/* Provider Selection */}
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                {connections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Kies je email provider'}
+                {connections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je Gmail'}
               </h2>
               <p className="text-muted-foreground mb-6">
-                Selecteer je email provider om je mailbox te koppelen
+                Koppel je Gmail account om je emails te synchroniseren
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {providers.map((provider) => {
-                  const existingConnection = getConnectionForProvider(provider.id);
-                  const isConnecting = connectingProvider === provider.id;
+                {(() => {
+                  const existingConnection = getConnectionForProvider('gmail');
+                  const isConnecting = connectingProvider === 'gmail';
 
                   return (
                     <Card 
-                      key={provider.id}
                       className={`shadow-card hover:shadow-elevated transition-all duration-200 ${
                         existingConnection ? 'border-success/30' : ''
                       }`}
@@ -190,12 +189,12 @@ const MailboxSetup = () => {
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
-                            <div className={`text-3xl p-2 rounded-lg ${provider.color}`}>
-                              {provider.icon}
+                            <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">
+                              {gmailProvider.icon}
                             </div>
                             <div>
                               <CardTitle className="flex items-center">
-                                {provider.name}
+                                {gmailProvider.name}
                                 {existingConnection && (
                                   <Badge className="ml-2 bg-success text-success-foreground">
                                     Gekoppeld
@@ -203,7 +202,7 @@ const MailboxSetup = () => {
                                 )}
                               </CardTitle>
                               <p className="text-sm text-muted-foreground mt-1">
-                                {provider.description}
+                                {gmailProvider.description}
                               </p>
                             </div>
                           </div>
@@ -212,7 +211,7 @@ const MailboxSetup = () => {
                       <CardContent>
                         <div className="space-y-3">
                           <div className="flex flex-wrap gap-2">
-                            {provider.features.map((feature, index) => (
+                            {gmailProvider.features.map((feature, index) => (
                               <Badge key={index} variant="outline" className="text-xs">
                                 {feature}
                               </Badge>
@@ -220,7 +219,7 @@ const MailboxSetup = () => {
                           </div>
                           <Button 
                             className="w-full"
-                            onClick={() => handleConnect(provider.id as 'gmail' | 'outlook')}
+                            onClick={handleConnect}
                             disabled={isConnecting || isLoading}
                           >
                             {isConnecting ? (
@@ -236,7 +235,7 @@ const MailboxSetup = () => {
                             ) : (
                               <>
                                 <Mail className="h-4 w-4 mr-2" />
-                                Koppel {provider.name}
+                                Koppel Gmail
                               </>
                             )}
                           </Button>
@@ -244,7 +243,33 @@ const MailboxSetup = () => {
                       </CardContent>
                     </Card>
                   );
-                })}
+                })()}
+
+                {/* Outlook - Coming Soon */}
+                <Card className="shadow-card opacity-60">
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <div className="text-3xl p-2 rounded-lg bg-muted text-muted-foreground">
+                        📨
+                      </div>
+                      <div>
+                        <CardTitle className="flex items-center">
+                          Microsoft Outlook
+                          <Badge variant="secondary" className="ml-2">Binnenkort</Badge>
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Outlook / Office 365 integratie komt binnenkort
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full" disabled>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Binnenkort beschikbaar
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
