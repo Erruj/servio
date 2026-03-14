@@ -1,10 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/components/AuthProvider';
+import { useSubscription } from '@/hooks/useSubscription';
+import { toast } from 'sonner';
 
 const plans = [
   {
     name: 'Starter',
+    tier: 'starter',
     price: '9,99',
     description: 'Perfect om te starten',
     features: [
@@ -17,6 +21,7 @@ const plans = [
   },
   {
     name: 'Pro',
+    tier: 'pro',
     price: '29,99',
     description: 'Meest gekozen door ondernemers',
     features: [
@@ -31,6 +36,7 @@ const plans = [
   },
   {
     name: 'Business',
+    tier: 'business',
     price: '79,99',
     description: 'Voor groeiende bedrijven',
     features: [
@@ -47,6 +53,17 @@ const plans = [
 
 export function PricingSection() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { createCheckoutSession } = useSubscription();
+
+  const handlePlanClick = async (tier: string) => {
+    if (!user) {
+      navigate('/signup');
+      return;
+    }
+    toast.info('Checkout sessie wordt geopend...');
+    await createCheckoutSession(tier);
+  };
 
   return (
     <section className="py-24 md:py-32" id="pricing">
@@ -114,17 +131,17 @@ export function PricingSection() {
                 ))}
               </ul>
 
-              <Button 
-                className={`w-full h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  plan.popular 
-                    ? 'bg-background text-foreground hover:bg-background/90 hover:scale-[1.02]' 
-                    : 'hover:scale-[1.02]'
-                }`}
-                variant={plan.popular ? 'secondary' : 'outline'}
-                onClick={() => navigate('/signup')}
-              >
-                Start Gratis
-              </Button>
+                <Button 
+                  className={`w-full h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    plan.popular 
+                      ? 'bg-background text-foreground hover:bg-background/90 hover:scale-[1.02]' 
+                      : 'hover:scale-[1.02]'
+                  }`}
+                  variant={plan.popular ? 'secondary' : 'outline'}
+                  onClick={() => handlePlanClick(plan.tier)}
+                >
+                  Start Gratis
+                </Button>
             </div>
           ))}
         </div>
