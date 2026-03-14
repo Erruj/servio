@@ -131,17 +131,17 @@ export function PricingSection() {
                 ))}
               </ul>
 
-              <Button 
-                className={`w-full h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  plan.popular 
-                    ? 'bg-background text-foreground hover:bg-background/90 hover:scale-[1.02]' 
-                    : 'hover:scale-[1.02]'
-                }`}
-                variant={plan.popular ? 'secondary' : 'outline'}
-                onClick={() => navigate('/signup')}
-              >
-                Start Gratis
-              </Button>
+                <Button 
+                  className={`w-full h-10 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    plan.popular 
+                      ? 'bg-background text-foreground hover:bg-background/90 hover:scale-[1.02]' 
+                      : 'hover:scale-[1.02]'
+                  }`}
+                  variant={plan.popular ? 'secondary' : 'outline'}
+                  onClick={() => handlePlanClick(plan.tier)}
+                >
+                  Start Gratis
+                </Button>
             </div>
           ))}
         </div>
