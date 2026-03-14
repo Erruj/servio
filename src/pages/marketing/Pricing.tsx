@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 const plans = [
   {
     name: 'Starter',
+    tier: 'starter',
     price: '9,99',
     description: 'Voor startende ondernemers',
     features: [
@@ -26,6 +27,7 @@ const plans = [
   },
   {
     name: 'Pro',
+    tier: 'pro',
     price: '29,99',
     description: 'Meest gekozen door ZZP\'ers',
     features: [
@@ -42,6 +44,7 @@ const plans = [
   },
   {
     name: 'Business',
+    tier: 'business',
     price: '79,99',
     description: 'Voor groeiende MKB\'s',
     features: [
@@ -60,6 +63,17 @@ const plans = [
 
 export default function MarketingPricing() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { createCheckoutSession } = useSubscription();
+
+  const handlePlanClick = async (tier: string) => {
+    if (!user) {
+      navigate('/signup');
+      return;
+    }
+    toast.info('Checkout sessie wordt geopend...');
+    await createCheckoutSession(tier);
+  };
 
   return (
     <>
