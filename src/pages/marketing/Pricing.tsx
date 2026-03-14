@@ -184,7 +184,7 @@ export default function MarketingPricing() {
                           : ''
                       }`}
                       variant={plan.popular ? 'secondary' : 'default'}
-                      onClick={() => navigate('/signup')}
+                      onClick={() => handlePlanClick(plan.tier)}
                     >
                       {plan.cta}
                       <ArrowRight className="ml-2 h-4 w-4" />
