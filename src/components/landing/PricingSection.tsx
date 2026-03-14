@@ -1,6 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/components/AuthProvider';
+import { useSubscription } from '@/hooks/useSubscription';
+import { toast } from 'sonner';
 
 const plans = [
   {

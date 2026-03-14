@@ -5,6 +5,9 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/components/AuthProvider';
+import { useSubscription } from '@/hooks/useSubscription';
+import { toast } from 'sonner';
 
 const plans = [
   {
