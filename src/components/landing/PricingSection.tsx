@@ -53,6 +53,17 @@ const plans = [
 
 export function PricingSection() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { createCheckoutSession } = useSubscription();
+
+  const handlePlanClick = async (tier: string) => {
+    if (!user) {
+      navigate('/signup');
+      return;
+    }
+    toast.info('Checkout sessie wordt geopend...');
+    await createCheckoutSession(tier);
+  };
 
   return (
     <section className="py-24 md:py-32" id="pricing">
