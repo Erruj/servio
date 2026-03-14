@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 const plans = [
   {
     name: 'Starter',
+    tier: 'starter',
     price: '9,99',
     description: 'Perfect om te starten',
     features: [
@@ -20,6 +21,7 @@ const plans = [
   },
   {
     name: 'Pro',
+    tier: 'pro',
     price: '29,99',
     description: 'Meest gekozen door ondernemers',
     features: [
@@ -34,6 +36,7 @@ const plans = [
   },
   {
     name: 'Business',
+    tier: 'business',
     price: '79,99',
     description: 'Voor groeiende bedrijven',
     features: [
