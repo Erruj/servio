@@ -178,7 +178,7 @@ const Pricing = () => {
                           ? 'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground' 
                           : ''
                       }`}
-                      onClick={() => handleSubscribe(plan.priceId, plan.name)}
+                      onClick={() => handleSubscribe(plan.tier, plan.name)}
                       disabled={isCurrentPlan(plan.productId) || isLoading}
                     >
                       {isLoading ? (
