@@ -50,9 +50,20 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceId } = await req.json();
-    if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId });
+    const { tier } = await req.json();
+    if (!tier) throw new Error("Tier is required");
+    logStep("Tier received", { tier });
+
+    // Map tier to price ID from environment variables
+    const priceIdMap: Record<string, string | undefined> = {
+      starter: Deno.env.get("STRIPE_STARTER_PRICE_ID"),
+      pro: Deno.env.get("STRIPE_PRO_PRICE_ID"),
+      business: Deno.env.get("STRIPE_BUSINESS_PRICE_ID"),
+    };
+
+    const priceId = priceIdMap[tier];
+    if (!priceId) throw new Error(`No price ID configured for tier: ${tier}`);
+    logStep("Price ID resolved", { tier, priceId });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
