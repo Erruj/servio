@@ -16,6 +16,7 @@ const Pricing = () => {
   const plans = [
     {
       name: 'Starter',
+      tier: 'starter',
       price: '€9,99',
       period: '/maand',
       description: 'Perfect voor freelancers en starters',
@@ -24,12 +25,12 @@ const Pricing = () => {
       buttonText: 'Start Starter',
       variant: 'outline' as const,
       popular: false,
-      priceId: SUBSCRIPTION_TIERS.starter.price_id,
       productId: SUBSCRIPTION_TIERS.starter.product_id,
       highlight: 'Ideaal om te beginnen',
     },
     {
       name: 'Pro',
+      tier: 'pro',
       price: '€29,99',
       period: '/maand',
       description: 'Voor groeiende bedrijven',
@@ -38,12 +39,12 @@ const Pricing = () => {
       buttonText: 'Kies Pro',
       variant: 'default' as const,
       popular: true,
-      priceId: SUBSCRIPTION_TIERS.pro.price_id,
       productId: SUBSCRIPTION_TIERS.pro.product_id,
       highlight: 'Meeste waarde',
     },
     {
       name: 'Business',
+      tier: 'business',
       price: '€79,99',
       period: '/maand',
       description: 'Voor teams en grote organisaties',
@@ -52,7 +53,6 @@ const Pricing = () => {
       buttonText: 'Kies Business',
       variant: 'outline' as const,
       popular: false,
-      priceId: SUBSCRIPTION_TIERS.business.price_id,
       productId: SUBSCRIPTION_TIERS.business.product_id,
       highlight: 'Onbeperkte kracht',
     }
