@@ -58,7 +58,7 @@ const Pricing = () => {
     }
   ];
 
-  const handleSubscribe = async (priceId: string, planName: string) => {
+  const handleSubscribe = async (tier: string, planName: string) => {
     if (!user) {
       toast.error('Log eerst in om te abonneren');
       window.location.href = '/auth';
@@ -66,7 +66,7 @@ const Pricing = () => {
     }
     
     toast.info(`Checkout sessie wordt geopend voor ${planName}...`);
-    await createCheckoutSession(priceId);
+    await createCheckoutSession(tier);
   };
 
   const isCurrentPlan = (productId: string) => {
