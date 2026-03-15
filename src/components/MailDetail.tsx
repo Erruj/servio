@@ -27,8 +27,9 @@ import {
 import { generateSmartReplies } from '@/lib/ai/orchestrator';
 import { analyzeEmail } from '@/lib/ai';
 import { useToast } from '@/hooks/use-toast';
-import { sanitizeHtml, SecurityError, handleSecurityError } from '@/lib/security';
+import { SecurityError, handleSecurityError } from '@/lib/security';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { EmailBodyRenderer } from '@/components/EmailBodyRenderer';
 
 interface MailDetailProps {
   mail: MailItem | null;
@@ -252,14 +253,10 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           </CardHeader>
 
           <CardContent>
-            <div className="bg-secondary/30 rounded-xl p-4">
-              <div 
-                className="whitespace-pre-wrap text-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ 
-                  __html: sanitizeHtml(mail.body.replace(/\n/g, '<br>')) 
-                }}
-              />
-            </div>
+            <EmailBodyRenderer
+              bodyHtml={mail.bodyHtml}
+              bodyText={mail.bodyText || mail.body}
+            />
           </CardContent>
         </Card>
 
