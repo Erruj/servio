@@ -254,8 +254,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
 
           <CardContent>
             <EmailBodyRenderer
-              bodyHtml={mail.body.includes('<') ? mail.body : undefined}
-              bodyText={mail.body.includes('<') ? undefined : mail.body}
+              bodyHtml={mail.bodyHtml}
+              bodyText={mail.bodyText || mail.body}
             />
           </CardContent>
         </Card>
