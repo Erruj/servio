@@ -27,8 +27,9 @@ import {
 import { generateSmartReplies } from '@/lib/ai/orchestrator';
 import { analyzeEmail } from '@/lib/ai';
 import { useToast } from '@/hooks/use-toast';
-import { sanitizeHtml, SecurityError, handleSecurityError } from '@/lib/security';
+import { SecurityError, handleSecurityError } from '@/lib/security';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { EmailBodyRenderer } from '@/components/EmailBodyRenderer';
 
 interface MailDetailProps {
   mail: MailItem | null;
