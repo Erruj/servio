@@ -253,14 +253,10 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           </CardHeader>
 
           <CardContent>
-            <div className="bg-secondary/30 rounded-xl p-4">
-              <div 
-                className="whitespace-pre-wrap text-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ 
-                  __html: sanitizeHtml(mail.body.replace(/\n/g, '<br>')) 
-                }}
-              />
-            </div>
+            <EmailBodyRenderer
+              bodyHtml={mail.body.includes('<') ? mail.body : undefined}
+              bodyText={mail.body.includes('<') ? undefined : mail.body}
+            />
           </CardContent>
         </Card>
 
