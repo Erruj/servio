@@ -40,6 +40,8 @@ export function emailToMailItem(email: Email): MailItem {
     subject: email.subject || '(Geen onderwerp)',
     snippet: email.snippet || '',
     body: email.body_html || email.body_text || '',
+    bodyHtml: email.body_html || undefined,
+    bodyText: email.body_text || undefined,
     receivedAt: email.received_at,
     unread: !email.is_read,
     labels: email.labels.filter(l => !['INBOX', 'UNREAD', 'CATEGORY_PERSONAL', 'CATEGORY_UPDATES'].includes(l)),

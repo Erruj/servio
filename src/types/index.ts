@@ -11,6 +11,8 @@ export interface MailItem {
   subject: string;
   snippet: string;
   body: string;
+  bodyHtml?: string;
+  bodyText?: string;
   receivedAt: string; // ISO
   unread: boolean;
   labels: string[];
