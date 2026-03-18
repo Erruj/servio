@@ -91,8 +91,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/dashboard?subscription=success`,
-      cancel_url: `${req.headers.get("origin")}/pricing?subscription=canceled`,
+      success_url: `https://servio.lovable.app/dashboard?subscription=success`,
+      cancel_url: `https://servio.lovable.app/prijzen?subscription=canceled`,
       metadata: {
         user_id: user.id,
       },
