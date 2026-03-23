@@ -1,6 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+async function hmacSign(data: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 serve(async (req) => {
   try {
     const url = new URL(req.url);
@@ -8,8 +32,7 @@ serve(async (req) => {
     const state = url.searchParams.get("state");
     const error = url.searchParams.get("error");
 
-    // Get the frontend URL for redirects
-    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://servio.lovable.app";
+    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://getservio.co";
 
     if (error) {
       console.error("OAuth error:", error);
@@ -20,11 +43,26 @@ serve(async (req) => {
       return Response.redirect(`${frontendUrl}/mailbox-setup?error=missing_params`);
     }
 
-    // Decode state to get user_id
+    // Verify signed state
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     let userId: string;
     try {
       const stateData = JSON.parse(atob(state));
-      userId = stateData.user_id;
+      const { payload, sig } = stateData;
+      if (!payload || !sig) {
+        return Response.redirect(`${frontendUrl}/mailbox-setup?error=invalid_state`);
+      }
+      const expectedSig = await hmacSign(payload, SUPABASE_SERVICE_ROLE_KEY);
+      if (!timingSafeEqual(sig, expectedSig)) {
+        console.error("State signature mismatch");
+        return Response.redirect(`${frontendUrl}/mailbox-setup?error=invalid_state`);
+      }
+      const parsedPayload = JSON.parse(payload);
+      userId = parsedPayload.user_id;
+      // Reject states older than 10 minutes
+      if (Date.now() - parsedPayload.ts > 10 * 60 * 1000) {
+        return Response.redirect(`${frontendUrl}/mailbox-setup?error=state_expired`);
+      }
     } catch {
       return Response.redirect(`${frontendUrl}/mailbox-setup?error=invalid_state`);
     }
@@ -32,7 +70,6 @@ serve(async (req) => {
     const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID");
     const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_CLIENT_SECRET");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
       throw new Error("Google OAuth credentials not configured");
@@ -40,7 +77,6 @@ serve(async (req) => {
 
     const redirectUri = `${SUPABASE_URL}/functions/v1/gmail-callback`;
 
-    // Exchange code for tokens
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -61,7 +97,6 @@ serve(async (req) => {
 
     const tokens = await tokenResponse.json();
 
-    // Get user email from Google
     const userInfoResponse = await fetch(
       "https://www.googleapis.com/oauth2/v2/userinfo",
       {
@@ -76,13 +111,10 @@ serve(async (req) => {
     const userInfo = await userInfoResponse.json();
     const emailAddress = userInfo.email;
 
-    // Calculate token expiration
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
-    // Store connection in database using service role
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Upsert the connection (update if exists, insert if not)
     const { error: dbError } = await supabase
       .from("email_connections")
       .upsert(
@@ -107,11 +139,10 @@ serve(async (req) => {
       return Response.redirect(`${frontendUrl}/mailbox-setup?error=database_error`);
     }
 
-    // Redirect back to the app with success
     return Response.redirect(`${frontendUrl}/app?connected=gmail`);
   } catch (error) {
     console.error("Gmail callback error:", error);
-    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://servio.lovable.app";
+    const frontendUrl = Deno.env.get("FRONTEND_URL") || "https://getservio.co";
     return Response.redirect(`${frontendUrl}/mailbox-setup?error=unknown_error`);
   }
 });
