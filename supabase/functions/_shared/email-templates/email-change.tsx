@@ -21,38 +21,23 @@ interface EmailChangeEmailProps {
   confirmationUrl: string
 }
 
-export const EmailChangeEmail = ({
-  siteName,
-  email,
-  newEmail,
-  confirmationUrl,
-}: EmailChangeEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const EmailChangeEmail = ({ siteName, email, newEmail, confirmationUrl }: EmailChangeEmailProps) => (
+  <Html lang="nl" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for {siteName}</Preview>
+    <Preview>Bevestig je e-mailadres wijziging voor {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email change</Heading>
+        <Heading style={h1}>E-mailadres wijziging bevestigen</Heading>
         <Text style={text}>
-          You requested to change your email address for {siteName} from{' '}
-          <Link href={`mailto:${email}`} style={link}>
-            {email}
-          </Link>{' '}
-          to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>
-            {newEmail}
-          </Link>
-          .
-        </Text>
-        <Text style={text}>
-          Click the button below to confirm this change:
+          Je hebt een verzoek ingediend om je e-mailadres voor {siteName} te wijzigen van{' '}
+          <Link href={`mailto:${email}`} style={link}>{email}</Link> naar{' '}
+          <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Confirm Email Change
+          Wijziging bevestigen
         </Button>
         <Text style={footer}>
-          If you didn't request this change, please secure your account
-          immediately.
+          Als je dit niet hebt aangevraagd, beveilig dan onmiddellijk je account.
         </Text>
       </Container>
     </Body>
@@ -61,27 +46,10 @@ export const EmailChangeEmail = ({
 
 export default EmailChangeEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
+const container = { padding: '40px 25px' }
+const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#1e293b', margin: '0 0 20px' }
+const text = { fontSize: '15px', color: '#64748b', lineHeight: '1.6', margin: '0 0 25px' }
+const link = { color: '#3b82f6', textDecoration: 'underline' }
+const button = { backgroundColor: '#3b82f6', color: '#ffffff', fontSize: '15px', borderRadius: '8px', padding: '12px 24px', textDecoration: 'none', fontWeight: '600' as const }
+const footer = { fontSize: '12px', color: '#94a3b8', margin: '30px 0 0' }

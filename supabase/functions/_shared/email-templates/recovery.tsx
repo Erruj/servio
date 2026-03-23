@@ -18,26 +18,21 @@ interface RecoveryEmailProps {
   confirmationUrl: string
 }
 
-export const RecoveryEmail = ({
-  siteName,
-  confirmationUrl,
-}: RecoveryEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
+  <Html lang="nl" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Wachtwoord herstellen voor {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Reset your password</Heading>
+        <Heading style={h1}>Wachtwoord herstellen</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
+          We hebben een verzoek ontvangen om je wachtwoord voor {siteName} te herstellen. Klik op onderstaande knop om een nieuw wachtwoord in te stellen.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Reset Password
+          Wachtwoord resetten
         </Button>
         <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
+          Als je dit niet hebt aangevraagd, kun je deze e-mail veilig negeren. Je wachtwoord wordt niet gewijzigd.
         </Text>
       </Container>
     </Body>
@@ -46,26 +41,9 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
+const container = { padding: '40px 25px' }
+const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#1e293b', margin: '0 0 20px' }
+const text = { fontSize: '15px', color: '#64748b', lineHeight: '1.6', margin: '0 0 25px' }
+const button = { backgroundColor: '#3b82f6', color: '#ffffff', fontSize: '15px', borderRadius: '8px', padding: '12px 24px', textDecoration: 'none', fontWeight: '600' as const }
+const footer = { fontSize: '12px', color: '#94a3b8', margin: '30px 0 0' }
