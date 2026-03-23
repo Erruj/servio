@@ -3,6 +3,8 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const allowedOrigins = [
+  'https://getservio.co',
+  'https://www.getservio.co',
   'https://servio.lovable.app',
   'https://avtzjxknxnajzutcoayl.lovableproject.com',
   'http://localhost:3000',
@@ -91,8 +93,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `https://servio.lovable.app/dashboard?subscription=success`,
-      cancel_url: `https://servio.lovable.app/prijzen?subscription=canceled`,
+      success_url: `https://getservio.co/dashboard?subscription=success`,
+      cancel_url: `https://getservio.co/prijzen?subscription=canceled`,
       metadata: {
         user_id: user.id,
       },
