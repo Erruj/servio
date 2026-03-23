@@ -3,6 +3,8 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const allowedOrigins = [
+  'https://getservio.co',
+  'https://www.getservio.co',
   'https://servio.lovable.app',
   'https://avtzjxknxnajzutcoayl.lovableproject.com',
   'http://localhost:3000',
