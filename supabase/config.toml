@@ -1,31 +1,25 @@
 project_id = "avtzjxknxnajzutcoayl"
 
-[functions.ai-assistant]
-verify_jwt = true
-
-[functions.create-checkout]
-verify_jwt = true
-
-[functions.check-subscription]
-verify_jwt = true
-
-[functions.customer-portal]
-verify_jwt = true
-
-[functions.gmail-oauth]
-verify_jwt = true
-
-[functions.gmail-callback]
-verify_jwt = false
-
-[functions.outlook-oauth]
-verify_jwt = true
-
-[functions.outlook-callback]
-verify_jwt = false
-
-[functions.sync-emails]
-verify_jwt = false
-
-[functions.stripe-webhook]
-verify_jwt = false
+[functions]
+  [functions.ai-assistant]
+    verify_jwt = true
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-subscription]
+    verify_jwt = true
+  [functions.create-checkout]
+    verify_jwt = true
+  [functions.customer-portal]
+    verify_jwt = true
+  [functions.gmail-callback]
+    verify_jwt = false
+  [functions.gmail-oauth]
+    verify_jwt = true
+  [functions.outlook-callback]
+    verify_jwt = false
+  [functions.outlook-oauth]
+    verify_jwt = true
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.sync-emails]
+    verify_jwt = false
