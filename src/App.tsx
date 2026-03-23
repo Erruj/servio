@@ -83,6 +83,7 @@ function AppRoutes() {
       {/* Auth pages */}
       <Route path="/login" element={<Auth />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Protected app routes */}
       <Route path="/app" element={
