@@ -20,6 +20,7 @@ import MailboxSetup from "./pages/MailboxSetup";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import { DebugDrawer } from "./components/DebugDrawer";
 import FinancialOverview from "./pages/administration/FinancialOverview";
 import AIAssistant from "./pages/administration/AIAssistant";
@@ -83,6 +84,7 @@ function AppRoutes() {
       {/* Auth pages */}
       <Route path="/login" element={<Auth />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Protected app routes */}
       <Route path="/app" element={

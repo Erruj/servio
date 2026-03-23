@@ -11,6 +11,8 @@ import {
   Html,
   Preview,
   Text,
+  Section,
+  Hr,
 } from 'npm:@react-email/components@0.0.22'
 
 interface RecoveryEmailProps {
@@ -21,19 +23,43 @@ interface RecoveryEmailProps {
 export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
   <Html lang="nl" dir="ltr">
     <Head />
-    <Preview>Wachtwoord herstellen voor {siteName}</Preview>
+    <Preview>Wachtwoord opnieuw instellen – {siteName}</Preview>
     <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Wachtwoord herstellen</Heading>
-        <Text style={text}>
-          We hebben een verzoek ontvangen om je wachtwoord voor {siteName} te herstellen. Klik op onderstaande knop om een nieuw wachtwoord in te stellen.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Wachtwoord resetten
-        </Button>
-        <Text style={footer}>
-          Als je dit niet hebt aangevraagd, kun je deze e-mail veilig negeren. Je wachtwoord wordt niet gewijzigd.
-        </Text>
+      <Container style={outerContainer}>
+        <Section style={card}>
+          {/* Logo area */}
+          <Section style={logoSection}>
+            <Text style={logoText}>
+              <span style={logoIcon}>◆</span> Servio
+            </Text>
+          </Section>
+
+          <Hr style={divider} />
+
+          <Heading style={h1}>Wachtwoord opnieuw instellen</Heading>
+
+          <Text style={greeting}>Hallo,</Text>
+
+          <Text style={text}>
+            Je hebt een verzoek ingediend om je wachtwoord te resetten. Klik op de knop hieronder om een nieuw wachtwoord in te stellen. Als je dit niet zelf hebt aangevraagd, kun je deze email veilig negeren.
+          </Text>
+
+          <Section style={buttonContainer}>
+            <Button style={button} href={confirmationUrl}>
+              Wachtwoord opnieuw instellen
+            </Button>
+          </Section>
+
+          <Text style={linkExpiry}>
+            Deze link is 24 uur geldig.
+          </Text>
+
+          <Hr style={divider} />
+
+          <Text style={footer}>
+            © 2026 Servio · getservio.co · Je ontvangt deze email omdat je een account hebt bij Servio.
+          </Text>
+        </Section>
       </Container>
     </Body>
   </Html>
@@ -41,9 +67,97 @@ export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps)
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
-const container = { padding: '40px 25px' }
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#1e293b', margin: '0 0 20px' }
-const text = { fontSize: '15px', color: '#64748b', lineHeight: '1.6', margin: '0 0 25px' }
-const button = { backgroundColor: '#3b82f6', color: '#ffffff', fontSize: '15px', borderRadius: '8px', padding: '12px 24px', textDecoration: 'none', fontWeight: '600' as const }
-const footer = { fontSize: '12px', color: '#94a3b8', margin: '30px 0 0' }
+const main = {
+  backgroundColor: '#f5f5f5',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  padding: '40px 0',
+}
+
+const outerContainer = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  padding: '20px',
+}
+
+const card = {
+  backgroundColor: '#ffffff',
+  borderRadius: '12px',
+  padding: '40px 32px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)',
+}
+
+const logoSection = {
+  textAlign: 'center' as const,
+  marginBottom: '8px',
+}
+
+const logoText = {
+  fontSize: '22px',
+  fontWeight: '700' as const,
+  color: '#3b82f6',
+  margin: '0',
+  letterSpacing: '-0.3px',
+}
+
+const logoIcon = {
+  marginRight: '6px',
+  fontSize: '18px',
+}
+
+const divider = {
+  borderTop: '1px solid #e5e7eb',
+  margin: '20px 0',
+}
+
+const h1 = {
+  fontSize: '20px',
+  fontWeight: '600' as const,
+  color: '#1e293b',
+  margin: '0 0 20px',
+  letterSpacing: '-0.3px',
+}
+
+const greeting = {
+  fontSize: '15px',
+  color: '#374151',
+  margin: '0 0 12px',
+  lineHeight: '1.6',
+}
+
+const text = {
+  fontSize: '15px',
+  color: '#64748b',
+  lineHeight: '1.6',
+  margin: '0 0 28px',
+}
+
+const buttonContainer = {
+  textAlign: 'center' as const,
+  margin: '0 0 20px',
+}
+
+const button = {
+  backgroundColor: '#3b82f6',
+  color: '#ffffff',
+  fontSize: '15px',
+  borderRadius: '8px',
+  padding: '14px 32px',
+  textDecoration: 'none',
+  fontWeight: '600' as const,
+  display: 'inline-block',
+}
+
+const linkExpiry = {
+  fontSize: '13px',
+  color: '#9ca3af',
+  textAlign: 'center' as const,
+  margin: '0 0 8px',
+}
+
+const footer = {
+  fontSize: '12px',
+  color: '#9ca3af',
+  textAlign: 'center' as const,
+  margin: '0',
+  lineHeight: '1.5',
+}
