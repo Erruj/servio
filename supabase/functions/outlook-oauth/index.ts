@@ -6,6 +6,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function hmacSign(data: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -14,12 +29,12 @@ serve(async (req) => {
   try {
     const MICROSOFT_CLIENT_ID = Deno.env.get("MICROSOFT_CLIENT_ID");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     if (!MICROSOFT_CLIENT_ID) {
       throw new Error("MICROSOFT_CLIENT_ID is not configured");
     }
 
-    // Get the user from the authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("Authorization header required");
@@ -38,7 +53,6 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    // Build the OAuth URL
     const redirectUri = `${SUPABASE_URL}/functions/v1/outlook-callback`;
     const scopes = [
       "openid",
@@ -49,8 +63,10 @@ serve(async (req) => {
       "https://graph.microsoft.com/Mail.Send",
     ].join(" ");
 
-    // Store user_id in state for the callback
-    const state = btoa(JSON.stringify({ user_id: user.id }));
+    // Create signed state with CSRF protection
+    const statePayload = JSON.stringify({ user_id: user.id, ts: Date.now() });
+    const signature = await hmacSign(statePayload, SUPABASE_SERVICE_ROLE_KEY!);
+    const state = btoa(JSON.stringify({ payload: statePayload, sig: signature }));
 
     const authUrl = new URL("https://login.microsoftonline.com/common/oauth2/v2.0/authorize");
     authUrl.searchParams.set("client_id", MICROSOFT_CLIENT_ID);
