@@ -1,7 +1,6 @@
 import { Shield } from 'lucide-react';
 
 export function Footer() {
-  const { t } = useTranslation();
   
   return (
     <footer className="bg-card border-t border-border px-6 py-4">
