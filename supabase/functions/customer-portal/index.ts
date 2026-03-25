@@ -50,10 +50,19 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const origin = req.headers.get("origin") || "http://localhost:3000";
+    const ALLOWED_ORIGINS = [
+      "https://getservio.co",
+      "https://www.getservio.co",
+      "https://servio.lovable.app",
+    ];
+    const requestOrigin = req.headers.get("origin") || "";
+    const returnOrigin = ALLOWED_ORIGINS.includes(requestOrigin)
+      ? requestOrigin
+      : ALLOWED_ORIGINS[0];
+
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${origin}/dashboard`,
+      return_url: `${returnOrigin}/dashboard`,
     });
 
     logStep("Customer portal session created", { sessionId: portalSession.id });
