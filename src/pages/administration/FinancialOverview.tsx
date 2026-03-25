@@ -226,7 +226,7 @@ export default function FinancialOverview() {
         ? `Je kosten liggen ${Math.abs(benchmarkDiff).toFixed(0)}% ${benchmarkDiff > 0 ? 'boven' : 'onder'} je 3-maand gemiddelde`
         : null;
 
-      // Use demo data if no real data
+      // Use placeholder data if no real data exists yet
       if (invoices.length === 0 && receipts.length === 0 && transactions.length === 0) {
         setData({
           totalIncome: 15000,

@@ -85,9 +85,9 @@ export function MailList({
     return words.join(' ') + (body.split(' ').length > 10 ? '...' : '');
   };
 
-  // Mock analysis data for display (in real app this would come from AI analysis)
+  // Heuristic analysis data for display
   const getMailAnalysis = (mail: MailItem) => {
-    // Simple heuristic for demo
+    // Simple heuristic categorization based on content
     let category: Category = 'Overig';
     let urgency: Urgency = 'Normaal';
     let sentiment: Sentiment = 'Neutraal';
