@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Search, Filter, User, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,10 +61,6 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
 
       {/* Status and user menu */}
       <div className="flex items-center space-x-4">
-        <Badge variant="secondary" className="text-xs">
-          Demo Modus
-        </Badge>
-        
         <Button 
           variant="ghost" 
           size="sm"
