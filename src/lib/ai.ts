@@ -249,10 +249,10 @@ function getLocalizedErrorMessage(code: AiErrorCode, language?: string): string 
       UNKNOWN: 'Onverwachte fout. Probeer opnieuw. (Details gelogd)'
     },
     EN: {
-      TIMEOUT: 'AI took too long. Try again or use demo response.',
+      TIMEOUT: 'AI took too long. Please try again.',
       RATE_LIMIT: 'Too many requests. Please wait and try again.',
       BAD_INPUT: 'Incomplete email. Add subject/content and try again.',
-      NO_API_KEY: 'No AI key configured → demo responses activated.',
+      NO_API_KEY: 'AI service not available. Please check your configuration.',
       NETWORK_ERROR: 'Network error. Check your connection and try again.',
       UNKNOWN: 'Unexpected error. Please try again. (Details logged)'
     }
@@ -328,7 +328,7 @@ export async function analyzeEmail(mail: MailItem): Promise<AnalysisResult> {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
   
-    // Simple heuristic-based analysis for demo purposes
+    // Simple heuristic-based analysis
     const body = sanitizedBody.toLowerCase();
     const subject = sanitizedSubject.toLowerCase();
   
