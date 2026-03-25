@@ -376,7 +376,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2 bg-white/50 p-3 rounded-lg">
+            <p className="text-sm text-muted-foreground mt-2 bg-secondary/50 p-3 rounded-lg">
               De AI heeft dit antwoord gegenereerd op basis van de email-inhoud en je bedrijfsrichtlijnen.
             </p>
           </CardHeader>
@@ -392,7 +392,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
                 readOnly={!isEditingReply}
-                className={`min-h-48 resize-none text-base shadow-subtle ${!isEditingReply ? 'bg-white/70' : 'bg-white'}`}
+                className={`min-h-48 resize-none text-base shadow-subtle ${!isEditingReply ? 'bg-muted/50' : 'bg-background'}`}
                 placeholder="AI genereert hier een antwoord..."
               />
             )}
@@ -404,7 +404,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           <Button 
             onClick={handleSendReply}
             size="lg"
-            className="flex-1 bg-green-600 text-white hover:bg-green-700 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
+            className="flex-1 bg-success text-success-foreground hover:bg-success/90 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
             disabled={isGeneratingReply || !reply.trim()}
           >
             <Send className="h-5 w-5 mr-2" />
@@ -415,7 +415,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             variant={isEditingReply ? "default" : "outline"}
             onClick={() => setIsEditingReply(!isEditingReply)}
             size="lg"
-            className="flex-1 bg-blue-600 text-white hover:bg-blue-700 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
+            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
             disabled={isGeneratingReply}
           >
             <Edit className="h-5 w-5 mr-2" />
@@ -426,7 +426,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             variant="outline" 
             onClick={handleMarkAsResolved}
             size="lg"
-            className="flex-1 bg-gray-500 text-white hover:bg-gray-600 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
+            className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
           >
             <CheckCircle2 className="h-5 w-5 mr-2" />
             Markeer als afgehandeld

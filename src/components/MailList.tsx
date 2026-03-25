@@ -79,10 +79,21 @@ export function MailList({
     onSelectMail(mail);
   };
 
-  // Get first 10 words from email body
+  // Get first 10 words from email body, stripping HTML tags
   const getEmailPreview = (body: string): string => {
-    const words = body.split(' ').slice(0, 10);
-    return words.join(' ') + (body.split(' ').length > 10 ? '...' : '');
+    // Strip HTML tags and decode entities
+    const textOnly = body
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+    const words = textOnly.split(' ').filter(w => w.length > 0).slice(0, 12);
+    return words.join(' ') + (textOnly.split(' ').length > 12 ? '...' : '');
   };
 
   // Heuristic analysis data for display
