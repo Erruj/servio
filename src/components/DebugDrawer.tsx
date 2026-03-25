@@ -11,8 +11,9 @@ export function DebugDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const logs = getAiLogs();
 
-  // Only show in development
-  if (import.meta.env.PROD) {
+  // Never show in production — only enable with ?debug=true URL param
+  const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug');
+  if (!showDebug) {
     return null;
   }
 
