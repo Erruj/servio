@@ -376,7 +376,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2 bg-white/50 p-3 rounded-lg">
+            <p className="text-sm text-muted-foreground mt-2 bg-secondary/50 p-3 rounded-lg">
               De AI heeft dit antwoord gegenereerd op basis van de email-inhoud en je bedrijfsrichtlijnen.
             </p>
           </CardHeader>

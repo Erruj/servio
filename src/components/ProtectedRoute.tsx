@@ -14,7 +14,7 @@ export function ProtectedRoute({
   requiredRoles,
   requireAuth = true 
 }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+  const { user, userRole, isLoading } = useAuth();
   const { hasAnyRole } = useRoleAccess();
 
   if (isLoading) {
@@ -27,6 +27,15 @@ export function ProtectedRoute({
 
   if (requireAuth && !user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Wait for role to load before checking role-based access
+  if (requiredRoles && user && !userRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (requiredRoles && !hasAnyRole(requiredRoles)) {
