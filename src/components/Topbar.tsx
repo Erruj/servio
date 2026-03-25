@@ -61,10 +61,6 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
 
       {/* Status and user menu */}
       <div className="flex items-center space-x-4">
-        <Badge variant="secondary" className="text-xs">
-          Demo Modus
-        </Badge>
-        
         <Button 
           variant="ghost" 
           size="sm"
