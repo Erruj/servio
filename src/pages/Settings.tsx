@@ -63,6 +63,7 @@ const Settings = () => {
 
         // Apply loaded settings immediately
         i18n.changeLanguage(loadedSettings.language);
+        localStorage.setItem('servio-language', loadedSettings.language);
         setAppTheme(loadedSettings.theme);
       }
     } catch (error) {
