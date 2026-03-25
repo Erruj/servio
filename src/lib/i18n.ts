@@ -151,11 +151,9 @@ const resources = {
       // Header
       tagline: 'AI customer service that automatically handles up to 80% of your emails',
       logout: 'Logout',
-      demo: 'Demo',
       
       // Welcome
       welcome: 'Welcome to Servio — your AI customer service assistant',
-      loadDemoData: 'Load demo data',
       connectMailbox: 'Connect mailbox',
       
       // Mail interface
@@ -368,11 +366,9 @@ const resources = {
       // Header
       tagline: 'AI-klantenservice die tot 80% van je mails automatisch afhandelt',
       logout: 'Uitloggen',
-      demo: 'Demo',
       
       // Welcome
       welcome: 'Welkom bij Servio — jouw AI-klantenservice-assistent',
-      loadDemoData: 'Laad demo-data',
       connectMailbox: 'Mailbox koppelen',
       
       // Mail interface

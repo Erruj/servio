@@ -168,7 +168,7 @@ export default function Invoices() {
       });
 
       if (!error && data) {
-        // For demo, use simulated OCR results
+        // Use simulated OCR results for auto-categorization
         const simulatedResults = {
           supplier: 'Software BV',
           amount: Math.floor(Math.random() * 500) + 100,
