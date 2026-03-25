@@ -30,6 +30,7 @@ import Documents from "./pages/administration/Documents";
 import Exports from "./pages/administration/Exports";
 import TeamManagement from "./pages/administration/TeamManagement";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { SubscriptionGate } from "./components/SubscriptionGate";
 
 // Marketing website pages
 import MarketingHome from "./pages/marketing/Home";
