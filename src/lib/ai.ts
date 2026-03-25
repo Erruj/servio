@@ -1,5 +1,5 @@
-// Mock AI Analysis and Reply Generation
-// TODO: Replace with actual LLM API calls in production
+// AI Analysis and Reply Generation
+// Uses Lovable AI via edge functions for contextual replies
 
 import { MailItem, AnalysisResult, ReplyGenerationParams, TemplateItem, Category, Urgency, Sentiment } from '@/types';
 import { dummyTemplates } from './dummy';
@@ -19,7 +19,7 @@ export interface AiLog {
   mailId?: string;
 }
 
-// In-memory log storage (for dev/demo purposes)
+// In-memory log storage
 const aiLogs: AiLog[] = [];
 const MAX_LOGS = 50;
 
