@@ -101,8 +101,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
         setCanRetry(true);
       }
       
-      // Generate demo replies as ultimate fallback
-      handleUseDemoReplies();
+      // Generate fallback replies as ultimate fallback
+      handleUseFallbackReplies();
     } finally {
       setIsGenerating(false);
     }
@@ -123,39 +123,39 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
     await generateAiSuggestions();
   };
 
-  const handleUseDemoReplies = () => {
+  const handleUseFallbackReplies = () => {
     if (!mail) return;
 
     const customerName = mail.from.split(' ')[0] || 'klant';
-    const demoSuggestions: ReplyVariant[] = [
+    const fallbackSuggestions: ReplyVariant[] = [
       {
         type: 'Zakelijk',
         label: 'Zakelijk',
-        content: `Beste ${customerName},\n\nDank je voor je bericht. We pakken dit direct voor je op.\n\nMet vriendelijke groet,\nServio Klantenservice`,
+        content: `Beste ${customerName},\n\nBedankt voor je bericht. We pakken dit direct voor je op.\n\nMet vriendelijke groet`,
         icon: '💼'
       },
       {
         type: 'Empathisch',
         label: 'Empathisch',
-        content: `Beste ${customerName},\n\nIk begrijp je situatie en dank je voor je geduld. We helpen je graag verder.\n\nHartelijke groet,\nServio Klantenservice`,
+        content: `Beste ${customerName},\n\nIk begrijp je situatie en dank je voor je geduld. We helpen je graag verder.\n\nHartelijke groet`,
         icon: '💝'
       },
       {
         type: 'Uitgebreid',
         label: 'Uitgebreid',
-        content: `Geachte ${customerName},\n\nWij hebben uw verzoek in goede orde ontvangen en zullen dit met de grootst mogelijke zorg behandelen.\n\nWe streven ernaar binnen 24 uur te reageren.\n\nHoogachtend,\nServio Klantenservice`,
+        content: `Geachte ${customerName},\n\nWij hebben uw verzoek in goede orde ontvangen en zullen dit zorgvuldig behandelen.\n\nWe streven ernaar binnen 24 uur te reageren.\n\nHoogachtend`,
         icon: '📋'
       }
     ];
     
-    setAiSuggestions(demoSuggestions);
-    setSelectedSuggestion(demoSuggestions[0]);
-    setCustomReply(demoSuggestions[0].content);
+    setAiSuggestions(fallbackSuggestions);
+    setSelectedSuggestion(fallbackSuggestions[0]);
+    setCustomReply(fallbackSuggestions[0].content);
     setLastError(null);
 
     toast({
-      title: t('replyEditor.demoReplies'),
-      description: t('replyEditor.demoRepliesActivated'),
+      title: t('replyEditor.usingFallbackReplies'),
+      description: t('replyEditor.fallbackRepliesActivated'),
     });
   };
 
@@ -375,10 +375,10 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={handleUseDemoReplies}
+                          onClick={handleUseFallbackReplies}
                         >
                           <Sparkles className="h-3 w-3 mr-1" />
-                          {t('replyEditor.actions.useDemoReply')}
+                          {t('replyEditor.actions.useFallbackReply')}
                         </Button>
                       )}
                     </div>
