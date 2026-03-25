@@ -67,31 +67,17 @@ export function useEmailConnections() {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
-        toast({
-          title: "Niet ingelogd",
-          description: "Log eerst in om je mailbox te koppelen.",
-          variant: "destructive",
-        });
+        toast({ title: "Niet ingelogd", description: "Log eerst in.", variant: "destructive" });
         return;
       }
-
       const { data, error } = await supabase.functions.invoke('gmail-oauth', {
-        headers: {
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
       });
-
       if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
+      if (data?.url) window.location.href = data.url;
     } catch (error) {
       console.error('Gmail OAuth error:', error);
-      toast({
-        title: "Fout bij koppelen",
-        description: "Kon Gmail OAuth niet starten. Probeer later opnieuw.",
-        variant: "destructive",
-      });
+      toast({ title: "Fout bij koppelen", description: "Kon Gmail OAuth niet starten.", variant: "destructive" });
     }
   };
 
@@ -99,31 +85,17 @@ export function useEmailConnections() {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
-        toast({
-          title: "Niet ingelogd",
-          description: "Log eerst in om je mailbox te koppelen.",
-          variant: "destructive",
-        });
+        toast({ title: "Niet ingelogd", description: "Log eerst in.", variant: "destructive" });
         return;
       }
-
       const { data, error } = await supabase.functions.invoke('outlook-oauth', {
-        headers: {
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
       });
-
       if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
+      if (data?.url) window.location.href = data.url;
     } catch (error) {
       console.error('Outlook OAuth error:', error);
-      toast({
-        title: "Fout bij koppelen",
-        description: "Kon Outlook OAuth niet starten. Probeer later opnieuw.",
-        variant: "destructive",
-      });
+      toast({ title: "Fout bij koppelen", description: "Kon Outlook OAuth niet starten.", variant: "destructive" });
     }
   };
 
@@ -133,49 +105,31 @@ export function useEmailConnections() {
         .from('email_connections')
         .delete()
         .eq('id', connectionId);
-
       if (error) throw error;
-
-      toast({
-        title: "Mailbox ontkoppeld",
-        description: "Je mailbox is succesvol ontkoppeld.",
-      });
-
+      toast({ title: "Mailbox ontkoppeld" });
       await fetchConnections();
     } catch (error) {
       console.error('Disconnect error:', error);
-      toast({
-        title: "Fout",
-        description: "Kon mailbox niet ontkoppelen.",
-        variant: "destructive",
-      });
+      toast({ title: "Fout", description: "Kon mailbox niet ontkoppelen.", variant: "destructive" });
     }
   };
 
   const syncEmails = async () => {
     if (!user) return;
 
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-emails', {
-        body: { user_id: user.id },
-      });
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) throw new Error('Niet ingelogd');
 
-      if (error) throw error;
+    const { data, error } = await supabase.functions.invoke('sync-emails', {
+      body: { user_id: user.id },
+      headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+    });
 
-      toast({
-        title: "Emails gesynchroniseerd",
-        description: `${data?.results?.filter((r: any) => r.status === 'success').length || 0} mailbox(en) bijgewerkt.`,
-      });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
 
-      await fetchConnections();
-    } catch (error) {
-      console.error('Sync error:', error);
-      toast({
-        title: "Sync mislukt",
-        description: "Kon emails niet synchroniseren.",
-        variant: "destructive",
-      });
-    }
+    await fetchConnections();
+    return data;
   };
 
   const hasConnections = connections.length > 0;
@@ -225,23 +179,12 @@ export function useEmails() {
 
   const markAsRead = async (emailId: string) => {
     try {
-      await supabase
-        .from('emails')
-        .update({ is_read: true })
-        .eq('id', emailId);
-
-      setEmails(prev => prev.map(e => 
-        e.id === emailId ? { ...e, is_read: true } : e
-      ));
+      await supabase.from('emails').update({ is_read: true }).eq('id', emailId);
+      setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_read: true } : e));
     } catch (error) {
       console.error('Error marking email as read:', error);
     }
   };
 
-  return {
-    emails,
-    isLoading,
-    refetch: fetchEmails,
-    markAsRead,
-  };
+  return { emails, isLoading, refetch: fetchEmails, markAsRead };
 }

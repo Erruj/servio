@@ -1,5 +1,5 @@
-// Mock AI Analysis and Reply Generation
-// TODO: Replace with actual LLM API calls in production
+// AI Analysis and Reply Generation
+// Uses Lovable AI via edge functions for contextual replies
 
 import { MailItem, AnalysisResult, ReplyGenerationParams, TemplateItem, Category, Urgency, Sentiment } from '@/types';
 import { dummyTemplates } from './dummy';
@@ -19,7 +19,7 @@ export interface AiLog {
   mailId?: string;
 }
 
-// In-memory log storage (for dev/demo purposes)
+// In-memory log storage
 const aiLogs: AiLog[] = [];
 const MAX_LOGS = 50;
 
@@ -241,10 +241,10 @@ function generateDeterministicMockReplies(params: ReplyGenerationParams): string
 function getLocalizedErrorMessage(code: AiErrorCode, language?: string): string {
   const messages = {
     NL: {
-      TIMEOUT: 'De AI deed er te lang over. Probeer opnieuw of gebruik demo-antwoord.',
+      TIMEOUT: 'De AI deed er te lang over. Probeer opnieuw.',
       RATE_LIMIT: 'Te veel verzoeken. Even wachten en nogmaals proberen.',
       BAD_INPUT: 'Onvolledige e-mail. Voeg onderwerp/tekst toe en probeer opnieuw.',
-      NO_API_KEY: 'Geen AI-sleutel geconfigureerd → demo-antwoorden geactiveerd.',
+      NO_API_KEY: 'AI niet beschikbaar. Controleer je configuratie.',
       NETWORK_ERROR: 'Netwerkfout. Controleer je verbinding en probeer opnieuw.',
       UNKNOWN: 'Onverwachte fout. Probeer opnieuw. (Details gelogd)'
     },

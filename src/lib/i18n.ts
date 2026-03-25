@@ -169,11 +169,11 @@ const resources = {
       generating: 'Generating...',
       error: 'Error',
       aiGenerationFailed: 'AI Generation Failed',
-      usingDemoReplies: 'Using Demo Replies',
-      demoRepliesActivated: 'Demo responses have been activated',
+      usingFallbackReplies: 'Using Fallback Replies',
+      fallbackRepliesActivated: 'Fallback responses have been activated',
       unexpectedError: 'An unexpected error occurred',
       tryAgain: 'Try Again',
-      useDemoReply: 'Use Demo Reply',
+      useFallbackReply: 'Use Fallback Reply',
       generatingReplies: 'Generating AI responses...',
       aiSuggestionsPlaceholder: 'AI will generate response suggestions here...',
       
@@ -215,7 +215,7 @@ const resources = {
       errorUploadingDocument: 'Error uploading document',
       
       // Footer
-      footerText: 'Demo version of Servio. Not for production use.',
+      footerText: '© Servio. All rights reserved.',
       version: 'Version'
     }
   },
@@ -386,11 +386,11 @@ const resources = {
       generating: 'Genereren...',
       error: 'Fout',
       aiGenerationFailed: 'AI Genereren Mislukt',
-      usingDemoReplies: 'Demo Antwoorden Gebruiken',
-      demoRepliesActivated: 'Demo antwoorden zijn geactiveerd',
+      usingFallbackReplies: 'Fallback Antwoorden',
+      fallbackRepliesActivated: 'Fallback antwoorden zijn geactiveerd',
       unexpectedError: 'Er is een onverwachte fout opgetreden',
       tryAgain: 'Opnieuw Proberen',
-      useDemoReply: 'Demo Antwoord Gebruiken',
+      useFallbackReply: 'Fallback Antwoord Gebruiken',
       generatingReplies: 'AI antwoorden genereren...',
       aiSuggestionsPlaceholder: 'AI zal hier antwoordsuggesties genereren...',
       
@@ -432,7 +432,7 @@ const resources = {
       errorUploadingDocument: 'Fout bij uploaden van document',
       
       // Footer
-      footerText: 'Demo-versie van Servio. Niet voor productie.',
+      footerText: '© Servio. Alle rechten voorbehouden.',
       version: 'Versie'
     }
   }

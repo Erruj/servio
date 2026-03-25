@@ -118,7 +118,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     }
   };
 
-  const handleSendReply = () => {
+  const handleSendReply = async () => {
     if (!reply.trim()) {
       toast({
         title: "Geen inhoud",
@@ -128,14 +128,39 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       return;
     }
 
-    toast({
-      title: "✅ Email verzonden",
-      description: "Je antwoord is succesvol verzonden naar de klant.",
-    });
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: session } = await supabase.auth.getSession();
+      
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: mail!.from,
+          subject: `Re: ${mail!.subject}`,
+          body: reply,
+          replyToEmailId: mail!.id,
+        },
+        headers: {
+          Authorization: `Bearer ${session.session?.access_token}`,
+        },
+      });
 
-    // Clear state
-    setReply('');
-    setIsEditingReply(false);
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: "✅ Email verzonden",
+        description: "Je antwoord is succesvol verzonden.",
+      });
+
+      setReply('');
+      setIsEditingReply(false);
+    } catch (error: any) {
+      toast({
+        title: "Verzenden mislukt",
+        description: error.message || "Probeer het opnieuw.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleMarkAsResolved = () => {
