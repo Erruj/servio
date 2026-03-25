@@ -326,7 +326,7 @@ serve(async (req) => {
       JSON.stringify({ error: "An error occurred during email sync" }),
       {
         status: 500,
-        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }

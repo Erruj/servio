@@ -104,9 +104,14 @@ const Settings = () => {
 
       if (error) throw error;
 
+      // Re-apply settings after successful save to ensure consistency
+      i18n.changeLanguage(settings.language);
+      localStorage.setItem('servio-language', settings.language);
+      setAppTheme(settings.theme);
+
       setSaveSuccess(true);
-      toast.success('Instellingen opgeslagen', {
-        description: 'Je voorkeuren zijn bijgewerkt.',
+      toast.success(t('settings') + ' ' + t('success').toLowerCase(), {
+        description: settings.language === 'nl' ? 'Je voorkeuren zijn bijgewerkt.' : 'Your preferences have been updated.',
         icon: <Check className="h-4 w-4" />,
       });
       
