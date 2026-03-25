@@ -17,6 +17,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('generate-reply: Request received');
     const { emailId, tone, language } = await req.json();
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error('No authorization header');
@@ -27,6 +28,7 @@ serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Unauthorized');
+    console.log('generate-reply: User authenticated:', user.id);
 
     // Fetch the email
     const { data: email, error: emailError } = await supabase
@@ -36,7 +38,11 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    if (emailError || !email) throw new Error('Email not found');
+    if (emailError || !email) {
+      console.error('generate-reply: Email not found', emailError);
+      throw new Error('Email not found');
+    }
+    console.log('generate-reply: Email found:', email.subject);
 
     // Fetch user profile for signature
     const { data: profile } = await supabase
@@ -71,22 +77,18 @@ REGELS:
 - Als de voorkeurstaal "${replyLanguage}" is, gebruik die als fallback
 - Pas de toon aan: "${preferredTone}" (neutral=zakelijk, empathetic=empathisch, formal=formeel, detailed=gedetailleerd)
 - Geen generieke antwoorden - elk antwoord moet uniek zijn voor deze specifieke e-mail
-- Geef 3 varianten terug in JSON format
+- Geef 3 varianten: Zakelijk, Empathisch, Uitgebreid
 
-ANTWOORD FORMAT (JSON):
-{
-  "variants": [
-    { "type": "Zakelijk", "label": "Zakelijk", "content": "...", "icon": "💼" },
-    { "type": "Empathisch", "label": "Empathisch", "content": "...", "icon": "💝" },
-    { "type": "Uitgebreid", "label": "Uitgebreid", "content": "...", "icon": "📋" }
-  ]
-}`;
+ANTWOORD: Geef exact dit JSON formaat terug (geen markdown, geen code blocks, alleen raw JSON):
+{"variants":[{"type":"Zakelijk","label":"Zakelijk","content":"<zakelijk antwoord>","icon":"💼"},{"type":"Empathisch","label":"Empathisch","content":"<empathisch antwoord>","icon":"💝"},{"type":"Uitgebreid","label":"Uitgebreid","content":"<uitgebreid antwoord>","icon":"📋"}]}`;
 
     const userPrompt = `E-mail van: ${senderName} <${email.from_email}>
 Onderwerp: ${email.subject || '(geen onderwerp)'}
 Inhoud:
-${emailContent.substring(0, 4000)}`;
+${emailContent.substring(0, 3000)}`;
 
+    console.log('generate-reply: Calling AI Gateway...');
+    
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -94,46 +96,19 @@ ${emailContent.substring(0, 4000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        tools: [{
-          type: 'function',
-          function: {
-            name: 'generate_reply_variants',
-            description: 'Generate 3 reply variants for the email',
-            parameters: {
-              type: 'object',
-              properties: {
-                variants: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      type: { type: 'string', enum: ['Zakelijk', 'Empathisch', 'Uitgebreid'] },
-                      label: { type: 'string' },
-                      content: { type: 'string' },
-                      icon: { type: 'string' }
-                    },
-                    required: ['type', 'label', 'content', 'icon'],
-                    additionalProperties: false
-                  }
-                }
-              },
-              required: ['variants'],
-              additionalProperties: false
-            }
-          }
-        }],
-        tool_choice: { type: 'function', function: { name: 'generate_reply_variants' } }
+        temperature: 0.7,
+        max_tokens: 2000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
+      console.error('generate-reply: AI Gateway error:', response.status, errorText);
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Te veel verzoeken. Probeer het over een minuutje opnieuw.' }),
@@ -146,42 +121,41 @@ ${emailContent.substring(0, 4000)}`;
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('generate-reply: AI response received');
     
-    // Extract from tool call response
+    // Extract content from response
+    const content = data.choices?.[0]?.message?.content || '';
+    
     let variants;
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (toolCall?.function?.arguments) {
-      const parsed = JSON.parse(toolCall.function.arguments);
+    try {
+      // Try to parse JSON directly
+      const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
       variants = parsed.variants;
-    } else {
-      // Fallback: try to parse from content
-      const content = data.choices?.[0]?.message?.content || '';
-      try {
-        const parsed = JSON.parse(content);
-        variants = parsed.variants;
-      } catch {
-        // Ultimate fallback
-        variants = [
-          { type: 'Zakelijk', label: 'Zakelijk', content: content, icon: '💼' },
-        ];
-      }
+    } catch (parseError) {
+      console.warn('generate-reply: Failed to parse JSON, using content as single variant');
+      variants = [
+        { type: 'Zakelijk', label: 'Zakelijk', content: content, icon: '💼' },
+      ];
     }
+
+    console.log('generate-reply: Success, returning', variants?.length, 'variants');
 
     return new Response(
       JSON.stringify({
         variants,
         provider: 'Lovable AI',
-        model: 'gemini-3-flash',
+        model: 'gpt-4o-mini',
         success: true
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error in generate-reply:', error);
+    console.error('generate-reply: Error:', error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
