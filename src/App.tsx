@@ -132,32 +132,44 @@ function AppRoutes() {
       {/* Administration Routes */}
       <Route path="/administration/overview" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <FinancialOverview />
+          <SubscriptionGate feature="Financieel Overzicht">
+            <FinancialOverview />
+          </SubscriptionGate>
         </ProtectedRoute>
       } />
       <Route path="/administration/ai-assistant" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <AIAssistant />
+          <SubscriptionGate feature="AI Boekhoudassistent">
+            <AIAssistant />
+          </SubscriptionGate>
         </ProtectedRoute>
       } />
       <Route path="/administration/invoices" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <Invoices />
+          <SubscriptionGate feature="Facturen">
+            <Invoices />
+          </SubscriptionGate>
         </ProtectedRoute>
       } />
       <Route path="/administration/receipts" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <Receipts />
+          <SubscriptionGate feature="Bonnetjes">
+            <Receipts />
+          </SubscriptionGate>
         </ProtectedRoute>
       } />
       <Route path="/administration/documents" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <Documents />
+          <SubscriptionGate feature="Documenten">
+            <Documents />
+          </SubscriptionGate>
         </ProtectedRoute>
       } />
       <Route path="/administration/exports" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <Exports />
+          <SubscriptionGate feature="Exports">
+            <Exports />
+          </SubscriptionGate>
         </ProtectedRoute>
       } />
       
