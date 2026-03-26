@@ -25,6 +25,16 @@ export function MailList({
   className 
 }: MailListProps) {
   const { toast } = useToast();
+  const filterLabels: Record<string, string> = {
+    all: 'Alle mails',
+    inbox: 'Inbox',
+    unread: 'Ongelezen',
+    starred: 'Met ster',
+    important: 'Belangrijk',
+    snoozed: 'Gesnoozed',
+    spam: 'Spam',
+    sent: 'Verzonden',
+  };
 
   // Validate and sanitize search query
   const safeSearchQuery = useMemo(() => {
@@ -163,7 +173,7 @@ export function MailList({
       {/* Header */}
       <div className="p-6 border-b border-border bg-secondary/30">
         <h2 className="text-xl font-bold text-foreground flex items-center">
-          📧 {filter === 'all' ? 'Alle mails' : 'Inbox'} ({filteredMails.length})
+          📧 {filterLabels[filter] || 'Inbox'} ({filteredMails.length})
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
           Gesynchroniseerde mailboxberichten
