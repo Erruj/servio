@@ -465,9 +465,54 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
             />
           </TabsContent>
         </Tabs>
-      </div>
 
-      {/* Actions */}
+        {/* Attachments */}
+        <div className="space-y-2 mt-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Paperclip className="h-4 w-4 mr-2" />
+            Bijlage toevoegen
+          </Button>
+
+          {attachments.length > 0 && (
+            <div className="space-y-1">
+              {attachments.map((att, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-muted rounded-md px-3 py-2 text-sm"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="truncate">{att.file.name}</span>
+                    <span className="text-muted-foreground text-xs flex-shrink-0">
+                      ({formatFileSize(att.file.size)})
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeAttachment(index)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       <div className="p-4 border-t border-border space-y-3">
         {/* Primary actions */}
         <div className="flex space-x-2">
