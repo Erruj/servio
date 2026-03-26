@@ -24,19 +24,71 @@ async function refreshGoogleToken(refreshToken: string): Promise<{ access_token:
   return response.json();
 }
 
-function createRawEmail(to: string, cc: string, subject: string, body: string, fromEmail: string): string {
-  const boundary = 'boundary_' + Date.now();
+interface Attachment {
+  filename: string;
+  mimeType: string;
+  content: string; // base64 encoded
+}
+
+function createRawEmail(
+  to: string,
+  cc: string,
+  subject: string,
+  body: string,
+  fromEmail: string,
+  attachments?: Attachment[]
+): string {
+  const boundary = 'boundary_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  const encodedSubject = `=?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+  const encodedBody = btoa(unescape(encodeURIComponent(body)));
+
+  if (!attachments || attachments.length === 0) {
+    // Simple email without attachments
+    const lines = [
+      `From: ${fromEmail}`,
+      `To: ${to}`,
+      ...(cc ? [`Cc: ${cc}`] : []),
+      `Subject: ${encodedSubject}`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/plain; charset=UTF-8',
+      'Content-Transfer-Encoding: base64',
+      '',
+      encodedBody,
+    ];
+    const raw = lines.join('\r\n');
+    return btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  // Multipart email with attachments
   const lines = [
     `From: ${fromEmail}`,
     `To: ${to}`,
     ...(cc ? [`Cc: ${cc}`] : []),
-    `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+    `Subject: ${encodedSubject}`,
     'MIME-Version: 1.0',
-    `Content-Type: text/plain; charset=UTF-8`,
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset=UTF-8',
     'Content-Transfer-Encoding: base64',
     '',
-    btoa(unescape(encodeURIComponent(body))),
+    encodedBody,
   ];
+
+  for (const att of attachments) {
+    const encodedFilename = `=?UTF-8?B?${btoa(unescape(encodeURIComponent(att.filename)))}?=`;
+    lines.push(
+      `--${boundary}`,
+      `Content-Type: ${att.mimeType}; name="${att.filename}"`,
+      `Content-Disposition: attachment; filename="${att.filename}"`,
+      'Content-Transfer-Encoding: base64',
+      '',
+      att.content, // already base64
+    );
+  }
+
+  lines.push(`--${boundary}--`);
+
   const raw = lines.join('\r\n');
   return btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
@@ -47,7 +99,7 @@ serve(async (req) => {
   }
 
   try {
-    const { to, cc, subject, body, replyToEmailId } = await req.json();
+    const { to, cc, subject, body, replyToEmailId, attachments } = await req.json();
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error('No authorization header');
 
@@ -58,7 +110,6 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Unauthorized');
 
-    // Get user's active Gmail connection
     const { data: connection, error: connError } = await supabase
       .from('email_connections')
       .select('*')
@@ -75,7 +126,6 @@ serve(async (req) => {
       );
     }
 
-    // Refresh token if needed
     let accessToken = connection.access_token;
     const tokenExpiry = new Date(connection.token_expires_at);
     if (tokenExpiry < new Date(Date.now() + 5 * 60 * 1000)) {
@@ -96,10 +146,8 @@ serve(async (req) => {
         .eq('id', connection.id);
     }
 
-    // Build raw email
-    const raw = createRawEmail(to, cc || '', subject, body, connection.email_address);
+    const raw = createRawEmail(to, cc || '', subject, body, connection.email_address, attachments);
 
-    // If replying, get the threadId
     let threadId: string | undefined;
     if (replyToEmailId) {
       const { data: originalEmail } = await supabase
@@ -111,7 +159,6 @@ serve(async (req) => {
       threadId = originalEmail?.thread_id || undefined;
     }
 
-    // Send via Gmail API
     const gmailUrl = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
     const gmailBody: any = { raw };
     if (threadId) gmailBody.threadId = threadId;
