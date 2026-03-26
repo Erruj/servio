@@ -1,6 +1,6 @@
 // AI Orchestrator - Smart Provider Selection & Fallback Logic
 
-import { LovableAIProvider, FallbackProvider, MockProvider, GenerateRepliesParams, GenerateRepliesResult, AIProvider } from './providers';
+import { LovableAIProvider, FallbackProvider, GenerateRepliesParams, GenerateRepliesResult, AIProvider } from './providers';
 import { checkRateLimit } from '@/lib/security';
 import { addAiLog, AiLog } from '../ai';
 
@@ -46,10 +46,9 @@ export async function generateSmartReplies(params: GenerateRepliesParams): Promi
     throw error;
   }
 
-  // Try Lovable AI first, then Mock as fallback
+  // Use Lovable AI only — no mock fallback
   const providers: AIProvider[] = [
     new LovableAIProvider(),
-    new MockProvider()
   ];
 
   let lastError: Error | null = null;
@@ -75,7 +74,7 @@ export async function generateSmartReplies(params: GenerateRepliesParams): Promi
       console.warn(`Provider ${provider.name} failed:`, error);
       lastError = error as Error;
       
-      if (provider instanceof MockProvider) break;
+      // No more providers to try
     }
   }
 

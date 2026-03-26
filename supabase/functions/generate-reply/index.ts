@@ -96,7 +96,7 @@ ${emailContent.substring(0, 3000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -149,7 +149,7 @@ ${emailContent.substring(0, 3000)}`;
       JSON.stringify({
         variants,
         provider: 'Lovable AI',
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-3-flash-preview',
         success: true
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
