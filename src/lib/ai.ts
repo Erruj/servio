@@ -321,69 +321,76 @@ export async function analyzeEmail(mail: MailItem): Promise<AnalysisResult> {
       throw new SecurityError('Te veel analyseverzoeken. Probeer het later opnieuw.');
     }
 
-    // Sanitize input
-    const sanitizedSubject = sanitizeText(mail.subject);
-    const sanitizedBody = sanitizeText(mail.body);
+    // Try real AI analysis via edge function
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (session.session && mail.id) {
+        const { data, error } = await supabase.functions.invoke('analyze-email', {
+          body: { emailId: mail.id },
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+        });
+
+        if (!error && data?.success && data?.analysis) {
+          const ai = data.analysis;
+          return {
+            summary: ai.summary || 'Geen samenvatting beschikbaar',
+            bullets: ai.bullets || ['E-mail ontvangen'],
+            category: ai.category || 'Overig',
+            urgency: ai.urgency || 'Normaal',
+            sentiment: ai.sentiment || 'Neutraal',
+            policyFlags: ai.policyFlags || [],
+          };
+        }
+        console.warn('AI analysis failed, falling back to heuristics:', error || data?.error);
+      }
+    } catch (aiError) {
+      console.warn('AI analysis unavailable, using heuristics:', aiError);
+    }
+
+    // Fallback: heuristic-based analysis
+    const body = sanitizeText(mail.body).toLowerCase();
+    const subject = sanitizeText(mail.subject).toLowerCase();
+  
+    let category: Category = 'Overig';
+    let urgency: Urgency = 'Normaal';
+    let sentiment: Sentiment = 'Neutraal';
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-  
-    // Simple heuristic-based analysis
-    const body = sanitizedBody.toLowerCase();
-    const subject = sanitizedSubject.toLowerCase();
-  
-  let category: Category = 'Overig';
-  let urgency: Urgency = 'Normaal';
-  let sentiment: Sentiment = 'Neutraal';
-  
-  // Category detection based on keywords
-  if (body.includes('retour') || body.includes('return') || subject.includes('retour')) {
-    category = 'Retour';
-  } else if (body.includes('klacht') || body.includes('beschadigd') || body.includes('boos') || body.includes('onacceptabel')) {
-    category = 'Klacht';
-  } else if (body.includes('factuur') || body.includes('invoice') || subject.includes('factuur')) {
-    category = 'Factuur';
-  } else if (body.includes('wachtwoord') || body.includes('password') || body.includes('inloggen') || body.includes('login')) {
-    category = 'Vraag';
-  } else if (body.includes('error') || body.includes('bug') || body.includes('website') || body.includes('technisch')) {
-    category = 'Technisch';
-  }
-  
-  // Urgency detection
-  if (body.includes('urgent') || body.includes('direct') || body.includes('onmiddellijk') || subject.includes('urgent')) {
-    urgency = 'Hoog';
-  } else if (body.includes('snel') || body.includes('spoedig') || mail.labels.includes('urgent')) {
-    urgency = 'Normaal';
-  } else {
-    urgency = 'Laag';
-  }
-  
-  // Sentiment analysis
-  if (body.includes('boos') || body.includes('teleurstellend') || body.includes('onacceptabel') || body.includes('klacht')) {
-    sentiment = 'Negatief';
-  } else if (body.includes('bedankt') || body.includes('geweldig') || body.includes('tevreden') || body.includes('dank')) {
-    sentiment = 'Positief';
-  }
-  
-  // Find suggested template
-  const suggestedTemplate = dummyTemplates.find(t => t.category === category);
-  
-  // Generate summary and bullets
-  const summary = generateSummary(mail, category);
-  const bullets = generateBullets(mail, category);
-  
-  // Policy flags
-  const policyFlags = checkPolicyFlags(mail, category);
-  
-  return {
-      summary,
-      bullets,
-      category,
-      urgency,
-      sentiment,
-      suggestedTemplateId: suggestedTemplate?.id,
-      policyFlags
-    };
+    // Improved category detection
+    if (body.includes('retour') || body.includes('return') || subject.includes('retour')) {
+      category = 'Retour';
+    } else if (body.includes('klacht') || body.includes('beschadigd') || body.includes('boos') || body.includes('onacceptabel')) {
+      category = 'Klacht';
+    } else if (body.includes('factuur') || body.includes('invoice') || subject.includes('factuur')) {
+      category = 'Factuur';
+    } else if (body.includes('?') || body.includes('wat') || body.includes('hoe') || body.includes('wanneer') || body.includes('kosten') || body.includes('prijs') || body.includes('vraag') || body.includes('wachtwoord') || body.includes('informatie')) {
+      category = 'Vraag';
+    } else if (body.includes('error') || body.includes('bug') || body.includes('technisch')) {
+      category = 'Technisch';
+    }
+    
+    if (body.includes('urgent') || body.includes('direct') || body.includes('onmiddellijk')) {
+      urgency = 'Hoog';
+    } else if (body.includes('snel') || body.includes('spoedig')) {
+      urgency = 'Normaal';
+    } else {
+      urgency = 'Laag';
+    }
+    
+    if (body.includes('boos') || body.includes('teleurstellend') || body.includes('onacceptabel')) {
+      sentiment = 'Negatief';
+    } else if (body.includes('bedankt') || body.includes('geweldig') || body.includes('tevreden')) {
+      sentiment = 'Positief';
+    }
+    
+    const summary = generateSummary(mail, category);
+    const bullets = generateBullets(mail, category);
+    const policyFlags = checkPolicyFlags(mail, category);
+    
+    return { summary, bullets, category, urgency, sentiment, policyFlags };
   } catch (error) {
     throw new SecurityError(handleSecurityError(error));
   }
