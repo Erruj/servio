@@ -174,26 +174,51 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const handleSend = async () => {
     const currentReply = activeTab === 'ai' ? customReply : manualReply;
     
-    if (!currentReply.trim()) {
+    if (!currentReply.trim() || !mail) {
       toast({
-        title: "No content",
-        description: "Please add content to your reply first.",
+        title: "Geen inhoud",
+        description: "Voeg eerst inhoud toe aan je antwoord.",
         variant: "destructive"
       });
       return;
     }
 
-    // Mock send functionality
-    toast({
-      title: "Email sent",
-      description: "Your reply has been successfully sent to the customer.",
-    });
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: session } = await supabase.auth.getSession();
 
-    // Clear the editor
-    setAiSuggestions([]);
-    setSelectedSuggestion(null);
-    setCustomReply('');
-    setManualReply('');
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: mail.from,
+          subject: `Re: ${mail.subject}`,
+          body: currentReply,
+          replyToEmailId: mail.id,
+        },
+        headers: {
+          Authorization: `Bearer ${session.session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: "✅ E-mail verzonden",
+        description: "Je antwoord is succesvol verzonden.",
+      });
+
+      setAiSuggestions([]);
+      setSelectedSuggestion(null);
+      setCustomReply('');
+      setManualReply('');
+    } catch (err: any) {
+      console.error('Send error:', err);
+      toast({
+        title: "Verzenden mislukt",
+        description: err.message || "Probeer het opnieuw.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveAsDraft = () => {
