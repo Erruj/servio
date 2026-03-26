@@ -44,7 +44,7 @@ export function emailToMailItem(email: Email): MailItem {
     bodyText: email.body_text || undefined,
     receivedAt: email.received_at,
     unread: !email.is_read,
-    labels: email.labels.filter(l => !['INBOX', 'UNREAD', 'CATEGORY_PERSONAL', 'CATEGORY_UPDATES'].includes(l)),
+    labels: email.labels || [],
     attachments: email.has_attachments ? [{ name: 'attachment' }] : undefined,
   };
 }

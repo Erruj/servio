@@ -25,6 +25,16 @@ export function MailList({
   className 
 }: MailListProps) {
   const { toast } = useToast();
+  const filterLabels: Record<string, string> = {
+    all: 'Alle mails',
+    inbox: 'Inbox',
+    unread: 'Ongelezen',
+    starred: 'Met ster',
+    important: 'Belangrijk',
+    snoozed: 'Gesnoozed',
+    spam: 'Spam',
+    sent: 'Verzonden',
+  };
 
   // Validate and sanitize search query
   const safeSearchQuery = useMemo(() => {
@@ -48,6 +58,7 @@ export function MailList({
   }, [searchQuery, toast]);
   const filteredMails = useMemo(() => {
     let filtered = mails;
+    const hasLabel = (mail: MailItem, label: string) => mail.labels.some((mailLabel) => mailLabel.toUpperCase() === label);
 
     // Apply search filter
     if (safeSearchQuery) {
@@ -62,11 +73,26 @@ export function MailList({
 
     // Apply category/status filter
     switch (filter) {
-      case 'urgent':
-        filtered = filtered.filter(mail => mail.labels.includes('urgent'));
+      case 'inbox':
+        filtered = filtered.filter((mail) => hasLabel(mail, 'INBOX'));
         break;
       case 'unread':
-        filtered = filtered.filter(mail => mail.unread);
+        filtered = filtered.filter((mail) => mail.unread || hasLabel(mail, 'UNREAD'));
+        break;
+      case 'starred':
+        filtered = filtered.filter((mail) => hasLabel(mail, 'STARRED'));
+        break;
+      case 'important':
+        filtered = filtered.filter((mail) => hasLabel(mail, 'IMPORTANT'));
+        break;
+      case 'snoozed':
+        filtered = filtered.filter((mail) => hasLabel(mail, 'SNOOZED'));
+        break;
+      case 'spam':
+        filtered = filtered.filter((mail) => hasLabel(mail, 'SPAM'));
+        break;
+      case 'sent':
+        filtered = filtered.filter((mail) => hasLabel(mail, 'SENT'));
         break;
       default:
         break;
@@ -147,10 +173,10 @@ export function MailList({
       {/* Header */}
       <div className="p-6 border-b border-border bg-secondary/30">
         <h2 className="text-xl font-bold text-foreground flex items-center">
-          📧 Inbox ({filteredMails.length})
+          📧 {filterLabels[filter] || 'Inbox'} ({filteredMails.length})
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Inkomende support emails
+          Gesynchroniseerde mailboxberichten
         </p>
       </div>
 

@@ -45,16 +45,20 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
           />
         </div>
         
-        <Select onValueChange={onFilterChange}>
+        <Select defaultValue="all" onValueChange={onFilterChange}>
           <SelectTrigger className="w-32">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle</SelectItem>
-            <SelectItem value="urgent">Urgent</SelectItem>
+            <SelectItem value="inbox">Inbox</SelectItem>
             <SelectItem value="unread">Ongelezen</SelectItem>
-            <SelectItem value="complaints">Klachten</SelectItem>
+            <SelectItem value="starred">Met ster</SelectItem>
+            <SelectItem value="important">Belangrijk</SelectItem>
+            <SelectItem value="snoozed">Gesnoozed</SelectItem>
+            <SelectItem value="spam">Spam</SelectItem>
+            <SelectItem value="sent">Verzonden</SelectItem>
           </SelectContent>
         </Select>
       </div>
