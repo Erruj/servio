@@ -2,9 +2,13 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const GMAIL_PAGE_SIZE = 100;
+const INITIAL_SYNC_LIMIT = 500;
+const INCREMENTAL_SYNC_LIMIT = 200;
 
 // Refresh Google access token
 async function refreshGoogleToken(refreshToken: string): Promise<{ access_token: string; expires_in: number } | null> {
@@ -20,7 +24,7 @@ async function refreshGoogleToken(refreshToken: string): Promise<{ access_token:
   });
 
   if (!response.ok) {
-    console.error("Failed to refresh Google token:", await response.text());
+    console.error("[sync-emails] Failed to refresh Google token:", await response.text());
     return null;
   }
 
@@ -41,40 +45,84 @@ async function refreshMicrosoftToken(refreshToken: string): Promise<{ access_tok
   });
 
   if (!response.ok) {
-    console.error("Failed to refresh Microsoft token:", await response.text());
+    console.error("[sync-emails] Failed to refresh Microsoft token:", await response.text());
     return null;
   }
 
   return response.json();
 }
 
-// Fetch Gmail messages
-async function fetchGmailMessages(accessToken: string, maxResults = 50) {
-  const listResponse = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxResults}&labelIds=INBOX`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+interface GmailFetchOptions {
+  maxResults: number;
+  query?: string;
+  includeSpamTrash?: boolean;
+}
 
-  if (!listResponse.ok) {
-    throw new Error(`Gmail API error: ${await listResponse.text()}`);
+// Fetch Gmail messages with pagination + optional query
+async function fetchGmailMessages(accessToken: string, options: GmailFetchOptions) {
+  const messageRefs: Array<{ id: string }> = [];
+  let nextPageToken: string | undefined;
+
+  while (messageRefs.length < options.maxResults) {
+    const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
+    listUrl.searchParams.set("maxResults", String(Math.min(GMAIL_PAGE_SIZE, options.maxResults - messageRefs.length)));
+
+    if (options.query) {
+      listUrl.searchParams.set("q", options.query);
+    }
+
+    if (options.includeSpamTrash) {
+      listUrl.searchParams.set("includeSpamTrash", "true");
+    }
+
+    if (nextPageToken) {
+      listUrl.searchParams.set("pageToken", nextPageToken);
+    }
+
+    const listResponse = await fetch(listUrl.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!listResponse.ok) {
+      throw new Error(`Gmail list API error [${listResponse.status}]: ${await listResponse.text()}`);
+    }
+
+    const listData = await listResponse.json();
+    const pageMessages = (listData.messages || []) as Array<{ id: string }>;
+
+    if (pageMessages.length === 0) {
+      break;
+    }
+
+    messageRefs.push(...pageMessages);
+    nextPageToken = listData.nextPageToken;
+
+    if (!nextPageToken) {
+      break;
+    }
   }
 
-  const listData = await listResponse.json();
-  const messages = listData.messages || [];
+  const trimmedMessageRefs = messageRefs.slice(0, options.maxResults);
+  const detailedMessages: any[] = [];
 
-  const detailedMessages = [];
-  for (let i = 0; i < messages.length; i += 10) {
-    const batch = messages.slice(i, i + 10);
+  for (let i = 0; i < trimmedMessageRefs.length; i += 10) {
+    const batch = trimmedMessageRefs.slice(i, i + 10);
     const details = await Promise.all(
-      batch.map(async (msg: { id: string }) => {
+      batch.map(async (msg) => {
         const msgResponse = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
-        if (!msgResponse.ok) return null;
+
+        if (!msgResponse.ok) {
+          console.error(`[sync-emails] Failed to fetch Gmail message detail ${msg.id}:`, await msgResponse.text());
+          return null;
+        }
+
         return msgResponse.json();
       })
     );
+
     detailedMessages.push(...details.filter(Boolean));
   }
 
@@ -89,7 +137,7 @@ async function fetchOutlookMessages(accessToken: string, maxResults = 50) {
   );
 
   if (!response.ok) {
-    throw new Error(`Outlook API error: ${await response.text()}`);
+    throw new Error(`Outlook API error [${response.status}]: ${await response.text()}`);
   }
 
   const data = await response.json();
@@ -163,9 +211,72 @@ function parseOutlookMessage(msg: any) {
   };
 }
 
-serve(async (req) => {
-  // Use top-level corsHeaders constant
+async function persistMessages(
+  supabase: ReturnType<typeof createClient>,
+  connection: { id: string; user_id: string },
+  messages: any[]
+): Promise<{ insertedCount: number; updatedCount: number }> {
+  if (messages.length === 0) {
+    return { insertedCount: 0, updatedCount: 0 };
+  }
 
+  const externalIds = [...new Set(messages.map((message) => message.external_id).filter(Boolean))];
+
+  const { data: existingRows, error: existingError } = await supabase
+    .from("emails")
+    .select("id, external_id")
+    .eq("connection_id", connection.id)
+    .in("external_id", externalIds);
+
+  if (existingError) {
+    throw new Error(`Failed to lookup existing emails: ${existingError.message}`);
+  }
+
+  const existingByExternalId = new Map((existingRows || []).map((row: { id: string; external_id: string }) => [row.external_id, row.id]));
+
+  const inserts: any[] = [];
+  const updates: any[] = [];
+
+  for (const message of messages) {
+    const baseRecord = {
+      ...message,
+      user_id: connection.user_id,
+      connection_id: connection.id,
+    };
+
+    const existingId = existingByExternalId.get(message.external_id);
+    if (existingId) {
+      updates.push({ ...baseRecord, id: existingId });
+    } else {
+      inserts.push(baseRecord);
+    }
+  }
+
+  const chunkSize = 100;
+
+  for (let i = 0; i < inserts.length; i += chunkSize) {
+    const chunk = inserts.slice(i, i + chunkSize);
+    const { error: insertError } = await supabase.from("emails").insert(chunk);
+    if (insertError) {
+      throw new Error(`Failed to insert emails: ${insertError.message}`);
+    }
+  }
+
+  for (let i = 0; i < updates.length; i += chunkSize) {
+    const chunk = updates.slice(i, i + chunkSize);
+    const { error: upsertError } = await supabase.from("emails").upsert(chunk, { onConflict: "id" });
+    if (upsertError) {
+      throw new Error(`Failed to update emails: ${upsertError.message}`);
+    }
+  }
+
+  return {
+    insertedCount: inserts.length,
+    updatedCount: updates.length,
+  };
+}
+
+serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -174,54 +285,67 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    // Authenticate the caller via JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Create a client with the user's token to verify identity
     const userClient = createClient(SUPABASE_URL!, Deno.env.get("SUPABASE_ANON_KEY") || SUPABASE_SERVICE_ROLE_KEY!);
     const { data: { user }, error: authError } = await userClient.auth.getUser(authHeader.replace("Bearer ", ""));
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Force userId to authenticated user — never trust client input
-    const userId = user.id;
+    const requestBody = await req.json().catch(() => ({}));
+    const forceFullSync = Boolean(requestBody?.force_full_sync);
+    const connectionId = typeof requestBody?.connection_id === "string" ? requestBody.connection_id : null;
 
+    const userId = user.id;
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Get only this user's active connections
-    const { data: connections, error: connError } = await supabase
+    let connectionQuery = supabase
       .from("email_connections")
       .select("*")
-      .eq("is_active", true)
       .eq("user_id", userId);
+
+    if (connectionId) {
+      connectionQuery = connectionQuery.eq("id", connectionId);
+    }
+
+    const { data: connections, error: connError } = await connectionQuery;
 
     if (connError) {
       throw new Error(`Failed to fetch connections: ${connError.message}`);
     }
 
-    const results = [];
+    if (!connections?.length) {
+      return new Response(JSON.stringify({ error: "Geen mailboxverbinding gevonden." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    for (const connection of connections || []) {
+    console.log(`[sync-emails] Start sync for user ${userId}. Connections: ${connections.length}`);
+
+    const results: Array<Record<string, unknown>> = [];
+
+    for (const connection of connections) {
       try {
         let accessToken = connection.access_token;
+        const tokenExpiry = connection.token_expires_at ? new Date(connection.token_expires_at) : new Date(0);
+        const shouldRefreshToken = !connection.is_active || tokenExpiry.getTime() <= Date.now() + 5 * 60 * 1000;
 
-        // Check if token needs refresh
-        const tokenExpiry = new Date(connection.token_expires_at);
-        if (tokenExpiry < new Date(Date.now() + 5 * 60 * 1000)) {
-          console.log(`Refreshing token for ${connection.email_address}`);
+        if (shouldRefreshToken) {
+          console.log(`[sync-emails] Refreshing token for ${connection.email_address} (${connection.provider})`);
 
-          let newTokens;
+          let newTokens: { access_token: string; expires_in: number } | null = null;
           if (connection.provider === "gmail") {
             newTokens = await refreshGoogleToken(connection.refresh_token);
           } else if (connection.provider === "outlook") {
@@ -229,88 +353,116 @@ serve(async (req) => {
           }
 
           if (!newTokens) {
-            await supabase
-              .from("email_connections")
-              .update({
-                sync_error: "Failed to refresh token. Please reconnect your account.",
-                is_active: false,
-              })
-              .eq("id", connection.id);
-
-            results.push({
-              connection_id: connection.id,
-              status: "error",
-              error: "Token refresh failed",
-            });
-            continue;
+            throw new Error("Token refresh failed. Koppel je mailbox opnieuw.");
           }
 
           accessToken = newTokens.access_token;
           const newExpiry = new Date(Date.now() + newTokens.expires_in * 1000).toISOString();
 
-          await supabase
+          const { error: tokenUpdateError } = await supabase
             .from("email_connections")
             .update({
               access_token: accessToken,
               token_expires_at: newExpiry,
+              is_active: true,
+              sync_error: null,
             })
             .eq("id", connection.id);
+
+          if (tokenUpdateError) {
+            throw new Error(`Failed to update refreshed token: ${tokenUpdateError.message}`);
+          }
         }
 
-        // Fetch messages based on provider
-        let messages;
+        let messages: any[] = [];
+
         if (connection.provider === "gmail") {
-          const rawMessages = await fetchGmailMessages(accessToken);
+          const hasPreviousSync = Boolean(connection.last_sync_at) && !forceFullSync;
+          const maxResults = hasPreviousSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
+          const bufferedAfterTimestamp = connection.last_sync_at
+            ? Math.max(0, new Date(connection.last_sync_at).getTime() - 5 * 60 * 1000)
+            : null;
+          const query = hasPreviousSync && bufferedAfterTimestamp
+            ? `after:${Math.floor(bufferedAfterTimestamp / 1000)}`
+            : undefined;
+
+          console.log(
+            `[sync-emails] Gmail fetch for ${connection.email_address} | mode=${hasPreviousSync ? "incremental" : "full"} | max=${maxResults} | query=${query || "none"}`
+          );
+
+          const rawMessages = await fetchGmailMessages(accessToken, {
+            maxResults,
+            query,
+            includeSpamTrash: true,
+          });
+
           messages = rawMessages.map(parseGmailMessage);
         } else if (connection.provider === "outlook") {
-          const rawMessages = await fetchOutlookMessages(accessToken);
+          const maxResults = connection.last_sync_at && !forceFullSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
+          console.log(`[sync-emails] Outlook fetch for ${connection.email_address} | max=${maxResults}`);
+          const rawMessages = await fetchOutlookMessages(accessToken, maxResults);
           messages = rawMessages.map(parseOutlookMessage);
         } else {
-          continue;
+          throw new Error(`Unsupported provider: ${connection.provider}`);
         }
 
-        // Upsert messages to database
-        for (const msg of messages) {
-          await supabase.from("emails").upsert(
-            {
-              ...msg,
-              user_id: connection.user_id,
-              connection_id: connection.id,
-            },
-            { onConflict: "connection_id,external_id" }
-          );
-        }
+        const { insertedCount, updatedCount } = await persistMessages(supabase, connection, messages);
 
-        // Update last sync time
-        await supabase
+        const { error: connectionUpdateError } = await supabase
           .from("email_connections")
           .update({
             last_sync_at: new Date().toISOString(),
             sync_error: null,
+            is_active: true,
           })
           .eq("id", connection.id);
+
+        if (connectionUpdateError) {
+          throw new Error(`Failed to update sync metadata: ${connectionUpdateError.message}`);
+        }
+
+        console.log(
+          `[sync-emails] Sync success for ${connection.email_address}. fetched=${messages.length}, inserted=${insertedCount}, updated=${updatedCount}`
+        );
 
         results.push({
           connection_id: connection.id,
           status: "success",
-          synced_count: messages.length,
+          fetched_count: messages.length,
+          inserted_count: insertedCount,
+          updated_count: updatedCount,
         });
       } catch (error) {
-        console.error(`Sync error for ${connection.email_address}:`, error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown sync error";
+        const shouldDeactivate = /refresh|invalid_grant|unauthorized|reconnect|token/i.test(errorMessage.toLowerCase());
+
+        console.error(`[sync-emails] Sync error for ${connection.email_address}:`, errorMessage);
 
         await supabase
           .from("email_connections")
           .update({
-            sync_error: error instanceof Error ? error.message : "Unknown sync error",
+            sync_error: errorMessage,
+            is_active: shouldDeactivate ? false : connection.is_active,
           })
           .eq("id", connection.id);
 
         results.push({
           connection_id: connection.id,
           status: "error",
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: errorMessage,
         });
       }
+    }
+
+    const successfulSyncs = results.filter((result) => result.status === "success");
+    if (successfulSyncs.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Synchronisatie mislukt voor alle mailboxen.", results }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     return new Response(
@@ -321,9 +473,10 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Sync emails error:", error);
+    const errorMessage = error instanceof Error ? error.message : "An error occurred during email sync";
+    console.error("[sync-emails] Fatal error:", errorMessage);
     return new Response(
-      JSON.stringify({ error: "An error occurred during email sync" }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
