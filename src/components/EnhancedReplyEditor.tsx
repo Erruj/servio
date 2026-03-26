@@ -56,6 +56,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const [faqSuggestion, setFaqSuggestion] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [canRetry, setCanRetry] = useState(false);
+  const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Auto-generate suggestions when mail or analysis changes
