@@ -128,8 +128,25 @@ export function useEmailConnections() {
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
 
+    const results = Array.isArray(data?.results) ? data.results : [];
+    if (results.length === 0) {
+      throw new Error('Geen actieve mailboxverbinding gevonden. Koppel je mailbox opnieuw.');
+    }
+
+    const successfulSyncs = results.filter((result: { status?: string }) => result.status === 'success');
+    if (successfulSyncs.length === 0) {
+      const firstError = results.find((result: { error?: string }) => result.error)?.error;
+      throw new Error(firstError || 'Synchronisatie mislukt. Koppel je mailbox opnieuw.');
+    }
+
     await fetchConnections();
-    return data;
+    return {
+      ...data,
+      synced_count: successfulSyncs.reduce(
+        (total: number, result: { fetched_count?: number }) => total + (result.fetched_count || 0),
+        0,
+      ),
+    };
   };
 
   const hasConnections = connections.length > 0;
