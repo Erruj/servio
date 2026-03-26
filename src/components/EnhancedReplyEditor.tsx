@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MailItem, AnalysisResult, ToneOfVoice, Language } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,10 @@ import {
   Users,
   Heart,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Paperclip,
+  FileIcon,
+  Trash2
 } from 'lucide-react';
 import { detectFaq, addAiLog, getAiLogs } from '@/lib/ai';
 import { generateSmartReplies, getLocalizedErrorMessage, AiError } from '@/lib/ai/orchestrator';
@@ -53,6 +56,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const [faqSuggestion, setFaqSuggestion] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [canRetry, setCanRetry] = useState(false);
+  const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Auto-generate suggestions when mail or analysis changes
@@ -171,6 +176,36 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
     setCustomReply(suggestion.content);
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const maxSize = 10 * 1024 * 1024;
+    for (const file of Array.from(files)) {
+      if (file.size > maxSize) {
+        toast({ title: `${file.name} is te groot (max 10MB)`, variant: 'destructive' });
+        continue;
+      }
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      setAttachments(prev => [...prev, { file, base64 }]);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleSend = async () => {
     const currentReply = activeTab === 'ai' ? customReply : manualReply;
     
@@ -187,12 +222,19 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: session } = await supabase.auth.getSession();
 
+      const emailAttachments = attachments.map(att => ({
+        filename: att.file.name,
+        mimeType: att.file.type || 'application/octet-stream',
+        content: att.base64,
+      }));
+
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           to: mail.from,
           subject: `Re: ${mail.subject}`,
           body: currentReply,
           replyToEmailId: mail.id,
+          attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
         },
         headers: {
           Authorization: `Bearer ${session.session?.access_token}`,
@@ -211,6 +253,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
       setSelectedSuggestion(null);
       setCustomReply('');
       setManualReply('');
+      setAttachments([]);
     } catch (err: any) {
       console.error('Send error:', err);
       toast({
@@ -422,9 +465,54 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
             />
           </TabsContent>
         </Tabs>
-      </div>
 
-      {/* Actions */}
+        {/* Attachments */}
+        <div className="space-y-2 mt-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Paperclip className="h-4 w-4 mr-2" />
+            Bijlage toevoegen
+          </Button>
+
+          {attachments.length > 0 && (
+            <div className="space-y-1">
+              {attachments.map((att, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-muted rounded-md px-3 py-2 text-sm"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="truncate">{att.file.name}</span>
+                    <span className="text-muted-foreground text-xs flex-shrink-0">
+                      ({formatFileSize(att.file.size)})
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeAttachment(index)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       <div className="p-4 border-t border-border space-y-3">
         {/* Primary actions */}
         <div className="flex space-x-2">
