@@ -74,7 +74,7 @@ export async function generateSmartReplies(params: GenerateRepliesParams): Promi
       console.warn(`Provider ${provider.name} failed:`, error);
       lastError = error as Error;
       
-      if (provider instanceof MockProvider) break;
+      // No more providers to try
     }
   }
 
