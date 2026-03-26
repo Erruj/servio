@@ -71,8 +71,12 @@ const Inbox = () => {
       await syncEmails();
       await refetchEmails();
       toast({ title: "📧 Emails bijgewerkt", description: "Je inbox is gesynchroniseerd." });
-    } catch {
-      toast({ title: "Sync mislukt", description: "Kon emails niet ophalen. Probeer later opnieuw.", variant: "destructive" });
+    } catch (error) {
+      toast({
+        title: "Sync mislukt",
+        description: error instanceof Error ? error.message : "Kon emails niet ophalen. Probeer later opnieuw.",
+        variant: "destructive"
+      });
     } finally {
       setIsSyncing(false);
     }
