@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MailItem, AnalysisResult, ToneOfVoice, Language } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,10 @@ import {
   Users,
   Heart,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Paperclip,
+  FileIcon,
+  Trash2
 } from 'lucide-react';
 import { detectFaq, addAiLog, getAiLogs } from '@/lib/ai';
 import { generateSmartReplies, getLocalizedErrorMessage, AiError } from '@/lib/ai/orchestrator';
