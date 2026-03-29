@@ -334,10 +334,16 @@ export default function AIAssistant() {
           <CardContent className="flex-1 flex flex-col p-4 min-h-0">
             <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
               {messages.length === 0 ? (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground text-center py-4">
-                    {t('aiAssistantWelcome')}
-                  </p>
+                <div className="space-y-6">
+                  <div className="text-center py-6">
+                    <div className="p-4 bg-primary/10 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <Brain className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Welkom bij je AI Boekhoudassistent</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      Ik help je met inzicht in je financiën. Stel een vraag over je facturen, uitgaven, BTW of maandoverzichten — ik analyseer je data en geef direct antwoord.
+                    </p>
+                  </div>
                   <div className="grid gap-2">
                     {suggestions.map((suggestion, index) => (
                       <Button
