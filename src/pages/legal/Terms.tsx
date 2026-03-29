@@ -125,7 +125,7 @@ export default function Terms() {
                 <section className="mb-8">
                   <h2 className="text-2xl font-semibold text-foreground mb-4">11. Contact</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Voor vragen over deze algemene voorwaarden kunt u contact opnemen via info@servio.nl.
+                    Voor vragen over deze algemene voorwaarden kunt u contact opnemen via <a href="mailto:info@getservio.co" className="text-primary hover:underline">info@getservio.co</a>.
                   </p>
                 </section>
               </div>
