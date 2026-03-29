@@ -115,10 +115,23 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
     setIsConnecting(true);
     try {
       await callImapConnect('connect');
-      toast({ title: '✅ E-mail gekoppeld!', description: `${email} is succesvol gekoppeld.` });
+      toast({ title: '✅ E-mail gekoppeld!', description: `${email} is succesvol gekoppeld. Emails worden gesynchroniseerd...` });
       resetForm();
       onOpenChange(false);
       onConnected();
+
+      // Auto-start first sync
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        if (session.session) {
+          await supabase.functions.invoke('sync-emails', {
+            body: { user_id: session.session.user.id },
+            headers: { Authorization: `Bearer ${session.session.access_token}` },
+          });
+        }
+      } catch {
+        // Silent fail - user can manually sync
+      }
     } catch (err: any) {
       toast({ title: 'Koppelen mislukt', description: err.message, variant: 'destructive' });
     } finally {
