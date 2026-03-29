@@ -6,10 +6,11 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mail, CheckCircle, Loader2, RefreshCw, Trash2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Mail, CheckCircle, Loader2, RefreshCw, Trash2, AlertCircle, Link2 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
+import { ImapConnectionModal } from '@/components/ImapConnectionModal';
 
 const MailboxSetup = () => {
   const navigate = useNavigate();
@@ -17,16 +18,17 @@ const MailboxSetup = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [connectingProvider, setConnectingProvider] = useState<string | null>(null);
-  
+  const [imapModalOpen, setImapModalOpen] = useState(false);
+
   const {
     connections,
     isLoading,
     startGmailOAuth,
     disconnectProvider,
     syncEmails,
+    refetch,
   } = useEmailConnections();
 
-  // Handle OAuth callback messages
   useEffect(() => {
     const connected = searchParams.get('connected');
     const error = searchParams.get('error');
@@ -36,7 +38,6 @@ const MailboxSetup = () => {
         title: "✅ Mailbox gekoppeld!",
         description: `Je ${connected === 'gmail' ? 'Gmail' : 'Outlook'} account is succesvol gekoppeld.`,
       });
-      // Clean up URL
       navigate('/mailbox-setup', { replace: true });
     }
 
@@ -50,7 +51,7 @@ const MailboxSetup = () => {
     }
   }, [searchParams, toast, navigate]);
 
-  const handleConnect = async () => {
+  const handleConnectGmail = async () => {
     setConnectingProvider('gmail');
     try {
       await startGmailOAuth();
@@ -59,35 +60,37 @@ const MailboxSetup = () => {
     }
   };
 
-  const gmailProvider = {
-    id: 'gmail',
-    name: 'Gmail',
-    icon: '📧',
-    description: 'Koppel je Google Gmail account',
-    features: ['Auto-sync', 'Real-time updates', 'Volledige integratie'],
+  const getProviderIcon = (provider: string) => {
+    switch (provider) {
+      case 'gmail': return '📧';
+      case 'outlook': return '📨';
+      case 'imap': return '🔗';
+      default: return '📬';
+    }
   };
 
-  const getConnectionForProvider = (providerId: string) => {
-    return connections.find(c => c.provider === providerId);
+  const getProviderName = (provider: string) => {
+    switch (provider) {
+      case 'gmail': return 'Gmail';
+      case 'outlook': return 'Outlook';
+      case 'imap': return 'IMAP';
+      default: return provider;
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header user={user} onLogout={signOut} />
-      
+
       <div className="flex-1 flex">
         <Sidebar />
-        
+
         <div className="flex-1 overflow-y-auto">
           <div className="p-8 space-y-8">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate('/app')}
-                  className="p-2"
-                >
+                <Button variant="ghost" onClick={() => navigate('/app')} className="p-2">
                   <ArrowLeft className="h-5 w-5" />
                   Terug
                 </Button>
@@ -123,14 +126,12 @@ const MailboxSetup = () => {
                       className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg"
                     >
                       <div className="flex items-center space-x-4">
-                        <div className="text-2xl">
-                          {connection.provider === 'gmail' ? '📧' : '📨'}
-                        </div>
+                        <div className="text-2xl">{getProviderIcon(connection.provider)}</div>
                         <div>
                           <p className="font-medium">{connection.email_address}</p>
                           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                             <Badge variant="secondary" className="capitalize">
-                              {connection.provider}
+                              {getProviderName(connection.provider)}
                             </Badge>
                             {connection.is_active ? (
                               <span className="text-success">● Actief</span>
@@ -169,97 +170,89 @@ const MailboxSetup = () => {
             {/* Provider Selection */}
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                {connections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je Gmail'}
+                {connections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je mailbox'}
               </h2>
               <p className="text-muted-foreground mb-6">
-                Koppel je Gmail account om je emails te synchroniseren
+                Kies een provider om je emails te synchroniseren
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {(() => {
-                  const existingConnection = getConnectionForProvider('gmail');
-                  const isConnecting = connectingProvider === 'gmail';
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Gmail */}
+                <Card className="shadow-card hover:shadow-elevated transition-all duration-200">
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">📧</div>
+                      <div>
+                        <CardTitle>Gmail</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">Google Gmail koppelen</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {['OAuth 2.0', 'Auto-sync', 'Volledige integratie'].map((feature, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
+                        ))}
+                      </div>
+                      <Button
+                        className="w-full"
+                        onClick={handleConnectGmail}
+                        disabled={connectingProvider === 'gmail' || isLoading}
+                      >
+                        {connectingProvider === 'gmail' ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verbinden...</>
+                        ) : (
+                          <><Mail className="h-4 w-4 mr-2" />Koppel Gmail</>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  return (
-                    <Card 
-                      className={`shadow-card hover:shadow-elevated transition-all duration-200 ${
-                        existingConnection ? 'border-success/30' : ''
-                      }`}
-                    >
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">
-                              {gmailProvider.icon}
-                            </div>
-                            <div>
-                              <CardTitle className="flex items-center">
-                                {gmailProvider.name}
-                                {existingConnection && (
-                                  <Badge className="ml-2 bg-success text-success-foreground">
-                                    Gekoppeld
-                                  </Badge>
-                                )}
-                              </CardTitle>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {gmailProvider.description}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex flex-wrap gap-2">
-                            {gmailProvider.features.map((feature, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {feature}
-                              </Badge>
-                            ))}
-                          </div>
-                          <Button 
-                            className="w-full"
-                            onClick={handleConnect}
-                            disabled={isConnecting || isLoading}
-                          >
-                            {isConnecting ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Verbinden...
-                              </>
-                            ) : existingConnection ? (
-                              <>
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Opnieuw koppelen
-                              </>
-                            ) : (
-                              <>
-                                <Mail className="h-4 w-4 mr-2" />
-                                Koppel Gmail
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })()}
+                {/* IMAP - Any Provider */}
+                <Card className="shadow-card hover:shadow-elevated transition-all duration-200 border-primary/30">
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">🔗</div>
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          Andere e-mail
+                          <Badge className="bg-primary/20 text-primary text-[10px]">Universeel</Badge>
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">IMAP/SMTP koppeling</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {['Alle providers', 'IMAP/SMTP', 'Versleuteld'].map((feature, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
+                        ))}
+                      </div>
+                      <Button className="w-full" onClick={() => setImapModalOpen(true)}>
+                        <Link2 className="h-4 w-4 mr-2" />
+                        Koppel via IMAP
+                      </Button>
+                      <p className="text-xs text-muted-foreground text-center">
+                        Werkt met Namecheap, Zoho, Yahoo en meer
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Outlook - Coming Soon */}
                 <Card className="shadow-card opacity-60">
                   <CardHeader>
                     <div className="flex items-center space-x-3">
-                      <div className="text-3xl p-2 rounded-lg bg-muted text-muted-foreground">
-                        📨
-                      </div>
+                      <div className="text-3xl p-2 rounded-lg bg-muted text-muted-foreground">📨</div>
                       <div>
                         <CardTitle className="flex items-center">
                           Microsoft Outlook
                           <Badge variant="secondary" className="ml-2">Binnenkort</Badge>
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Outlook / Office 365 integratie komt binnenkort
-                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">OAuth integratie komt binnenkort</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -292,7 +285,16 @@ const MailboxSetup = () => {
           </div>
         </div>
       </div>
-      
+
+      <ImapConnectionModal
+        open={imapModalOpen}
+        onOpenChange={setImapModalOpen}
+        onConnected={() => {
+          refetch();
+          setImapModalOpen(false);
+        }}
+      />
+
       <Footer />
     </div>
   );

@@ -10,7 +10,8 @@ const GMAIL_PAGE_SIZE = 100;
 const INITIAL_SYNC_LIMIT = 500;
 const INCREMENTAL_SYNC_LIMIT = 200;
 
-// Refresh Google access token
+// ─── Token Refresh ───────────────────────────────────────────────────────
+
 async function refreshGoogleToken(refreshToken: string): Promise<{ access_token: string; expires_in: number } | null> {
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -22,16 +23,13 @@ async function refreshGoogleToken(refreshToken: string): Promise<{ access_token:
       grant_type: "refresh_token",
     }),
   });
-
   if (!response.ok) {
     console.error("[sync-emails] Failed to refresh Google token:", await response.text());
     return null;
   }
-
   return response.json();
 }
 
-// Refresh Microsoft access token
 async function refreshMicrosoftToken(refreshToken: string): Promise<{ access_token: string; expires_in: number } | null> {
   const response = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
     method: "POST",
@@ -43,14 +41,14 @@ async function refreshMicrosoftToken(refreshToken: string): Promise<{ access_tok
       grant_type: "refresh_token",
     }),
   });
-
   if (!response.ok) {
     console.error("[sync-emails] Failed to refresh Microsoft token:", await response.text());
     return null;
   }
-
   return response.json();
 }
+
+// ─── Gmail Fetch ─────────────────────────────────────────────────────────
 
 interface GmailFetchOptions {
   maxResults: number;
@@ -58,7 +56,6 @@ interface GmailFetchOptions {
   includeSpamTrash?: boolean;
 }
 
-// Fetch Gmail messages with pagination + optional query
 async function fetchGmailMessages(accessToken: string, options: GmailFetchOptions) {
   const messageRefs: Array<{ id: string }> = [];
   let nextPageToken: string | undefined;
@@ -66,40 +63,19 @@ async function fetchGmailMessages(accessToken: string, options: GmailFetchOption
   while (messageRefs.length < options.maxResults) {
     const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
     listUrl.searchParams.set("maxResults", String(Math.min(GMAIL_PAGE_SIZE, options.maxResults - messageRefs.length)));
+    if (options.query) listUrl.searchParams.set("q", options.query);
+    if (options.includeSpamTrash) listUrl.searchParams.set("includeSpamTrash", "true");
+    if (nextPageToken) listUrl.searchParams.set("pageToken", nextPageToken);
 
-    if (options.query) {
-      listUrl.searchParams.set("q", options.query);
-    }
-
-    if (options.includeSpamTrash) {
-      listUrl.searchParams.set("includeSpamTrash", "true");
-    }
-
-    if (nextPageToken) {
-      listUrl.searchParams.set("pageToken", nextPageToken);
-    }
-
-    const listResponse = await fetch(listUrl.toString(), {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    if (!listResponse.ok) {
-      throw new Error(`Gmail list API error [${listResponse.status}]: ${await listResponse.text()}`);
-    }
+    const listResponse = await fetch(listUrl.toString(), { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!listResponse.ok) throw new Error(`Gmail list API error [${listResponse.status}]: ${await listResponse.text()}`);
 
     const listData = await listResponse.json();
     const pageMessages = (listData.messages || []) as Array<{ id: string }>;
-
-    if (pageMessages.length === 0) {
-      break;
-    }
-
+    if (pageMessages.length === 0) break;
     messageRefs.push(...pageMessages);
     nextPageToken = listData.nextPageToken;
-
-    if (!nextPageToken) {
-      break;
-    }
+    if (!nextPageToken) break;
   }
 
   const trimmedMessageRefs = messageRefs.slice(0, options.maxResults);
@@ -113,63 +89,47 @@ async function fetchGmailMessages(accessToken: string, options: GmailFetchOption
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
-
         if (!msgResponse.ok) {
-          console.error(`[sync-emails] Failed to fetch Gmail message detail ${msg.id}:`, await msgResponse.text());
+          console.error(`[sync-emails] Failed to fetch Gmail message ${msg.id}:`, await msgResponse.text());
           return null;
         }
-
         return msgResponse.json();
       })
     );
-
     detailedMessages.push(...details.filter(Boolean));
   }
 
   return detailedMessages;
 }
 
-// Fetch Outlook messages
+// ─── Outlook Fetch ───────────────────────────────────────────────────────
+
 async function fetchOutlookMessages(accessToken: string, maxResults = 50) {
   const response = await fetch(
     `https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=${maxResults}&$orderby=receivedDateTime desc&$select=id,conversationId,from,toRecipients,ccRecipients,subject,bodyPreview,body,isRead,hasAttachments,receivedDateTime`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
-
-  if (!response.ok) {
-    throw new Error(`Outlook API error [${response.status}]: ${await response.text()}`);
-  }
-
+  if (!response.ok) throw new Error(`Outlook API error [${response.status}]: ${await response.text()}`);
   const data = await response.json();
   return data.value || [];
 }
 
-// Parse Gmail message to our format
+// ─── Gmail/Outlook Parsers ───────────────────────────────────────────────
+
 function parseGmailMessage(msg: any) {
   const headers = msg.payload?.headers || [];
   const getHeader = (name: string) => headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value;
-
   const fromHeader = getHeader("From") || "";
   const fromMatch = fromHeader.match(/^(.+?)\s*<(.+?)>$/) || [null, fromHeader, fromHeader];
 
   let bodyText = "";
   let bodyHtml = "";
-
   function extractBody(part: any) {
-    if (part.mimeType === "text/plain" && part.body?.data) {
-      bodyText = atob(part.body.data.replace(/-/g, "+").replace(/_/g, "/"));
-    }
-    if (part.mimeType === "text/html" && part.body?.data) {
-      bodyHtml = atob(part.body.data.replace(/-/g, "+").replace(/_/g, "/"));
-    }
-    if (part.parts) {
-      part.parts.forEach(extractBody);
-    }
+    if (part.mimeType === "text/plain" && part.body?.data) bodyText = atob(part.body.data.replace(/-/g, "+").replace(/_/g, "/"));
+    if (part.mimeType === "text/html" && part.body?.data) bodyHtml = atob(part.body.data.replace(/-/g, "+").replace(/_/g, "/"));
+    if (part.parts) part.parts.forEach(extractBody);
   }
-
-  if (msg.payload) {
-    extractBody(msg.payload);
-  }
+  if (msg.payload) extractBody(msg.payload);
 
   return {
     external_id: msg.id,
@@ -190,7 +150,6 @@ function parseGmailMessage(msg: any) {
   };
 }
 
-// Parse Outlook message to our format
 function parseOutlookMessage(msg: any) {
   return {
     external_id: msg.id,
@@ -211,16 +170,410 @@ function parseOutlookMessage(msg: any) {
   };
 }
 
+// ─── IMAP Support ────────────────────────────────────────────────────────
+
+async function deriveKey(): Promise<CryptoKey> {
+  const secret = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const keyMaterial = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: new TextEncoder().encode("servio-imap-v1"), iterations: 100000, hash: "SHA-256" },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["decrypt"]
+  );
+}
+
+async function decryptPassword(encryptedB64: string): Promise<string> {
+  const key = await deriveKey();
+  const data = Uint8Array.from(atob(encryptedB64), (c) => c.charCodeAt(0));
+  const iv = data.slice(0, 12);
+  const ciphertext = data.slice(12);
+  const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+  return new TextDecoder().decode(decrypted);
+}
+
+class ImapReader {
+  private buffer = new Uint8Array(0);
+  private decoder = new TextDecoder();
+
+  constructor(private conn: Deno.Conn) {}
+
+  private async fill() {
+    const chunk = new Uint8Array(16384);
+    const n = await this.conn.read(chunk);
+    if (n === null) throw new Error("IMAP connection closed");
+    const newBuf = new Uint8Array(this.buffer.length + n);
+    newBuf.set(this.buffer);
+    newBuf.set(chunk.subarray(0, n), this.buffer.length);
+    this.buffer = newBuf;
+  }
+
+  async readLine(): Promise<string> {
+    while (true) {
+      for (let i = 0; i < this.buffer.length - 1; i++) {
+        if (this.buffer[i] === 13 && this.buffer[i + 1] === 10) {
+          const line = this.decoder.decode(this.buffer.subarray(0, i));
+          this.buffer = this.buffer.subarray(i + 2);
+          return line;
+        }
+      }
+      await this.fill();
+    }
+  }
+
+  async readBytes(n: number): Promise<Uint8Array> {
+    while (this.buffer.length < n) await this.fill();
+    const data = this.buffer.slice(0, n);
+    this.buffer = this.buffer.subarray(n);
+    return data;
+  }
+}
+
+async function fetchImapEmails(
+  host: string,
+  port: number,
+  email: string,
+  password: string,
+  useSsl: boolean,
+  maxResults: number,
+  lastSyncAt: string | null
+): Promise<any[]> {
+  const conn = (useSsl || port === 993)
+    ? await Deno.connectTls({ hostname: host, port })
+    : await Deno.connect({ hostname: host, port });
+
+  const reader = new ImapReader(conn);
+  const enc = new TextEncoder();
+  let tagNum = 0;
+  const nextTag = () => `T${++tagNum}`;
+
+  const sendCmd = async (cmd: string): Promise<{ tag: string; lines: string[]; literals: Map<number, Uint8Array> }> => {
+    const tag = nextTag();
+    await conn.write(enc.encode(`${tag} ${cmd}\r\n`));
+
+    const lines: string[] = [];
+    const literals = new Map<number, Uint8Array>();
+
+    while (true) {
+      const line = await reader.readLine();
+      const litMatch = line.match(/\{(\d+)\}$/);
+      if (litMatch) {
+        const size = parseInt(litMatch[1]);
+        const data = await reader.readBytes(size);
+        literals.set(lines.length, data);
+      }
+      lines.push(line);
+      if (line.startsWith(`${tag} OK`)) break;
+      if (line.startsWith(`${tag} NO`) || line.startsWith(`${tag} BAD`)) {
+        throw new Error(`IMAP: ${line.substring(tag.length + 1)}`);
+      }
+    }
+
+    return { tag, lines, literals };
+  };
+
+  try {
+    // Read greeting
+    const greeting = await reader.readLine();
+    if (!greeting.includes("OK")) throw new Error("IMAP server niet bereikbaar");
+
+    // Login
+    const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    await sendCmd(`LOGIN "${esc(email)}" "${esc(password)}"`);
+
+    // Select INBOX
+    await sendCmd("SELECT INBOX");
+
+    // Search for messages
+    let searchCriteria = "ALL";
+    if (lastSyncAt) {
+      const sinceDate = new Date(new Date(lastSyncAt).getTime() - 24 * 60 * 60 * 1000);
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      searchCriteria = `SINCE ${sinceDate.getDate()}-${months[sinceDate.getMonth()]}-${sinceDate.getFullYear()}`;
+    }
+
+    const searchResult = await sendCmd(`UID SEARCH ${searchCriteria}`);
+    const searchLine = searchResult.lines.find((l) => l.startsWith("* SEARCH"));
+    const uids = searchLine
+      ? searchLine.substring(9).trim().split(/\s+/).filter(Boolean).map(Number).filter((n) => !isNaN(n))
+      : [];
+
+    if (uids.length === 0) {
+      await sendCmd("LOGOUT").catch(() => {});
+      conn.close();
+      return [];
+    }
+
+    // Take most recent UIDs (highest UIDs = newest)
+    const targetUids = uids.sort((a, b) => b - a).slice(0, maxResults);
+
+    // Fetch messages in batches
+    const messages: any[] = [];
+
+    for (let i = 0; i < targetUids.length; i += 10) {
+      const batch = targetUids.slice(i, i + 10);
+      const uidRange = batch.join(",");
+
+      const fetchResult = await sendCmd(`UID FETCH ${uidRange} (UID FLAGS INTERNALDATE BODY.PEEK[])`);
+
+      // Parse FETCH responses
+      let currentMeta = "";
+      let currentLiteral: Uint8Array | null = null;
+
+      for (let li = 0; li < fetchResult.lines.length; li++) {
+        const line = fetchResult.lines[li];
+        if (line.startsWith(`T${tagNum} `)) break;
+
+        const fetchMatch = line.match(/^\* \d+ FETCH \(/);
+        if (fetchMatch) {
+          // Process previous message if exists
+          if (currentLiteral) {
+            const parsed = processImapMessage(currentMeta, currentLiteral);
+            if (parsed) messages.push(parsed);
+          }
+          currentMeta = line;
+          currentLiteral = null;
+        } else if (currentMeta) {
+          currentMeta += " " + line;
+        }
+
+        // Check for literal data
+        if (fetchResult.literals.has(li)) {
+          currentLiteral = fetchResult.literals.get(li)!;
+        }
+      }
+
+      // Process last message
+      if (currentLiteral) {
+        const parsed = processImapMessage(currentMeta, currentLiteral);
+        if (parsed) messages.push(parsed);
+      }
+    }
+
+    // Logout
+    await sendCmd("LOGOUT").catch(() => {});
+    conn.close();
+
+    return messages;
+  } catch (error) {
+    try { conn.close(); } catch { /* ignore */ }
+    throw error;
+  }
+}
+
+function processImapMessage(metaLine: string, rawBytes: Uint8Array): any | null {
+  try {
+    const rawEmail = new TextDecoder("utf-8", { fatal: false }).decode(rawBytes);
+
+    // Extract UID from metadata
+    const uidMatch = metaLine.match(/UID (\d+)/);
+    const uid = uidMatch ? uidMatch[1] : `${Date.now()}`;
+
+    // Extract FLAGS
+    const flagsMatch = metaLine.match(/FLAGS \(([^)]*)\)/);
+    const flags = flagsMatch ? flagsMatch[1].split(/\s+/).filter(Boolean) : [];
+
+    // Extract INTERNALDATE
+    const dateMatch = metaLine.match(/INTERNALDATE "([^"]+)"/);
+    const internalDate = dateMatch ? new Date(dateMatch[1]).toISOString() : new Date().toISOString();
+
+    // Parse the raw RFC 2822 email
+    const parsed = parseRawEmail(rawEmail);
+
+    return {
+      external_id: parsed.messageId || `uid-${uid}`,
+      thread_id: null,
+      from_email: parsed.fromEmail,
+      from_name: parsed.fromName,
+      to_emails: parsed.toEmails,
+      cc_emails: parsed.ccEmails,
+      subject: parsed.subject,
+      snippet: (parsed.bodyText || "").substring(0, 200),
+      body_text: parsed.bodyText,
+      body_html: parsed.bodyHtml,
+      labels: flags.map((f) => f.replace(/\\/g, "")),
+      is_read: flags.some((f) => f.toLowerCase().includes("seen")),
+      is_starred: flags.some((f) => f.toLowerCase().includes("flagged")),
+      has_attachments: parsed.hasAttachments,
+      received_at: internalDate,
+    };
+  } catch (e) {
+    console.error("[sync-emails] Failed to parse IMAP message:", e);
+    return null;
+  }
+}
+
+function parseRawEmail(raw: string) {
+  const headerEnd = raw.indexOf("\r\n\r\n");
+  const headerStr = headerEnd >= 0 ? raw.substring(0, headerEnd) : raw;
+  const bodyStr = headerEnd >= 0 ? raw.substring(headerEnd + 4) : "";
+
+  // Parse headers (unfold continuation lines)
+  const headers: Record<string, string> = {};
+  const headerLines = headerStr.replace(/\r?\n[ \t]+/g, " ").split(/\r?\n/);
+  for (const line of headerLines) {
+    const colonIdx = line.indexOf(":");
+    if (colonIdx === -1) continue;
+    const name = line.substring(0, colonIdx).trim().toLowerCase();
+    const value = line.substring(colonIdx + 1).trim();
+    headers[name] = value;
+  }
+
+  // Parse From
+  const fromHeader = headers["from"] || "";
+  const fromMatch = fromHeader.match(/(?:"?([^"<]*)"?\s+)?<?([^\s>]+@[^\s>]+)>?/);
+  const fromName = fromMatch?.[1]?.trim() || null;
+  const fromEmail = fromMatch?.[2] || fromHeader;
+
+  // Parse To
+  const toEmails = parseAddressList(headers["to"] || "");
+  const ccEmails = parseAddressList(headers["cc"] || "");
+
+  // Parse body
+  const contentType = headers["content-type"] || "text/plain";
+  const transferEncoding = headers["content-transfer-encoding"] || "7bit";
+
+  let bodyText = "";
+  let bodyHtml = "";
+  let hasAttachments = false;
+
+  if (contentType.toLowerCase().includes("multipart/")) {
+    const boundaryMatch = contentType.match(/boundary="?([^";\s]+)"?/i);
+    if (boundaryMatch) {
+      const result = parseMultipart(bodyStr, boundaryMatch[1]);
+      bodyText = result.text;
+      bodyHtml = result.html;
+      hasAttachments = result.hasAttachments;
+    }
+  } else if (contentType.toLowerCase().includes("text/html")) {
+    bodyHtml = decodeContent(bodyStr, transferEncoding, contentType);
+  } else {
+    bodyText = decodeContent(bodyStr, transferEncoding, contentType);
+  }
+
+  const messageId = headers["message-id"]?.replace(/[<>]/g, "") || null;
+
+  return {
+    messageId,
+    fromEmail,
+    fromName: fromName ? decodeRFC2047(fromName) : null,
+    toEmails,
+    ccEmails,
+    subject: decodeRFC2047(headers["subject"] || "(Geen onderwerp)"),
+    bodyText,
+    bodyHtml,
+    hasAttachments: hasAttachments || contentType.toLowerCase().includes("multipart/mixed"),
+  };
+}
+
+function parseAddressList(str: string): string[] {
+  return str
+    .split(",")
+    .map((e) => {
+      const match = e.match(/<([^>]+)>/);
+      return match ? match[1].trim() : e.trim();
+    })
+    .filter((e) => e.includes("@"));
+}
+
+function parseMultipart(body: string, boundary: string): { text: string; html: string; hasAttachments: boolean } {
+  const parts = body.split("--" + boundary);
+  let text = "";
+  let html = "";
+  let hasAttachments = false;
+
+  for (const part of parts) {
+    if (part.trim() === "" || part.trim() === "--" || part.startsWith("--")) continue;
+
+    const headerEnd = part.indexOf("\r\n\r\n");
+    const altEnd = part.indexOf("\n\n");
+    const splitIdx = headerEnd >= 0 ? headerEnd : altEnd;
+    if (splitIdx === -1) continue;
+
+    const partHeaderStr = part.substring(0, splitIdx);
+    const partBody = part.substring(splitIdx + (headerEnd >= 0 ? 4 : 2));
+
+    const partHeaders: Record<string, string> = {};
+    const lines = partHeaderStr.replace(/\r?\n[ \t]+/g, " ").split(/\r?\n/);
+    for (const line of lines) {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx === -1) continue;
+      partHeaders[line.substring(0, colonIdx).trim().toLowerCase()] = line.substring(colonIdx + 1).trim();
+    }
+
+    const partCt = (partHeaders["content-type"] || "").toLowerCase();
+    const partCte = (partHeaders["content-transfer-encoding"] || "7bit").toLowerCase();
+    const partDisp = (partHeaders["content-disposition"] || "").toLowerCase();
+
+    if (partDisp.includes("attachment")) {
+      hasAttachments = true;
+      continue;
+    }
+
+    if (partCt.includes("multipart/")) {
+      const nestedBoundary = partCt.match(/boundary="?([^";\s]+)"?/i);
+      if (nestedBoundary) {
+        const nested = parseMultipart(partBody, nestedBoundary[1]);
+        if (!text && nested.text) text = nested.text;
+        if (!html && nested.html) html = nested.html;
+        if (nested.hasAttachments) hasAttachments = true;
+      }
+    } else if (partCt.includes("text/plain") && !text) {
+      text = decodeContent(partBody.trim(), partCte, partCt);
+    } else if (partCt.includes("text/html") && !html) {
+      html = decodeContent(partBody.trim(), partCte, partCt);
+    }
+  }
+
+  return { text, html, hasAttachments };
+}
+
+function decodeContent(content: string, encoding: string, contentType?: string): string {
+  encoding = encoding.toLowerCase().trim();
+
+  let decoded = content;
+  if (encoding === "base64") {
+    try {
+      const binary = atob(content.replace(/\s/g, ""));
+      // Check for UTF-8 BOM or assume UTF-8
+      decoded = binary;
+    } catch {
+      decoded = content;
+    }
+  } else if (encoding === "quoted-printable") {
+    decoded = content
+      .replace(/=\r?\n/g, "")
+      .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+  }
+
+  return decoded;
+}
+
+function decodeRFC2047(str: string): string {
+  return str.replace(/=\?([^?]+)\?([BbQq])\?([^?]+)\?=/g, (_, _charset, encoding, text) => {
+    if (encoding.toUpperCase() === "B") {
+      try { return atob(text); } catch { return text; }
+    }
+    if (encoding.toUpperCase() === "Q") {
+      return text
+        .replace(/_/g, " ")
+        .replace(/=([0-9A-Fa-f]{2})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+    }
+    return text;
+  });
+}
+
+// ─── Persist Messages ────────────────────────────────────────────────────
+
 async function persistMessages(
   supabase: ReturnType<typeof createClient>,
   connection: { id: string; user_id: string },
   messages: any[]
 ): Promise<{ insertedCount: number; updatedCount: number }> {
-  if (messages.length === 0) {
-    return { insertedCount: 0, updatedCount: 0 };
-  }
+  if (messages.length === 0) return { insertedCount: 0, updatedCount: 0 };
 
-  const externalIds = [...new Set(messages.map((message) => message.external_id).filter(Boolean))];
+  const externalIds = [...new Set(messages.map((m) => m.external_id).filter(Boolean))];
 
   const { data: existingRows, error: existingError } = await supabase
     .from("emails")
@@ -228,22 +581,15 @@ async function persistMessages(
     .eq("connection_id", connection.id)
     .in("external_id", externalIds);
 
-  if (existingError) {
-    throw new Error(`Failed to lookup existing emails: ${existingError.message}`);
-  }
+  if (existingError) throw new Error(`Failed to lookup existing emails: ${existingError.message}`);
 
-  const existingByExternalId = new Map((existingRows || []).map((row: { id: string; external_id: string }) => [row.external_id, row.id]));
+  const existingByExternalId = new Map((existingRows || []).map((row: any) => [row.external_id, row.id]));
 
   const inserts: any[] = [];
   const updates: any[] = [];
 
   for (const message of messages) {
-    const baseRecord = {
-      ...message,
-      user_id: connection.user_id,
-      connection_id: connection.id,
-    };
-
+    const baseRecord = { ...message, user_id: connection.user_id, connection_id: connection.id };
     const existingId = existingByExternalId.get(message.external_id);
     if (existingId) {
       updates.push({ ...baseRecord, id: existingId });
@@ -253,33 +599,24 @@ async function persistMessages(
   }
 
   const chunkSize = 100;
-
   for (let i = 0; i < inserts.length; i += chunkSize) {
     const chunk = inserts.slice(i, i + chunkSize);
-    const { error: insertError } = await supabase.from("emails").insert(chunk);
-    if (insertError) {
-      throw new Error(`Failed to insert emails: ${insertError.message}`);
-    }
+    const { error } = await supabase.from("emails").insert(chunk);
+    if (error) throw new Error(`Failed to insert emails: ${error.message}`);
   }
-
   for (let i = 0; i < updates.length; i += chunkSize) {
     const chunk = updates.slice(i, i + chunkSize);
-    const { error: upsertError } = await supabase.from("emails").upsert(chunk, { onConflict: "id" });
-    if (upsertError) {
-      throw new Error(`Failed to update emails: ${upsertError.message}`);
-    }
+    const { error } = await supabase.from("emails").upsert(chunk, { onConflict: "id" });
+    if (error) throw new Error(`Failed to update emails: ${error.message}`);
   }
 
-  return {
-    insertedCount: inserts.length,
-    updatedCount: updates.length,
-  };
+  return { insertedCount: inserts.length, updatedCount: updates.length };
 }
 
+// ─── Main Handler ────────────────────────────────────────────────────────
+
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -295,7 +632,6 @@ serve(async (req) => {
 
     const userClient = createClient(SUPABASE_URL!, Deno.env.get("SUPABASE_ANON_KEY") || SUPABASE_SERVICE_ROLE_KEY!);
     const { data: { user }, error: authError } = await userClient.auth.getUser(authHeader.replace("Bearer ", ""));
-
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -310,21 +646,11 @@ serve(async (req) => {
     const userId = user.id;
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    let connectionQuery = supabase
-      .from("email_connections")
-      .select("*")
-      .eq("user_id", userId);
-
-    if (connectionId) {
-      connectionQuery = connectionQuery.eq("id", connectionId);
-    }
+    let connectionQuery = supabase.from("email_connections").select("*").eq("user_id", userId);
+    if (connectionId) connectionQuery = connectionQuery.eq("id", connectionId);
 
     const { data: connections, error: connError } = await connectionQuery;
-
-    if (connError) {
-      throw new Error(`Failed to fetch connections: ${connError.message}`);
-    }
-
+    if (connError) throw new Error(`Failed to fetch connections: ${connError.message}`);
     if (!connections?.length) {
       return new Response(JSON.stringify({ error: "Geen mailboxverbinding gevonden." }), {
         status: 400,
@@ -333,98 +659,86 @@ serve(async (req) => {
     }
 
     console.log(`[sync-emails] Start sync for user ${userId}. Connections: ${connections.length}`);
-
     const results: Array<Record<string, unknown>> = [];
 
     for (const connection of connections) {
       try {
-        let accessToken = connection.access_token;
-        const tokenExpiry = connection.token_expires_at ? new Date(connection.token_expires_at) : new Date(0);
-        const shouldRefreshToken = !connection.is_active || tokenExpiry.getTime() <= Date.now() + 5 * 60 * 1000;
-
-        if (shouldRefreshToken) {
-          console.log(`[sync-emails] Refreshing token for ${connection.email_address} (${connection.provider})`);
-
-          let newTokens: { access_token: string; expires_in: number } | null = null;
-          if (connection.provider === "gmail") {
-            newTokens = await refreshGoogleToken(connection.refresh_token);
-          } else if (connection.provider === "outlook") {
-            newTokens = await refreshMicrosoftToken(connection.refresh_token);
-          }
-
-          if (!newTokens) {
-            throw new Error("Token refresh failed. Koppel je mailbox opnieuw.");
-          }
-
-          accessToken = newTokens.access_token;
-          const newExpiry = new Date(Date.now() + newTokens.expires_in * 1000).toISOString();
-
-          const { error: tokenUpdateError } = await supabase
-            .from("email_connections")
-            .update({
-              access_token: accessToken,
-              token_expires_at: newExpiry,
-              is_active: true,
-              sync_error: null,
-            })
-            .eq("id", connection.id);
-
-          if (tokenUpdateError) {
-            throw new Error(`Failed to update refreshed token: ${tokenUpdateError.message}`);
-          }
-        }
-
         let messages: any[] = [];
 
-        if (connection.provider === "gmail") {
+        if (connection.provider === "gmail" || connection.provider === "outlook") {
+          // OAuth-based providers: refresh token if needed
+          let accessToken = connection.access_token;
+          const tokenExpiry = connection.token_expires_at ? new Date(connection.token_expires_at) : new Date(0);
+          const shouldRefreshToken = !connection.is_active || tokenExpiry.getTime() <= Date.now() + 5 * 60 * 1000;
+
+          if (shouldRefreshToken && connection.refresh_token) {
+            console.log(`[sync-emails] Refreshing token for ${connection.email_address} (${connection.provider})`);
+            let newTokens: { access_token: string; expires_in: number } | null = null;
+            if (connection.provider === "gmail") newTokens = await refreshGoogleToken(connection.refresh_token);
+            else newTokens = await refreshMicrosoftToken(connection.refresh_token);
+
+            if (!newTokens) throw new Error("Token refresh failed. Koppel je mailbox opnieuw.");
+
+            accessToken = newTokens.access_token;
+            const newExpiry = new Date(Date.now() + newTokens.expires_in * 1000).toISOString();
+            await supabase
+              .from("email_connections")
+              .update({ access_token: accessToken, token_expires_at: newExpiry, is_active: true, sync_error: null })
+              .eq("id", connection.id);
+          }
+
+          if (connection.provider === "gmail") {
+            const hasPreviousSync = Boolean(connection.last_sync_at) && !forceFullSync;
+            const maxResults = hasPreviousSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
+            const bufferedAfterTimestamp = connection.last_sync_at
+              ? Math.max(0, new Date(connection.last_sync_at).getTime() - 5 * 60 * 1000)
+              : null;
+            const query = hasPreviousSync && bufferedAfterTimestamp
+              ? `after:${Math.floor(bufferedAfterTimestamp / 1000)}`
+              : undefined;
+
+            console.log(`[sync-emails] Gmail fetch | mode=${hasPreviousSync ? "incremental" : "full"} | max=${maxResults}`);
+            const rawMessages = await fetchGmailMessages(accessToken, { maxResults, query, includeSpamTrash: true });
+            messages = rawMessages.map(parseGmailMessage);
+          } else {
+            const maxResults = connection.last_sync_at && !forceFullSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
+            console.log(`[sync-emails] Outlook fetch | max=${maxResults}`);
+            const rawMessages = await fetchOutlookMessages(accessToken, maxResults);
+            messages = rawMessages.map(parseOutlookMessage);
+          }
+        } else if (connection.provider === "imap") {
+          // IMAP-based provider
+          if (!connection.encrypted_password || !connection.imap_host) {
+            throw new Error("IMAP configuratie onvolledig. Koppel je mailbox opnieuw.");
+          }
+
+          const password = await decryptPassword(connection.encrypted_password);
           const hasPreviousSync = Boolean(connection.last_sync_at) && !forceFullSync;
           const maxResults = hasPreviousSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
-          const bufferedAfterTimestamp = connection.last_sync_at
-            ? Math.max(0, new Date(connection.last_sync_at).getTime() - 5 * 60 * 1000)
-            : null;
-          const query = hasPreviousSync && bufferedAfterTimestamp
-            ? `after:${Math.floor(bufferedAfterTimestamp / 1000)}`
-            : undefined;
 
-          console.log(
-            `[sync-emails] Gmail fetch for ${connection.email_address} | mode=${hasPreviousSync ? "incremental" : "full"} | max=${maxResults} | query=${query || "none"}`
-          );
+          console.log(`[sync-emails] IMAP fetch for ${connection.email_address} | mode=${hasPreviousSync ? "incremental" : "full"} | max=${maxResults}`);
 
-          const rawMessages = await fetchGmailMessages(accessToken, {
+          messages = await fetchImapEmails(
+            connection.imap_host,
+            connection.imap_port || 993,
+            connection.email_address,
+            password,
+            connection.use_ssl !== false,
             maxResults,
-            query,
-            includeSpamTrash: true,
-          });
-
-          messages = rawMessages.map(parseGmailMessage);
-        } else if (connection.provider === "outlook") {
-          const maxResults = connection.last_sync_at && !forceFullSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
-          console.log(`[sync-emails] Outlook fetch for ${connection.email_address} | max=${maxResults}`);
-          const rawMessages = await fetchOutlookMessages(accessToken, maxResults);
-          messages = rawMessages.map(parseOutlookMessage);
+            hasPreviousSync ? connection.last_sync_at : null
+          );
         } else {
           throw new Error(`Unsupported provider: ${connection.provider}`);
         }
 
         const { insertedCount, updatedCount } = await persistMessages(supabase, connection, messages);
 
-        const { error: connectionUpdateError } = await supabase
+        await supabase
           .from("email_connections")
-          .update({
-            last_sync_at: new Date().toISOString(),
-            sync_error: null,
-            is_active: true,
-          })
+          .update({ last_sync_at: new Date().toISOString(), sync_error: null, is_active: true })
           .eq("id", connection.id);
 
-        if (connectionUpdateError) {
-          throw new Error(`Failed to update sync metadata: ${connectionUpdateError.message}`);
-        }
-
-        console.log(
-          `[sync-emails] Sync success for ${connection.email_address}. fetched=${messages.length}, inserted=${insertedCount}, updated=${updatedCount}`
-        );
-
+        console.log(`[sync-emails] Success for ${connection.email_address}: fetched=${messages.length}, inserted=${insertedCount}, updated=${updatedCount}`);
         results.push({
           connection_id: connection.id,
           status: "success",
@@ -434,53 +748,36 @@ serve(async (req) => {
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown sync error";
-        const shouldDeactivate = /refresh|invalid_grant|unauthorized|reconnect|token/i.test(errorMessage.toLowerCase());
+        const shouldDeactivate = /refresh|invalid_grant|unauthorized|reconnect|token|LOGIN|authentication|credentials/i.test(errorMessage);
 
         console.error(`[sync-emails] Sync error for ${connection.email_address}:`, errorMessage);
-
         await supabase
           .from("email_connections")
-          .update({
-            sync_error: errorMessage,
-            is_active: shouldDeactivate ? false : connection.is_active,
-          })
+          .update({ sync_error: errorMessage, is_active: shouldDeactivate ? false : connection.is_active })
           .eq("id", connection.id);
 
-        results.push({
-          connection_id: connection.id,
-          status: "error",
-          error: errorMessage,
-        });
+        results.push({ connection_id: connection.id, status: "error", error: errorMessage });
       }
     }
 
-    const successfulSyncs = results.filter((result) => result.status === "success");
+    const successfulSyncs = results.filter((r) => r.status === "success");
     if (successfulSyncs.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Synchronisatie mislukt voor alle mailboxen.", results }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Synchronisatie mislukt voor alle mailboxen.", results }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(
-      JSON.stringify({ success: true, results }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ success: true, results }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An error occurred during email sync";
     console.error("[sync-emails] Fatal error:", errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
