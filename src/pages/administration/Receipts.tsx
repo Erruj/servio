@@ -161,10 +161,10 @@ export default function Receipts() {
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">{t('loading')}...</div>
           ) : receipts.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground">
               <ReceiptIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('noReceipts')}</p>
-              <p className="text-sm mt-2">{t('uploadReceiptsToStart')}</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Nog geen bonnetjes</h3>
+              <p className="max-w-sm mx-auto">Upload of fotografeer je eerste bonnetje. Servio leest het bedrag, de winkel en de categorie automatisch uit.</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

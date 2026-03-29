@@ -199,9 +199,10 @@ export default function Documents() {
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">{t('loading')}...</div>
           ) : filteredDocuments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('noDocuments')}</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Nog geen documenten</h3>
+              <p className="max-w-sm mx-auto">Upload je eerste document (contract, offerte of factuur) om te beginnen. Servio analyseert het automatisch met AI.</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
