@@ -174,7 +174,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Footer */}
       <div className="p-6 border-t border-border">
         <div className="text-xs text-muted-foreground">
-          <p>{t('version')} 2.0.1</p>
+          <p>{t('version')} 1.0.0</p>
           <p className="mt-1">© {new Date().getFullYear()} Servio</p>
         </div>
       </div>
