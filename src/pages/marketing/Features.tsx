@@ -76,12 +76,12 @@ export default function Features() {
           name="keywords" 
           content="AI klantenservice, automatische factuurverwerking, boekhoudsoftware ZZP, financieel dashboard, email automatisering, administratie software" 
         />
-        <link rel="canonical" href="https://servio.nl/features" />
+        <link rel="canonical" href="https://getservio.co/features" />
         
         <meta property="og:title" content="Features - AI Klantenservice & Automatische Boekhouding | Servio" />
         <meta property="og:description" content="AI die 80% van je mails beantwoordt, automatische factuurverwerking, en realtime financieel inzicht." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://servio.nl/features" />
+        <meta property="og:url" content="https://getservio.co/features" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

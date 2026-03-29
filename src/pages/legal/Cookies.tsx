@@ -90,7 +90,7 @@ export default function Cookies() {
                 <section className="mb-8">
                   <h2 className="text-2xl font-semibold text-foreground mb-4">Contact</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Heeft u vragen over ons gebruik van cookies? Neem contact met ons op via privacy@servio.nl.
+                    Heeft u vragen over ons gebruik van cookies? Neem contact met ons op via <a href="mailto:info@getservio.co" className="text-primary hover:underline">info@getservio.co</a>.
                   </p>
                 </section>
               </div>

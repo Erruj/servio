@@ -84,7 +84,7 @@ export default function Contact() {
                       <Mail className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-2">E-mail</h3>
-                    <p className="text-muted-foreground text-sm">info@servio.nl</p>
+                    <a href="mailto:info@getservio.co" className="text-muted-foreground text-sm hover:text-primary transition-colors">info@getservio.co</a>
                   </CardContent>
                 </Card>
 

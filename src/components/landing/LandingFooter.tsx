@@ -34,6 +34,7 @@ export function LandingFooter() {
             <h4 className="font-medium text-foreground mb-4 text-sm">Support</h4>
             <ul className="space-y-2.5 text-sm">
               <li><Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
+              <li><a href="mailto:info@getservio.co" className="text-muted-foreground hover:text-foreground transition-colors">info@getservio.co</a></li>
               <li><Link to="/signup" className="text-muted-foreground hover:text-foreground transition-colors">Account aanmaken</Link></li>
             </ul>
           </div>

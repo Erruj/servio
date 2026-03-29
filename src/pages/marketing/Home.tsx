@@ -21,13 +21,13 @@ export default function MarketingHome() {
           name="keywords" 
           content="AI klantenservice, administratie automatiseren, boekhouding voor ZZP, bedrijfsassistent software, facturen verwerken, financieel dashboard, MKB software" 
         />
-        <link rel="canonical" href="https://servio.nl" />
+        <link rel="canonical" href="https://getservio.co" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Servio - AI Bedrijfsassistent voor ZZP & MKB" />
         <meta property="og:description" content="Automatiseer je administratie en bespaar 8+ uur per week. 14 dagen gratis." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://servio.nl" />
+        <meta property="og:url" content="https://getservio.co" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />

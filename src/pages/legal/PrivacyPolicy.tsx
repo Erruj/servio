@@ -89,7 +89,7 @@ export default function PrivacyPolicy() {
                   <h2 className="text-2xl font-semibold text-foreground mb-4">6. Contact</h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Heeft u vragen over dit privacybeleid of wilt u uw rechten uitoefenen? 
-                    Neem dan contact met ons op via privacy@servio.nl.
+                    Neem dan contact met ons op via <a href="mailto:info@getservio.co" className="text-primary hover:underline">info@getservio.co</a>.
                   </p>
                 </section>
               </div>

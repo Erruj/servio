@@ -121,7 +121,7 @@ export function HeroSection() {
               </div>
               <div className="flex-1 flex justify-center">
                 <div className="px-8 py-1 rounded-md bg-muted text-xs text-muted-foreground font-medium">
-                  app.servio.nl
+                  app.getservio.co
                 </div>
               </div>
               <div className="w-16" />
