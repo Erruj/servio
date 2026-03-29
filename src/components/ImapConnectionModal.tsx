@@ -128,11 +128,11 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
             body: { user_id: session.session.user.id },
             headers: { Authorization: `Bearer ${session.session.access_token}` },
           });
-          const timeoutPromise = new Promise((resolve) =>
+          const timeoutPromise = new Promise<{ timedOut: boolean }>((resolve) =>
             setTimeout(() => resolve({ timedOut: true }), 10000)
           );
           const result = await Promise.race([syncPromise, timeoutPromise]);
-          if (result && 'timedOut' in result) {
+          if ('timedOut' in result) {
             toast({
               title: '📧 Emails worden op de achtergrond gesynchroniseerd',
               description: 'Dit kan een moment duren. Je inbox wordt automatisch bijgewerkt.',
