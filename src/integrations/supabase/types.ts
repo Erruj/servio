@@ -151,48 +151,66 @@ export type Database = {
       }
       email_connections: {
         Row: {
-          access_token: string
+          access_token: string | null
           created_at: string
           email_address: string
+          encrypted_password: string | null
           id: string
+          imap_host: string | null
+          imap_port: number | null
           is_active: boolean | null
           last_sync_at: string | null
           provider: string
-          refresh_token: string
+          refresh_token: string | null
           scopes: string[] | null
+          smtp_host: string | null
+          smtp_port: number | null
           sync_error: string | null
-          token_expires_at: string
+          token_expires_at: string | null
           updated_at: string
+          use_ssl: boolean | null
           user_id: string
         }
         Insert: {
-          access_token: string
+          access_token?: string | null
           created_at?: string
           email_address: string
+          encrypted_password?: string | null
           id?: string
+          imap_host?: string | null
+          imap_port?: number | null
           is_active?: boolean | null
           last_sync_at?: string | null
           provider: string
-          refresh_token: string
+          refresh_token?: string | null
           scopes?: string[] | null
+          smtp_host?: string | null
+          smtp_port?: number | null
           sync_error?: string | null
-          token_expires_at: string
+          token_expires_at?: string | null
           updated_at?: string
+          use_ssl?: boolean | null
           user_id: string
         }
         Update: {
-          access_token?: string
+          access_token?: string | null
           created_at?: string
           email_address?: string
+          encrypted_password?: string | null
           id?: string
+          imap_host?: string | null
+          imap_port?: number | null
           is_active?: boolean | null
           last_sync_at?: string | null
           provider?: string
-          refresh_token?: string
+          refresh_token?: string | null
           scopes?: string[] | null
+          smtp_host?: string | null
+          smtp_port?: number | null
           sync_error?: string | null
-          token_expires_at?: string
+          token_expires_at?: string | null
           updated_at?: string
+          use_ssl?: boolean | null
           user_id?: string
         }
         Relationships: []
