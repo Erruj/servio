@@ -120,14 +120,24 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
       onOpenChange(false);
       onConnected();
 
-      // Auto-start first sync
+      // Auto-start first sync with 10s timeout — don't block the user
       try {
         const { data: session } = await supabase.auth.getSession();
         if (session.session) {
-          await supabase.functions.invoke('sync-emails', {
+          const syncPromise = supabase.functions.invoke('sync-emails', {
             body: { user_id: session.session.user.id },
             headers: { Authorization: `Bearer ${session.session.access_token}` },
           });
+          const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve({ timedOut: true }), 10000)
+          );
+          const result = await Promise.race([syncPromise, timeoutPromise]);
+          if (result && 'timedOut' in result) {
+            toast({
+              title: '📧 Emails worden op de achtergrond gesynchroniseerd',
+              description: 'Dit kan een moment duren. Je inbox wordt automatisch bijgewerkt.',
+            });
+          }
         }
       } catch {
         // Silent fail - user can manually sync

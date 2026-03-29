@@ -69,9 +69,27 @@ const Inbox = () => {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      await syncEmails();
-      await refetchEmails();
-      toast({ title: "📧 Emails bijgewerkt", description: "Je inbox is gesynchroniseerd." });
+      // Race sync against a 10s timeout for UI responsiveness
+      const syncPromise = (async () => {
+        await syncEmails();
+        await refetchEmails();
+        return { completed: true };
+      })();
+      const timeoutPromise = new Promise<{ completed: false }>((resolve) =>
+        setTimeout(() => resolve({ completed: false }), 10000)
+      );
+      const result = await Promise.race([syncPromise, timeoutPromise]);
+      
+      if (result.completed) {
+        toast({ title: "📧 Emails bijgewerkt", description: "Je inbox is gesynchroniseerd." });
+      } else {
+        toast({
+          title: "📧 Emails worden op de achtergrond gesynchroniseerd",
+          description: "Dit kan een moment duren. Je inbox wordt automatisch bijgewerkt.",
+        });
+        // Continue waiting in background and refresh when done
+        syncPromise.then(() => refetchEmails()).catch(() => {});
+      }
     } catch (error) {
       toast({
         title: "Sync mislukt",
