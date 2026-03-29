@@ -9,6 +9,8 @@ const corsHeaders = {
 const GMAIL_PAGE_SIZE = 100;
 const INITIAL_SYNC_LIMIT = 500;
 const INCREMENTAL_SYNC_LIMIT = 200;
+const IMAP_INITIAL_SYNC_LIMIT = 20;
+const IMAP_CONNECTION_TIMEOUT_MS = 25000;
 
 // ─── Token Refresh ───────────────────────────────────────────────────────
 
@@ -239,9 +241,20 @@ async function fetchImapEmails(
   maxResults: number,
   lastSyncAt: string | null
 ): Promise<any[]> {
-  const conn = (useSsl || port === 993)
-    ? await Deno.connectTls({ hostname: host, port })
-    : await Deno.connect({ hostname: host, port });
+  // Add connection timeout
+  const connectWithTimeout = async () => {
+    const connectPromise = (useSsl || port === 993)
+      ? Deno.connectTls({ hostname: host, port })
+      : Deno.connect({ hostname: host, port });
+    
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("IMAP verbinding timeout na 25 seconden. Probeer het later opnieuw.")), IMAP_CONNECTION_TIMEOUT_MS)
+    );
+    
+    return Promise.race([connectPromise, timeoutPromise]);
+  };
+
+  const conn = await connectWithTimeout();
 
   const reader = new ImapReader(conn);
   const enc = new TextEncoder();
@@ -714,7 +727,7 @@ serve(async (req) => {
 
           const password = await decryptPassword(connection.encrypted_password);
           const hasPreviousSync = Boolean(connection.last_sync_at) && !forceFullSync;
-          const maxResults = hasPreviousSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
+          const maxResults = hasPreviousSync ? INCREMENTAL_SYNC_LIMIT : IMAP_INITIAL_SYNC_LIMIT;
 
           console.log(`[sync-emails] IMAP fetch for ${connection.email_address} | mode=${hasPreviousSync ? "incremental" : "full"} | max=${maxResults}`);
 
