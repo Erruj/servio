@@ -87,12 +87,12 @@ export default function MarketingPricing() {
           name="keywords" 
           content="bedrijfssoftware prijzen, boekhoudsoftware kosten, AI klantenservice prijs, ZZP software, MKB administratie software" 
         />
-        <link rel="canonical" href="https://servio.nl/pricing" />
+        <link rel="canonical" href="https://getservio.co/pricing" />
         
         <meta property="og:title" content="Prijzen - Betaalbare AI Software voor ZZP & MKB | Servio" />
         <meta property="og:description" content="Vanaf €9,99/maand. 14 dagen gratis, geen creditcard nodig." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://servio.nl/pricing" />
+        <meta property="og:url" content="https://getservio.co/pricing" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
@@ -202,7 +202,7 @@ export default function MarketingPricing() {
                   <p className="text-muted-foreground mb-4">
                     Voor grotere organisaties bieden we maatwerk met dedicated support, SLA en custom integraties.
                   </p>
-                  <Button variant="outline" onClick={() => window.location.href = 'mailto:sales@servio.nl'}>
+                  <Button variant="outline" onClick={() => window.location.href = 'mailto:info@getservio.co'}>
                     Neem contact op
                   </Button>
                 </div>

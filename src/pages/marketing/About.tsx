@@ -40,12 +40,12 @@ export default function About() {
           name="keywords" 
           content="Servio over ons, Nederlandse startup, bedrijfssoftware Nederland, AI software ondernemers" 
         />
-        <link rel="canonical" href="https://servio.nl/about" />
+        <link rel="canonical" href="https://getservio.co/about" />
         
         <meta property="og:title" content="Over Ons - Servio | AI Bedrijfsassistent" />
         <meta property="og:description" content="Gebouwd door ondernemers, voor ondernemers. Ontdek onze missie." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://servio.nl/about" />
+        <meta property="og:url" content="https://getservio.co/about" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

@@ -4,7 +4,7 @@ export const dummyMails: MailItem[] = [
   {
     id: 'mail_001',
     from: 'jan.bakker@email.com',
-    to: ['support@servio.nl'],
+    to: ['info@getservio.co'],
     subject: 'Bestelling 12345 beschadigd aangekomen',
     snippet: 'Mijn bestelling kwam beschadigd aan en ik wil graag mijn geld terug voor €89,95...',
     body: `Beste Servio support,
