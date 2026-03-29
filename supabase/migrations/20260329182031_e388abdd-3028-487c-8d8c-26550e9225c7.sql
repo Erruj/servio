@@ -1,0 +1,2 @@
+ALTER TABLE email_connections DROP CONSTRAINT IF EXISTS email_connections_provider_check;
+ALTER TABLE email_connections ADD CONSTRAINT email_connections_provider_check CHECK (provider IN ('gmail', 'outlook', 'imap'));
