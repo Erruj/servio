@@ -463,6 +463,36 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_tracking: {
+        Row: {
+          ai_call_count: number
+          created_at: string | null
+          email_count: number
+          id: string
+          month_year: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_call_count?: number
+          created_at?: string | null
+          email_count?: number
+          id?: string
+          month_year: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_call_count?: number
+          created_at?: string | null
+          email_count?: number
+          id?: string
+          month_year?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -1,36 +1,93 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Euro, Wallet, Receipt, Upload, FileBox, Download, Users } from 'lucide-react';
+import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { UsageBadge } from '@/components/UsageBadge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SidebarProps {
   className?: string;
 }
 
 const getNavigation = (t: any) => [
-  { name: t('inbox'), href: '/app', icon: Mail },
-  { name: t('dashboard'), href: '/dashboard', icon: PieChart },
-  { name: t('statistics'), href: '/stats', icon: BarChart3 },
-  { name: t('templates'), href: '/templates', icon: FileText },
-  { name: t('settings'), href: '/settings', icon: Settings },
+  { name: t('inbox'), href: '/app', icon: Mail, feature: null },
+  { name: t('dashboard'), href: '/dashboard', icon: PieChart, feature: null },
+  { name: t('statistics'), href: '/stats', icon: BarChart3, feature: 'advanced_stats' },
+  { name: t('templates'), href: '/templates', icon: FileText, feature: null },
+  { name: t('settings'), href: '/settings', icon: Settings, feature: null },
 ];
 
 const getAdministrationNavigation = (t: any) => [
-  { name: t('financialOverview'), href: '/administration/overview', icon: Wallet },
-  { name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain },
-  { name: t('invoices'), href: '/administration/invoices', icon: Receipt },
-  { name: t('receipts'), href: '/administration/receipts', icon: Upload },
-  { name: t('documents'), href: '/administration/documents', icon: FileBox },
-  { name: t('exports'), href: '/administration/exports', icon: Upload },
+  { name: t('financialOverview'), href: '/administration/overview', icon: Wallet, feature: 'administration' },
+  { name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain, feature: 'ai_assistant' },
+  { name: t('invoices'), href: '/administration/invoices', icon: Receipt, feature: 'administration' },
+  { name: t('receipts'), href: '/administration/receipts', icon: Upload, feature: 'administration' },
+  { name: t('documents'), href: '/administration/documents', icon: FileBox, feature: 'documents' },
+  { name: t('exports'), href: '/administration/exports', icon: Upload, feature: 'exports' },
 ];
+
+interface NavItemProps {
+  item: { name: string; href: string; icon: any; feature: string | null };
+  isActive: boolean;
+  isLocked: boolean;
+  requiredLabel?: string;
+}
+
+function NavItem({ item, isActive, isLocked, requiredLabel }: NavItemProps) {
+  const content = (
+    <NavLink
+      to={item.href}
+      className={cn(
+        'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
+        isActive
+          ? 'bg-primary text-primary-foreground shadow-card'
+          : isLocked
+            ? 'text-muted-foreground/50 hover:bg-secondary/50 cursor-default'
+            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+      )}
+    >
+      <item.icon className="mr-3 h-5 w-5" />
+      <span className="flex-1">{item.name}</span>
+      {isLocked && <Lock className="h-4 w-4 ml-2 text-muted-foreground/50" />}
+    </NavLink>
+  );
+
+  if (isLocked) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="right">
+          Beschikbaar vanaf {requiredLabel}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return content;
+}
 
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
   const { t } = useTranslation();
   const { permissions } = useRoleAccess();
+  const { canAccessAdministration, canAccessAIAssistant, canAccessDocuments, canAccessExports, canAccessAdvancedStats, canManageTeam, requiredTierLabel } = useFeatureAccess();
   const navigation = getNavigation(t);
   const adminNavigation = getAdministrationNavigation(t);
+
+  const isFeatureLocked = (feature: string | null): boolean => {
+    if (!feature) return false;
+    switch (feature) {
+      case 'administration': return !canAccessAdministration;
+      case 'ai_assistant': return !canAccessAIAssistant;
+      case 'documents': return !canAccessDocuments;
+      case 'exports': return !canAccessExports;
+      case 'advanced_stats': return !canAccessAdvancedStats;
+      case 'team_management': return !canManageTeam;
+      default: return false;
+    }
+  };
 
   return (
     <div className={cn('w-64 bg-card border-r border-border flex flex-col shadow-card', className)}>
@@ -51,8 +108,7 @@ export function Sidebar({ className }: SidebarProps) {
       <nav className="flex-1 p-6 space-y-6 overflow-y-auto">
         {/* Main Navigation */}
         <div className="space-y-3">
-        {navigation.filter(item => {
-            // Filter based on permissions
+          {navigation.filter(item => {
             if (item.href === '/app' && !permissions.canAccessInbox) return false;
             if (item.href === '/stats' && !permissions.canAccessStatistics) return false;
             if (item.href === '/templates' && !permissions.canAccessTemplates) return false;
@@ -60,20 +116,15 @@ export function Sidebar({ className }: SidebarProps) {
             return true;
           }).map((item) => {
             const isActive = location.pathname === item.href;
+            const locked = isFeatureLocked(item.feature);
             return (
-              <NavLink
+              <NavItem
                 key={item.name}
-                to={item.href}
-                className={cn(
-                  'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-card'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                )}
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.name}
-              </NavLink>
+                item={item}
+                isActive={isActive}
+                isLocked={locked}
+                requiredLabel={item.feature ? requiredTierLabel(item.feature) : undefined}
+              />
             );
           })}
         </div>
@@ -85,26 +136,20 @@ export function Sidebar({ className }: SidebarProps) {
               {t('administration')}
             </h3>
             {adminNavigation.filter(item => {
-              // Filter AI assistant and exports based on permissions
               if (item.href === '/administration/ai-assistant' && !permissions.canUseAI) return false;
               if (item.href === '/administration/exports' && !permissions.canExportData) return false;
               return true;
             }).map((item) => {
               const isActive = location.pathname === item.href;
+              const locked = isFeatureLocked(item.feature);
               return (
-                <NavLink
+                <NavItem
                   key={item.name}
-                  to={item.href}
-                  className={cn(
-                    'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-card'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                  )}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </NavLink>
+                  item={item}
+                  isActive={isActive}
+                  isLocked={locked}
+                  requiredLabel={item.feature ? requiredTierLabel(item.feature) : undefined}
+                />
               );
             })}
           </div>
@@ -113,21 +158,18 @@ export function Sidebar({ className }: SidebarProps) {
         {/* Team Management */}
         {permissions.canManageTeam && (
           <div className="space-y-3 mt-6">
-            <NavLink
-              to="/team"
-              className={cn(
-                'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
-                location.pathname === '/team'
-                  ? 'bg-primary text-primary-foreground shadow-card'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-              )}
-            >
-              <Users className="mr-3 h-5 w-5" />
-              {t('teamManagement')}
-            </NavLink>
+            <NavItem
+              item={{ name: t('teamManagement'), href: '/team', icon: Users, feature: 'team_management' }}
+              isActive={location.pathname === '/team'}
+              isLocked={isFeatureLocked('team_management')}
+              requiredLabel={requiredTierLabel('team_management')}
+            />
           </div>
         )}
       </nav>
+
+      {/* Usage tracker for Starter */}
+      <UsageBadge />
 
       {/* Footer */}
       <div className="p-6 border-t border-border">
