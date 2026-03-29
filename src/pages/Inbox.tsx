@@ -40,9 +40,10 @@ const Inbox = () => {
   useEffect(() => {
     const connected = searchParams.get('connected');
     if (connected) {
+      const providerName = connected === 'gmail' ? 'Gmail' : connected === 'outlook' ? 'Outlook' : 'mailbox';
       toast({
         title: "✅ Mailbox gekoppeld!",
-        description: `Je ${connected === 'gmail' ? 'Gmail' : 'Outlook'} is gekoppeld. Emails worden nu gesynchroniseerd...`,
+        description: `Je ${providerName} is gekoppeld. Emails worden nu gesynchroniseerd...`,
       });
       handleSync();
     }
@@ -142,7 +143,7 @@ const Inbox = () => {
                   <Mail className="h-12 w-12 text-primary" />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground mb-3">Koppel je mailbox</h2>
-                <p className="text-muted-foreground mb-6">Verbind je Gmail of Outlook account om je emails hier te zien en met AI te beantwoorden.</p>
+                <p className="text-muted-foreground mb-6">Verbind je mailbox om je emails hier te zien en met AI te beantwoorden.</p>
                 <Button size="lg" onClick={() => window.location.href = '/mailbox-setup'}>
                   <Mail className="h-5 w-5 mr-2" />
                   Mailbox koppelen
