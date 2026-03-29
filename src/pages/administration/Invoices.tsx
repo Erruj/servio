@@ -505,9 +505,10 @@ const updateInvoiceCategory = async (invoiceId: string, category: TransactionCat
               {t('loading')}...
             </div>
           ) : filteredInvoices.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('noInvoices')}</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Nog geen facturen</h3>
+              <p className="max-w-sm mx-auto">Upload je eerste factuur om te beginnen. Servio herkent automatisch het bedrag, de leverancier en de BTW.</p>
             </div>
           ) : (
             <Table>
