@@ -3,7 +3,7 @@ import type { MailItem } from '@/types/index';
 
 export interface EmailConnection {
   id: string;
-  provider: 'gmail' | 'outlook';
+  provider: 'gmail' | 'outlook' | 'imap';
   email_address: string;
   is_active: boolean;
   last_sync_at: string | null;
