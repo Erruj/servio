@@ -134,8 +134,38 @@ export default function Receipts() {
     }
   };
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleViewReceipt = async (receipt: Receipt) => {
+    try {
+      const { data } = await supabase.storage.from('financial-documents').createSignedUrl(receipt.file_path, 3600);
+      if (data?.signedUrl) setPreviewUrl(data.signedUrl);
+    } catch { sonnerToast.error('Bestand kon niet worden geopend'); }
+  };
+
+  const handleDownloadReceipt = async (receipt: Receipt) => {
+    try {
+      const { data } = await supabase.storage.from('financial-documents').createSignedUrl(receipt.file_path, 3600);
+      if (data?.signedUrl) { const a = document.createElement('a'); a.href = data.signedUrl; a.download = receipt.merchant || 'bonnetje'; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+    } catch { sonnerToast.error('Download mislukt'); }
+  };
+
+  const handleDeleteReceipt = async () => {
+    if (!deleteId) return;
+    try {
+      const receipt = receipts.find(r => r.id === deleteId);
+      if (receipt) await supabase.storage.from('financial-documents').remove([receipt.file_path]);
+      await supabase.from('receipts').delete().eq('id', deleteId);
+      sonnerToast.success('Bonnetje verwijderd');
+      setDeleteId(null);
+      loadReceipts();
+    } catch { sonnerToast.error('Verwijderen mislukt'); }
+  };
+
   return (
     <div className="space-y-6 p-6">
+      <AdminBreadcrumb currentPage="Bonnetjes" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t('receipts')}</h1>
