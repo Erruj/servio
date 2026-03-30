@@ -114,6 +114,11 @@ function AppRoutes() {
           <Settings />
         </ProtectedRoute>
       } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      } />
       <Route path="/mailbox-setup" element={
         <ProtectedRoute>
           <MailboxSetup />
