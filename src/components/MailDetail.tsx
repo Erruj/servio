@@ -122,13 +122,36 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: `${file.name} is te groot (max 10MB)`, variant: 'destructive' });
+        continue;
+      }
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      setAttachments(prev => [...prev, { file, base64 }]);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index: number) => setAttachments(prev => prev.filter((_, i) => i !== index));
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleSendReply = async () => {
     if (!reply.trim()) {
-      toast({
-        title: "Geen inhoud",
-        description: "Voeg eerst inhoud toe aan je antwoord.",
-        variant: "destructive"
-      });
+      toast({ title: "Geen inhoud", description: "Voeg eerst inhoud toe aan je antwoord.", variant: "destructive" });
       return;
     }
 
@@ -136,34 +159,32 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: session } = await supabase.auth.getSession();
       
+      const emailAttachments = attachments.map(att => ({
+        filename: att.file.name,
+        mimeType: att.file.type || 'application/octet-stream',
+        content: att.base64,
+      }));
+
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           to: mail!.from,
           subject: `Re: ${mail!.subject}`,
           body: reply,
           replyToEmailId: mail!.id,
+          attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
         },
-        headers: {
-          Authorization: `Bearer ${session.session?.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${session.session?.access_token}` },
       });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast({
-        title: "✅ Email verzonden",
-        description: "Je antwoord is succesvol verzonden.",
-      });
-
+      toast({ title: "✅ Email verzonden", description: "Je antwoord is succesvol verzonden." });
       setReply('');
       setIsEditingReply(false);
+      setAttachments([]);
     } catch (error: any) {
-      toast({
-        title: "Verzenden mislukt",
-        description: error.message || "Probeer het opnieuw.",
-        variant: "destructive"
-      });
+      toast({ title: "Verzenden mislukt", description: error.message || "Probeer het opnieuw.", variant: "destructive" });
     }
   };
 
