@@ -208,24 +208,25 @@ export default function Receipts() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="font-semibold text-foreground">
-                          {receipt.merchant || t('unknownMerchant')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {receipt.receipt_date || new Date(receipt.created_at).toLocaleDateString()}
-                        </p>
+                        <p className="font-semibold text-foreground">{receipt.merchant || t('unknownMerchant')}</p>
+                        <p className="text-sm text-muted-foreground">{receipt.receipt_date || new Date(receipt.created_at).toLocaleDateString()}</p>
                       </div>
-                      <Badge variant={getStatusColor(receipt.status)}>
-                        {receipt.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getStatusColor(receipt.status)}>{receipt.status}</Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-6 w-6 p-0">⋮</Button></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewReceipt(receipt)}><Eye className="h-4 w-4 mr-2" />Bekijken</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDownloadReceipt(receipt)}><Download className="h-4 w-4 mr-2" />Downloaden</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(receipt.id)}><Trash2 className="h-4 w-4 mr-2" />Verwijderen</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className="text-2xl font-bold text-foreground">
-                        €{receipt.amount?.toFixed(2) || '0.00'}
-                      </p>
-                      {receipt.category && (
-                        <Badge variant="outline">{receipt.category}</Badge>
-                      )}
+                      <p className="text-2xl font-bold text-foreground">€{receipt.amount?.toFixed(2) || '0.00'}</p>
+                      {receipt.category && <Badge variant="outline">{receipt.category}</Badge>}
                     </div>
                   </CardContent>
                 </Card>
