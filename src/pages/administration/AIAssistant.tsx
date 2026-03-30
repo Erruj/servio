@@ -245,6 +245,7 @@ export default function AIAssistant() {
 
   return (
     <div className="h-full flex flex-col p-6 space-y-6">
+      <AdminBreadcrumb currentPage="AI Boekhoudassistent" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
