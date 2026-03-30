@@ -119,7 +119,7 @@ export default function Documents() {
 
       // Determine document type from filename
       const lowerName = fileName.toLowerCase();
-      let docType = 'other';
+      let docType: 'contract' | 'invoice' | 'offer' | 'other' | 'receipt' = 'other';
       if (lowerName.includes('contract') || lowerName.includes('overeenkomst')) docType = 'contract';
       else if (lowerName.includes('offerte') || lowerName.includes('quote')) docType = 'offer';
       else if (lowerName.includes('factuur') || lowerName.includes('invoice')) docType = 'invoice';
