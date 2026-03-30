@@ -46,6 +46,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const [isEditingReply, setIsEditingReply] = useState(false);
   const [tone, setTone] = useState<ToneOfVoice>('Neutraal');
   const [language, setLanguage] = useState<Language>('NL');
+  const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Auto-analyze when mail changes
