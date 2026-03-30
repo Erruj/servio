@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, User, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 import {
   DropdownMenu,
@@ -25,10 +28,38 @@ interface TopbarProps {
 
 export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      loadDisplayName();
+    }
+  }, [user]);
+
+  const loadDisplayName = async () => {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user!.id)
+        .single();
+      
+      setDisplayName(data?.full_name || data?.email || user?.email || 'Gebruiker');
+    } catch {
+      setDisplayName(user?.email || 'Gebruiker');
+    }
+  };
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     onSearchChange?.(value);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   return (
@@ -80,13 +111,13 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-sm">Support Team</span>
+              <span className="text-sm max-w-[150px] truncate">{displayName}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Profiel</DropdownMenuItem>
-            <DropdownMenuItem>Instellingen</DropdownMenuItem>
-            <DropdownMenuItem>Uitloggen</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/profile')}>Profiel</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/settings')}>Instellingen</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Uitloggen</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
