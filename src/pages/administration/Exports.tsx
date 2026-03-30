@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Download, FileText, Archive } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 
 export default function Exports() {
   const { t } = useTranslation();
