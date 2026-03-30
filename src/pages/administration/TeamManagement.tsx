@@ -159,6 +159,7 @@ export default function TeamManagement() {
 
   return (
     <div className="space-y-6 p-6">
+      <AdminBreadcrumb currentPage="Teambeheer" />
       <div>
         <h1 className="text-3xl font-bold text-foreground">{t('teamManagement') || 'Teambeheer'}</h1>
         <p className="text-muted-foreground">{t('teamManagementDescription') || 'Beheer teamleden en hun rollen'}</p>
