@@ -375,6 +375,7 @@ export default function FinancialOverview() {
 
   return (
     <div className="space-y-6 p-6">
+      <AdminBreadcrumb currentPage="Financieel Overzicht" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t('financialOverview')}</h1>
