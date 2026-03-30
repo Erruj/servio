@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Send, Brain, TrendingUp, FileText, Tag, History, Lightbulb, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 
 interface Message {
   role: 'user' | 'assistant';
