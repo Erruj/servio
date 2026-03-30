@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MailItem, AnalysisResult, ToneOfVoice, Language } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,9 @@ import {
   RefreshCw,
   Sparkles,
   Brain,
-  Mail as MailIcon
+  Mail as MailIcon,
+  FileIcon,
+  Trash2
 } from 'lucide-react';
 import { generateSmartReplies } from '@/lib/ai/orchestrator';
 import { analyzeEmail } from '@/lib/ai';
