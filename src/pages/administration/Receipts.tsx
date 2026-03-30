@@ -235,6 +235,24 @@ export default function Receipts() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader><AlertDialogTitle>Bonnetje verwijderen?</AlertDialogTitle><AlertDialogDescription>Dit kan niet ongedaan worden gemaakt.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>Annuleren</AlertDialogCancel><AlertDialogAction onClick={handleDeleteReceipt} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Verwijderen</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader><DialogTitle>Bonnetje bekijken</DialogTitle></DialogHeader>
+          {previewUrl && (
+            /\.(jpg|jpeg|png|gif|webp)$/i.test(previewUrl)
+              ? <img src={previewUrl} alt="Bonnetje" className="w-full max-h-[70vh] object-contain" />
+              : <iframe src={previewUrl} className="w-full h-[70vh]" title="Bonnetje preview" />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
