@@ -21,6 +21,7 @@ import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import Profile from "./pages/Profile";
 import { DebugDrawer } from "./components/DebugDrawer";
 import FinancialOverview from "./pages/administration/FinancialOverview";
 import AIAssistant from "./pages/administration/AIAssistant";
