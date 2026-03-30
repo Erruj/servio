@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Download, FileText, Archive } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 
 export default function Exports() {
   const { t } = useTranslation();
@@ -118,6 +119,7 @@ export default function Exports() {
 
   return (
     <div className="space-y-6 p-6">
+      <AdminBreadcrumb currentPage="Exports" />
       <div>
         <h1 className="text-3xl font-bold text-foreground">{t('exports')}</h1>
         <p className="text-muted-foreground">{t('exportsDescription')}</p>

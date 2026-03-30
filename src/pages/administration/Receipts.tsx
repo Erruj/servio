@@ -4,8 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, Receipt as ReceiptIcon, Camera } from 'lucide-react';
+import { Upload, Receipt as ReceiptIcon, Camera, Eye, Download, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast as sonnerToast } from 'sonner';
 
 interface Receipt {
   id: string;
@@ -129,8 +134,38 @@ export default function Receipts() {
     }
   };
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleViewReceipt = async (receipt: Receipt) => {
+    try {
+      const { data } = await supabase.storage.from('financial-documents').createSignedUrl(receipt.file_path, 3600);
+      if (data?.signedUrl) setPreviewUrl(data.signedUrl);
+    } catch { sonnerToast.error('Bestand kon niet worden geopend'); }
+  };
+
+  const handleDownloadReceipt = async (receipt: Receipt) => {
+    try {
+      const { data } = await supabase.storage.from('financial-documents').createSignedUrl(receipt.file_path, 3600);
+      if (data?.signedUrl) { const a = document.createElement('a'); a.href = data.signedUrl; a.download = receipt.merchant || 'bonnetje'; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+    } catch { sonnerToast.error('Download mislukt'); }
+  };
+
+  const handleDeleteReceipt = async () => {
+    if (!deleteId) return;
+    try {
+      const receipt = receipts.find(r => r.id === deleteId);
+      if (receipt) await supabase.storage.from('financial-documents').remove([receipt.file_path]);
+      await supabase.from('receipts').delete().eq('id', deleteId);
+      sonnerToast.success('Bonnetje verwijderd');
+      setDeleteId(null);
+      loadReceipts();
+    } catch { sonnerToast.error('Verwijderen mislukt'); }
+  };
+
   return (
     <div className="space-y-6 p-6">
+      <AdminBreadcrumb currentPage="Bonnetjes" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t('receipts')}</h1>
@@ -173,24 +208,25 @@ export default function Receipts() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="font-semibold text-foreground">
-                          {receipt.merchant || t('unknownMerchant')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {receipt.receipt_date || new Date(receipt.created_at).toLocaleDateString()}
-                        </p>
+                        <p className="font-semibold text-foreground">{receipt.merchant || t('unknownMerchant')}</p>
+                        <p className="text-sm text-muted-foreground">{receipt.receipt_date || new Date(receipt.created_at).toLocaleDateString()}</p>
                       </div>
-                      <Badge variant={getStatusColor(receipt.status)}>
-                        {receipt.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getStatusColor(receipt.status)}>{receipt.status}</Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-6 w-6 p-0">⋮</Button></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewReceipt(receipt)}><Eye className="h-4 w-4 mr-2" />Bekijken</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDownloadReceipt(receipt)}><Download className="h-4 w-4 mr-2" />Downloaden</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(receipt.id)}><Trash2 className="h-4 w-4 mr-2" />Verwijderen</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className="text-2xl font-bold text-foreground">
-                        €{receipt.amount?.toFixed(2) || '0.00'}
-                      </p>
-                      {receipt.category && (
-                        <Badge variant="outline">{receipt.category}</Badge>
-                      )}
+                      <p className="text-2xl font-bold text-foreground">€{receipt.amount?.toFixed(2) || '0.00'}</p>
+                      {receipt.category && <Badge variant="outline">{receipt.category}</Badge>}
                     </div>
                   </CardContent>
                 </Card>
@@ -199,6 +235,24 @@ export default function Receipts() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader><AlertDialogTitle>Bonnetje verwijderen?</AlertDialogTitle><AlertDialogDescription>Dit kan niet ongedaan worden gemaakt.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>Annuleren</AlertDialogCancel><AlertDialogAction onClick={handleDeleteReceipt} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Verwijderen</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader><DialogTitle>Bonnetje bekijken</DialogTitle></DialogHeader>
+          {previewUrl && (
+            /\.(jpg|jpeg|png|gif|webp)$/i.test(previewUrl)
+              ? <img src={previewUrl} alt="Bonnetje" className="w-full max-h-[70vh] object-contain" />
+              : <iframe src={previewUrl} className="w-full h-[70vh]" title="Bonnetje preview" />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

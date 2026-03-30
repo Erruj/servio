@@ -305,6 +305,7 @@ export type Database = {
           invoice_number: string | null
           status: string | null
           supplier: string | null
+          supplier_id: string | null
           updated_at: string | null
           user_id: string
           vat_amount: number | null
@@ -321,6 +322,7 @@ export type Database = {
           invoice_number?: string | null
           status?: string | null
           supplier?: string | null
+          supplier_id?: string | null
           updated_at?: string | null
           user_id: string
           vat_amount?: number | null
@@ -337,11 +339,20 @@ export type Database = {
           invoice_number?: string | null
           status?: string | null
           supplier?: string | null
+          supplier_id?: string | null
           updated_at?: string | null
           user_id?: string
           vat_amount?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invoices_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -409,6 +420,39 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          created_at: string
+          email: string | null
+          iban: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+          vat_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          iban?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+          vat_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          iban?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+          vat_number?: string | null
         }
         Relationships: []
       }

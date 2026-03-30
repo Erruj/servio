@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 import { useAuth } from '@/components/AuthProvider';
 import { Loader2, Mail, Trash2, UserPlus } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -158,6 +159,7 @@ export default function TeamManagement() {
 
   return (
     <div className="space-y-6 p-6">
+      <AdminBreadcrumb currentPage="Teambeheer" />
       <div>
         <h1 className="text-3xl font-bold text-foreground">{t('teamManagement') || 'Teambeheer'}</h1>
         <p className="text-muted-foreground">{t('teamManagementDescription') || 'Beheer teamleden en hun rollen'}</p>

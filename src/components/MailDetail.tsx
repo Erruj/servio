@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MailItem, AnalysisResult, ToneOfVoice, Language } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,9 @@ import {
   RefreshCw,
   Sparkles,
   Brain,
-  Mail as MailIcon
+  Mail as MailIcon,
+  FileIcon,
+  Trash2
 } from 'lucide-react';
 import { generateSmartReplies } from '@/lib/ai/orchestrator';
 import { analyzeEmail } from '@/lib/ai';
@@ -44,6 +46,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const [isEditingReply, setIsEditingReply] = useState(false);
   const [tone, setTone] = useState<ToneOfVoice>('Neutraal');
   const [language, setLanguage] = useState<Language>('NL');
+  const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Auto-analyze when mail changes
@@ -118,13 +122,36 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: `${file.name} is te groot (max 10MB)`, variant: 'destructive' });
+        continue;
+      }
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      setAttachments(prev => [...prev, { file, base64 }]);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index: number) => setAttachments(prev => prev.filter((_, i) => i !== index));
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleSendReply = async () => {
     if (!reply.trim()) {
-      toast({
-        title: "Geen inhoud",
-        description: "Voeg eerst inhoud toe aan je antwoord.",
-        variant: "destructive"
-      });
+      toast({ title: "Geen inhoud", description: "Voeg eerst inhoud toe aan je antwoord.", variant: "destructive" });
       return;
     }
 
@@ -132,34 +159,32 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: session } = await supabase.auth.getSession();
       
+      const emailAttachments = attachments.map(att => ({
+        filename: att.file.name,
+        mimeType: att.file.type || 'application/octet-stream',
+        content: att.base64,
+      }));
+
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           to: mail!.from,
           subject: `Re: ${mail!.subject}`,
           body: reply,
           replyToEmailId: mail!.id,
+          attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
         },
-        headers: {
-          Authorization: `Bearer ${session.session?.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${session.session?.access_token}` },
       });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast({
-        title: "✅ Email verzonden",
-        description: "Je antwoord is succesvol verzonden.",
-      });
-
+      toast({ title: "✅ Email verzonden", description: "Je antwoord is succesvol verzonden." });
       setReply('');
       setIsEditingReply(false);
+      setAttachments([]);
     } catch (error: any) {
-      toast({
-        title: "Verzenden mislukt",
-        description: error.message || "Probeer het opnieuw.",
-        variant: "destructive"
-      });
+      toast({ title: "Verzenden mislukt", description: error.message || "Probeer het opnieuw.", variant: "destructive" });
     }
   };
 
@@ -396,6 +421,29 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                 placeholder="AI genereert hier een antwoord..."
               />
             )}
+            {/* Attachment section */}
+            <div className="space-y-2 mt-3">
+              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
+              <Button variant="outline" size="sm" type="button" onClick={() => fileInputRef.current?.click()}>
+                <Paperclip className="h-4 w-4 mr-2" />Bijlage toevoegen
+              </Button>
+              {attachments.length > 0 && (
+                <div className="space-y-1">
+                  {attachments.map((att, index) => (
+                    <div key={index} className="flex items-center justify-between bg-muted rounded-md px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="truncate">{att.file.name}</span>
+                        <span className="text-muted-foreground text-xs flex-shrink-0">({formatFileSize(att.file.size)})</span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeAttachment(index)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
