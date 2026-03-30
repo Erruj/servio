@@ -4,8 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, Receipt as ReceiptIcon, Camera } from 'lucide-react';
+import { Upload, Receipt as ReceiptIcon, Camera, Eye, Download, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast as sonnerToast } from 'sonner';
 
 interface Receipt {
   id: string;
