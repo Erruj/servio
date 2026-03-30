@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, TrendingDown, DollarSign, Wallet, AlertTriangle, Lightbulb, Target, BarChart3 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart, Bar } from 'recharts';
 import { toast } from 'sonner';
+import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 
 interface MonthlyData {
   month: string;
