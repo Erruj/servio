@@ -26,6 +26,7 @@ const getAdministrationNavigation = (t: any) => [
   { name: t('receipts'), href: '/administration/receipts', icon: Upload, feature: 'administration' },
   { name: t('documents'), href: '/administration/documents', icon: FileBox, feature: 'documents' },
   { name: t('exports'), href: '/administration/exports', icon: Upload, feature: 'exports' },
+  { name: 'Audit Log', href: '/administration/audit-log', icon: Shield, feature: null },
 ];
 
 interface NavItemProps {
