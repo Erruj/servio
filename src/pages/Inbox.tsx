@@ -17,10 +17,7 @@ import { useEmailConnections, useEmails, requestNotificationPermission } from '@
 import { emailToMailItem } from '@/types/email';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAuth } from '@/components/AuthProvider';
-import { useToast } from '@/hooks/use-toast';
-import { useEmailConnections, useEmails, requestNotificationPermission } from '@/hooks/useEmailConnections';
-import { emailToMailItem } from '@/types/email';
+
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
 
