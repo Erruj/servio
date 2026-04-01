@@ -204,6 +204,7 @@ const App = () => (
               <BrowserRouter>
                 <AppRoutes />
                 <DebugDrawer />
+                <CookieConsent />
               </BrowserRouter>
             </ErrorBoundary>
           </AuthProvider>
