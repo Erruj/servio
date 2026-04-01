@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useLanguagePersistence } from "@/hooks/useLanguagePersistence";
+import { CookieConsent } from "@/components/CookieConsent";
 import "@/lib/i18n";
 import Inbox from "./pages/Inbox";
 import Dashboard from "./pages/Dashboard";
@@ -29,6 +30,7 @@ import Invoices from "./pages/administration/Invoices";
 import Receipts from "./pages/administration/Receipts";
 import Documents from "./pages/administration/Documents";
 import Exports from "./pages/administration/Exports";
+import AuditLog from "./pages/administration/AuditLog";
 import TeamManagement from "./pages/administration/TeamManagement";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionGate } from "./components/SubscriptionGate";
@@ -178,6 +180,11 @@ function AppRoutes() {
           </SubscriptionGate>
         </ProtectedRoute>
       } />
+      <Route path="/administration/audit-log" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin']}>
+          <AuditLog />
+        </ProtectedRoute>
+      } />
       
       {/* Catch-all for 404 */}
       <Route path="*" element={<NotFound />} />
@@ -197,6 +204,7 @@ const App = () => (
               <BrowserRouter>
                 <AppRoutes />
                 <DebugDrawer />
+                <CookieConsent />
               </BrowserRouter>
             </ErrorBoundary>
           </AuthProvider>

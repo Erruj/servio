@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock } from 'lucide-react';
+import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
@@ -26,6 +26,7 @@ const getAdministrationNavigation = (t: any) => [
   { name: t('receipts'), href: '/administration/receipts', icon: Upload, feature: 'administration' },
   { name: t('documents'), href: '/administration/documents', icon: FileBox, feature: 'documents' },
   { name: t('exports'), href: '/administration/exports', icon: Upload, feature: 'exports' },
+  { name: 'Audit Log', href: '/administration/audit-log', icon: Shield, feature: null },
 ];
 
 interface NavItemProps {

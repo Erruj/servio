@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { MailItem } from '@/types';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -10,11 +10,14 @@ import { ComposeEmail } from '@/components/ComposeEmail';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell } from 'lucide-react';
+import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell, Keyboard } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections, useEmails, requestNotificationPermission } from '@/hooks/useEmailConnections';
 import { emailToMailItem } from '@/types/email';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
 
@@ -25,11 +28,13 @@ const Inbox = () => {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading } = useEmailConnections();
@@ -39,6 +44,24 @@ const Inbox = () => {
 
   // Request notification permission on mount
   useEffect(() => { requestNotificationPermission(); }, []);
+
+  // Keyboard shortcuts
+  const shortcutsList = useMemo(() => [
+    { key: 'c', description: 'Nieuwe email', action: () => setComposeOpen(true) },
+    { key: 'r', description: 'Sync/refresh', action: () => handleSync() },
+    { key: 'j', description: 'Volgende email', action: () => {
+      const idx = mails.findIndex(m => m.id === selectedMail?.id);
+      if (idx < mails.length - 1) handleMailSelect(mails[idx + 1]);
+    }},
+    { key: 'k', description: 'Vorige email', action: () => {
+      const idx = mails.findIndex(m => m.id === selectedMail?.id);
+      if (idx > 0) handleMailSelect(mails[idx - 1]);
+    }},
+    { key: '/', description: 'Zoeken', action: () => document.querySelector<HTMLInputElement>('input[placeholder*="Zoek"]')?.focus() },
+    { key: '?', shift: true, description: 'Sneltoetsen tonen', action: () => setShowShortcuts(true) },
+    { key: 'Escape', description: 'Sluit dialoog', action: () => { setShowShortcuts(false); setComposeOpen(false); } },
+  ], [mails, selectedMail]);
+  useKeyboardShortcuts(shortcutsList);
 
   // Handle search with debounce — query database
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -207,6 +230,27 @@ const Inbox = () => {
       </div>
 
       <ComposeEmail open={composeOpen} onOpenChange={setComposeOpen} hasConnection={hasConnections} />
+
+      {/* Keyboard shortcuts dialog */}
+      <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>⌨️ Sneltoetsen</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            {[
+              { key: 'C', desc: 'Nieuwe email' }, { key: 'R', desc: 'Sync/refresh' },
+              { key: 'J', desc: 'Volgende email' }, { key: 'K', desc: 'Vorige email' },
+              { key: '/', desc: 'Zoeken' }, { key: 'Shift+?', desc: 'Sneltoetsen tonen' },
+              { key: 'Esc', desc: 'Sluit dialoog' },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center justify-between text-sm py-1">
+                <span className="text-muted-foreground">{s.desc}</span>
+                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">{s.key}</kbd>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
