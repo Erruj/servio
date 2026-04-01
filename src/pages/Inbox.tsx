@@ -45,6 +45,24 @@ const Inbox = () => {
   // Request notification permission on mount
   useEffect(() => { requestNotificationPermission(); }, []);
 
+  // Keyboard shortcuts
+  const shortcutsList = useMemo(() => [
+    { key: 'c', description: 'Nieuwe email', action: () => setComposeOpen(true) },
+    { key: 'r', description: 'Sync/refresh', action: () => handleSync() },
+    { key: 'j', description: 'Volgende email', action: () => {
+      const idx = mails.findIndex(m => m.id === selectedMail?.id);
+      if (idx < mails.length - 1) handleMailSelect(mails[idx + 1]);
+    }},
+    { key: 'k', description: 'Vorige email', action: () => {
+      const idx = mails.findIndex(m => m.id === selectedMail?.id);
+      if (idx > 0) handleMailSelect(mails[idx - 1]);
+    }},
+    { key: '/', description: 'Zoeken', action: () => document.querySelector<HTMLInputElement>('input[placeholder*="Zoek"]')?.focus() },
+    { key: '?', shift: true, description: 'Sneltoetsen tonen', action: () => setShowShortcuts(true) },
+    { key: 'Escape', description: 'Sluit dialoog', action: () => { setShowShortcuts(false); setComposeOpen(false); } },
+  ], [mails, selectedMail]);
+  useKeyboardShortcuts(shortcutsList);
+
   // Handle search with debounce — query database
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearchChange = useCallback((query: string) => {
