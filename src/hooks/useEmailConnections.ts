@@ -44,7 +44,7 @@ export function useEmailConnections() {
     if (!user) return;
     try {
       const { data, error } = await supabase
-        .from('email_connections')
+        .from('email_connections_safe' as any)
         .select('id, provider, email_address, is_active, last_sync_at, sync_error, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
