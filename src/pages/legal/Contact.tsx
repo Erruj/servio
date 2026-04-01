@@ -60,6 +60,11 @@ export default function Contact() {
       <Helmet>
         <title>Contact | Servio</title>
         <meta name="description" content="Neem contact op met Servio. We helpen je graag met al je vragen." />
+        <link rel="canonical" href="https://getservio.co/contact" />
+        <meta property="og:title" content="Contact | Servio" />
+        <meta property="og:description" content="Neem contact op met Servio. We reageren binnen 24 uur." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://getservio.co/contact" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

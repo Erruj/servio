@@ -266,9 +266,18 @@ Retourneer als gestructureerde tekst.`;
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error in ai-assistant function:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Error in ai-assistant function:', msg);
+    
+    let userMessage = 'Er is een fout opgetreden. Probeer het later opnieuw.';
+    if (msg.includes('Unauthorized') || msg.includes('authorization')) {
+      userMessage = 'Je sessie is verlopen. Log opnieuw in.';
+    } else if (msg.includes('rate') || msg.includes('429')) {
+      userMessage = 'Je hebt te veel verzoeken gedaan. Wacht even en probeer het opnieuw.';
+    }
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: userMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

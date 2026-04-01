@@ -6,8 +6,13 @@ export default function PrivacyPolicy() {
   return (
     <>
       <Helmet>
-        <title>Privacy Policy | Servio</title>
+        <title>Privacybeleid | Servio</title>
         <meta name="description" content="Lees ons privacybeleid en hoe Servio omgaat met je persoonsgegevens." />
+        <link rel="canonical" href="https://getservio.co/privacy" />
+        <meta property="og:title" content="Privacybeleid | Servio" />
+        <meta property="og:description" content="Hoe Servio omgaat met je persoonsgegevens en privacy." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://getservio.co/privacy" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
