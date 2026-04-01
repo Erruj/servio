@@ -180,6 +180,11 @@ function AppRoutes() {
           </SubscriptionGate>
         </ProtectedRoute>
       } />
+      <Route path="/administration/audit-log" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin']}>
+          <AuditLog />
+        </ProtectedRoute>
+      } />
       
       {/* Catch-all for 404 */}
       <Route path="*" element={<NotFound />} />
