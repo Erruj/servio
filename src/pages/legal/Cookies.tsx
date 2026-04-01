@@ -12,7 +12,7 @@ export default function Cookies() {
         <meta property="og:title" content="Cookiebeleid | Servio" />
         <meta property="og:description" content="Hoe Servio cookies en vergelijkbare technologieën gebruikt." />
         <meta property="og:type" content="website" />
-        <meta property:og:url" content="https://getservio.co/cookies" />
+        <meta property="og:url" content="https://getservio.co/cookies" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
