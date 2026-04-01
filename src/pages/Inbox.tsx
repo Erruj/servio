@@ -31,11 +31,13 @@ const Inbox = () => {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading } = useEmailConnections();
