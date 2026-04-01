@@ -3,6 +3,7 @@ import { Sparkles, LogOut, User as UserIcon } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { MobileNav } from '@/components/MobileNav';
 import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
