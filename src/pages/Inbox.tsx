@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MailItem } from '@/types';
 import { Sidebar } from '@/components/Sidebar';
@@ -7,17 +7,18 @@ import { Footer } from '@/components/Footer';
 import { Topbar } from '@/components/Topbar';
 import { MailList } from '@/components/MailList';
 import { ComposeEmail } from '@/components/ComposeEmail';
+import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Loader2, Mail, RefreshCw, Sparkles, PenSquare } from 'lucide-react';
+import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
-import { useEmailConnections, useEmails } from '@/hooks/useEmailConnections';
+import { useEmailConnections, useEmails, requestNotificationPermission } from '@/hooks/useEmailConnections';
 import { emailToMailItem } from '@/types/email';
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
 
-const AUTO_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const AUTO_SYNC_INTERVAL = 5 * 60 * 1000;
 
 const Inbox = () => {
   const { user, signOut } = useAuth();
@@ -32,70 +33,60 @@ const Inbox = () => {
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading } = useEmailConnections();
-  const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead } = useEmails();
+  const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails } = useEmails();
 
   const mails: MailItem[] = emails.map(emailToMailItem);
 
-  // Handle connection success message
+  // Request notification permission on mount
+  useEffect(() => { requestNotificationPermission(); }, []);
+
+  // Handle search with debounce — query database
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      if (query.trim().length >= 2) {
+        searchEmails(query);
+      } else if (query.trim().length === 0) {
+        refetchEmails();
+      }
+    }, 400);
+  }, [searchEmails, refetchEmails]);
+
   useEffect(() => {
     const connected = searchParams.get('connected');
     if (connected) {
       const providerName = connected === 'gmail' ? 'Gmail' : connected === 'outlook' ? 'Outlook' : 'mailbox';
-      toast({
-        title: "✅ Mailbox gekoppeld!",
-        description: `Je ${providerName} is gekoppeld. Emails worden nu gesynchroniseerd...`,
-      });
+      toast({ title: "✅ Mailbox gekoppeld!", description: `Je ${providerName} is gekoppeld. Emails worden nu gesynchroniseerd...` });
       handleSync();
     }
   }, [searchParams]);
 
-  // Auto-sync every 5 minutes
   useEffect(() => {
     if (hasConnections) {
       syncIntervalRef.current = setInterval(async () => {
-        try {
-          await syncEmails();
-          await refetchEmails();
-        } catch {
-          // Silent fail for background sync
-        }
+        try { await syncEmails(); await refetchEmails(); } catch { /* silent */ }
       }, AUTO_SYNC_INTERVAL);
     }
-    return () => {
-      if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
-    };
+    return () => { if (syncIntervalRef.current) clearInterval(syncIntervalRef.current); };
   }, [hasConnections, syncEmails, refetchEmails]);
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      // Race sync against a 10s timeout for UI responsiveness
-      const syncPromise = (async () => {
-        await syncEmails();
-        await refetchEmails();
-        return { completed: true };
-      })();
-      const timeoutPromise = new Promise<{ completed: false }>((resolve) =>
-        setTimeout(() => resolve({ completed: false }), 10000)
-      );
+      const syncPromise = (async () => { await syncEmails(); await refetchEmails(); return { completed: true }; })();
+      const timeoutPromise = new Promise<{ completed: false }>((resolve) => setTimeout(() => resolve({ completed: false }), 10000));
       const result = await Promise.race([syncPromise, timeoutPromise]);
       
       if (result.completed) {
         toast({ title: "📧 Emails bijgewerkt", description: "Je inbox is gesynchroniseerd." });
       } else {
-        toast({
-          title: "📧 Emails worden op de achtergrond gesynchroniseerd",
-          description: "Dit kan een moment duren. Je inbox wordt automatisch bijgewerkt.",
-        });
-        // Continue waiting in background and refresh when done
+        toast({ title: "📧 Emails worden op de achtergrond gesynchroniseerd", description: "Dit kan een moment duren. Je inbox wordt automatisch bijgewerkt." });
         syncPromise.then(() => refetchEmails()).catch(() => {});
       }
     } catch (error) {
-      toast({
-        title: "Sync mislukt",
-        description: error instanceof Error ? error.message : "Kon emails niet ophalen. Probeer later opnieuw.",
-        variant: "destructive"
-      });
+      toast({ title: "Sync mislukt", description: error instanceof Error ? error.message : "Kon emails niet ophalen.", variant: "destructive" });
     } finally {
       setIsSyncing(false);
     }
@@ -107,9 +98,7 @@ const Inbox = () => {
   };
 
   useEffect(() => {
-    if (mails.length > 0 && !selectedMail) {
-      setSelectedMail(mails[0]);
-    }
+    if (mails.length > 0 && !selectedMail) setSelectedMail(mails[0]);
   }, [mails, selectedMail]);
 
   const isLoading = connectionsLoading || emailsLoading;
@@ -117,25 +106,26 @@ const Inbox = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header user={user} onLogout={signOut} />
+      <RateLimitBanner />
       
       <div className="flex-1 flex">
         <Sidebar />
         
         <div className="flex-1 flex flex-col">
-          {/* Topbar with compose + sync */}
           <div className="flex items-center border-b border-border">
-            <div className="pl-4">
-              <Button
-                onClick={() => setComposeOpen(true)}
-                size="sm"
-                className="gap-2"
-              >
+            <div className="pl-4 flex items-center gap-2">
+              <Button onClick={() => setComposeOpen(true)} size="sm" className="gap-2">
                 <PenSquare className="h-4 w-4" />
                 <span className="hidden sm:inline">Nieuwe e-mail</span>
               </Button>
+              {'Notification' in window && Notification.permission === 'default' && (
+                <Button variant="ghost" size="sm" onClick={requestNotificationPermission} title="Notificaties inschakelen">
+                  <Bell className="h-4 w-4" />
+                </Button>
+              )}
             </div>
             <div className="flex-1">
-              <Topbar onSearchChange={setSearchQuery} onFilterChange={setFilter} />
+              <Topbar onSearchChange={handleSearchChange} onFilterChange={setFilter} />
             </div>
             {hasConnections && (
               <div className="pr-4">
@@ -163,8 +153,7 @@ const Inbox = () => {
                 <h2 className="text-2xl font-bold text-foreground mb-3">Koppel je mailbox</h2>
                 <p className="text-muted-foreground mb-6">Verbind je mailbox om je emails hier te zien en met AI te beantwoorden.</p>
                 <Button size="lg" onClick={() => window.location.href = '/mailbox-setup'}>
-                  <Mail className="h-5 w-5 mr-2" />
-                  Mailbox koppelen
+                  <Mail className="h-5 w-5 mr-2" /> Mailbox koppelen
                 </Button>
               </div>
             </div>
@@ -187,7 +176,8 @@ const Inbox = () => {
               {/* Desktop */}
               <div className="hidden lg:flex flex-1">
                 <div className="w-96 min-w-96">
-                  <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full" />
+                  <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
+                    onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
                 </div>
                 <div className="flex-1">
                   <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
@@ -207,7 +197,8 @@ const Inbox = () => {
                     </Suspense>
                   </div>
                 ) : (
-                  <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1" />
+                  <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
+                    onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
                 )}
               </div>
             </div>
@@ -215,12 +206,7 @@ const Inbox = () => {
         </div>
       </div>
 
-      <ComposeEmail
-        open={composeOpen}
-        onOpenChange={setComposeOpen}
-        hasConnection={hasConnections}
-      />
-      
+      <ComposeEmail open={composeOpen} onOpenChange={setComposeOpen} hasConnection={hasConnections} />
       <Footer />
     </div>
   );
