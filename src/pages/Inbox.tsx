@@ -230,6 +230,27 @@ const Inbox = () => {
       </div>
 
       <ComposeEmail open={composeOpen} onOpenChange={setComposeOpen} hasConnection={hasConnections} />
+
+      {/* Keyboard shortcuts dialog */}
+      <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>⌨️ Sneltoetsen</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            {[
+              { key: 'C', desc: 'Nieuwe email' }, { key: 'R', desc: 'Sync/refresh' },
+              { key: 'J', desc: 'Volgende email' }, { key: 'K', desc: 'Vorige email' },
+              { key: '/', desc: 'Zoeken' }, { key: 'Shift+?', desc: 'Sneltoetsen tonen' },
+              { key: 'Esc', desc: 'Sluit dialoog' },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center justify-between text-sm py-1">
+                <span className="text-muted-foreground">{s.desc}</span>
+                <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">{s.key}</kbd>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
