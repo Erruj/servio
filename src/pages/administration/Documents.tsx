@@ -107,40 +107,26 @@ export default function Documents() {
 
   const analyzeDocument = async (docId: string, fileName: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: {
-          query: `Analyseer dit document "${fileName}" en geef terug in JSON formaat: documentType (contract/offerte/factuur/overig), samenvatting (2-3 zinnen), belangrijkste punten (array van strings), risicos (array van strings), betrokken partijen (array van strings). Geef een realistische analyse.`,
-          type: 'document_analysis',
-          conversationHistory: []
-        }
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const doc = documents.find(d => d.id === docId);
+      const filePath = doc?.file_path || fileName;
+
+      const { data, error } = await supabase.functions.invoke('analyze-document', {
+        body: { documentId: docId, filePath, fileName },
+        headers: sessionData.session ? { Authorization: `Bearer ${sessionData.session.access_token}` } : undefined,
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      // Determine document type from filename
-      const lowerName = fileName.toLowerCase();
-      let docType: 'contract' | 'invoice' | 'offer' | 'other' | 'receipt' = 'other';
-      if (lowerName.includes('contract') || lowerName.includes('overeenkomst')) docType = 'contract';
-      else if (lowerName.includes('offerte') || lowerName.includes('quote')) docType = 'offer';
-      else if (lowerName.includes('factuur') || lowerName.includes('invoice')) docType = 'invoice';
-
-      const summary = data?.answer || `Document "${fileName}" is geanalyseerd. Het betreft een ${docType === 'other' ? 'algemeen document' : docType}.`;
-      const keyPoints = ['Document is succesvol verwerkt', 'Inhoud is geanalyseerd door AI', 'Classificatie: ' + docType];
-
-      await supabase.from('documents').update({
-        status: 'analyzed',
-        document_type: docType,
-        ai_summary: summary,
-        ai_key_points: keyPoints,
-        ai_risks: data?.answer ? ['Controleer de inhoud handmatig voor volledigheid'] : null,
-      }).eq('id', docId);
-
-      sonnerToast.success('Document geanalyseerd');
+      sonnerToast.success('Document geanalyseerd met OCR');
       loadDocuments();
     } catch (error) {
       console.error('Document analysis error:', error);
       await supabase.from('documents').update({ status: 'analysis_failed' }).eq('id', docId);
-      sonnerToast.error('Document analyse mislukt');
+      sonnerToast.error('Document analyse mislukt — probeer het opnieuw');
       loadDocuments();
     }
   };

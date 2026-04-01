@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react';
 import { MailItem, Category, Urgency, Sentiment } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { searchQuerySchema, sanitizeText, SecurityError } from '@/lib/security';
 import { useToast } from '@/hooks/use-toast';
+import { Mail, MailOpen, Trash2, CheckSquare } from 'lucide-react';
 
 interface MailListProps {
   mails: MailItem[];
@@ -14,53 +17,42 @@ interface MailListProps {
   searchQuery?: string;
   filter?: string;
   className?: string;
+  // Bulk actions
+  onMarkAsRead?: (ids: string[]) => void;
+  onMarkAsUnread?: (ids: string[]) => void;
+  onDeleteMultiple?: (ids: string[]) => void;
 }
 
 export function MailList({ 
-  mails, 
-  selectedMailId, 
-  onSelectMail, 
-  searchQuery = '', 
-  filter = 'all',
-  className 
+  mails, selectedMailId, onSelectMail, searchQuery = '', filter = 'all', className,
+  onMarkAsRead, onMarkAsUnread, onDeleteMultiple
 }: MailListProps) {
   const { toast } = useToast();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState(false);
+
   const filterLabels: Record<string, string> = {
-    all: 'Alle mails',
-    inbox: 'Inbox',
-    unread: 'Ongelezen',
-    starred: 'Met ster',
-    important: 'Belangrijk',
-    snoozed: 'Gesnoozed',
-    spam: 'Spam',
-    sent: 'Verzonden',
+    all: 'Alle mails', inbox: 'Inbox', unread: 'Ongelezen', starred: 'Met ster',
+    important: 'Belangrijk', snoozed: 'Gesnoozed', spam: 'Spam', sent: 'Verzonden',
   };
 
-  // Validate and sanitize search query
   const safeSearchQuery = useMemo(() => {
     if (!searchQuery) return '';
-    
     try {
-      if (searchQuery.length > 0) {
-        searchQuerySchema.parse(searchQuery);
-      }
+      if (searchQuery.length > 0) searchQuerySchema.parse(searchQuery);
       return sanitizeText(searchQuery);
     } catch (error) {
       if (error instanceof SecurityError) {
-        toast({
-          title: "Ongeldige zoekopdracht",
-          description: "Gebruik alleen letters, cijfers en basis leestekens.",
-          variant: "destructive"
-        });
+        toast({ title: "Ongeldige zoekopdracht", description: "Gebruik alleen letters, cijfers en basis leestekens.", variant: "destructive" });
       }
       return '';
     }
   }, [searchQuery, toast]);
+
   const filteredMails = useMemo(() => {
     let filtered = mails;
-    const hasLabel = (mail: MailItem, label: string) => mail.labels.some((mailLabel) => mailLabel.toUpperCase() === label);
+    const hasLabel = (mail: MailItem, label: string) => mail.labels.some(l => l.toUpperCase() === label);
 
-    // Apply search filter
     if (safeSearchQuery) {
       const query = safeSearchQuery.toLowerCase();
       filtered = filtered.filter(mail => 
@@ -71,64 +63,56 @@ export function MailList({
       );
     }
 
-    // Apply category/status filter
     switch (filter) {
-      case 'inbox':
-        filtered = filtered.filter((mail) => hasLabel(mail, 'INBOX'));
-        break;
-      case 'unread':
-        filtered = filtered.filter((mail) => mail.unread || hasLabel(mail, 'UNREAD'));
-        break;
-      case 'starred':
-        filtered = filtered.filter((mail) => hasLabel(mail, 'STARRED'));
-        break;
-      case 'important':
-        filtered = filtered.filter((mail) => hasLabel(mail, 'IMPORTANT'));
-        break;
-      case 'snoozed':
-        filtered = filtered.filter((mail) => hasLabel(mail, 'SNOOZED'));
-        break;
-      case 'spam':
-        filtered = filtered.filter((mail) => hasLabel(mail, 'SPAM'));
-        break;
-      case 'sent':
-        filtered = filtered.filter((mail) => hasLabel(mail, 'SENT'));
-        break;
-      default:
-        break;
+      case 'inbox': filtered = filtered.filter(m => hasLabel(m, 'INBOX')); break;
+      case 'unread': filtered = filtered.filter(m => m.unread || hasLabel(m, 'UNREAD')); break;
+      case 'starred': filtered = filtered.filter(m => hasLabel(m, 'STARRED')); break;
+      case 'important': filtered = filtered.filter(m => hasLabel(m, 'IMPORTANT')); break;
+      case 'snoozed': filtered = filtered.filter(m => hasLabel(m, 'SNOOZED')); break;
+      case 'spam': filtered = filtered.filter(m => hasLabel(m, 'SPAM')); break;
+      case 'sent': filtered = filtered.filter(m => hasLabel(m, 'SENT')); break;
     }
 
     return filtered;
   }, [mails, safeSearchQuery, filter]);
 
-  const handleMailClick = (mail: MailItem) => {
-    onSelectMail(mail);
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
 
-  // Get first 10 words from email body, stripping HTML tags
+  const selectAll = () => {
+    if (selectedIds.size === filteredMails.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredMails.map(m => m.id)));
+    }
+  };
+
+  const handleBulkAction = (action: 'read' | 'unread' | 'delete') => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    
+    if (action === 'read') onMarkAsRead?.(ids);
+    else if (action === 'unread') onMarkAsUnread?.(ids);
+    else if (action === 'delete') onDeleteMultiple?.(ids);
+    
+    setSelectedIds(new Set());
+    setBulkMode(false);
+  };
+
   const getEmailPreview = (body: string): string => {
-    // Strip HTML tags and decode entities
-    const textOnly = body
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/\s+/g, ' ')
-      .trim();
+    const textOnly = body.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
     const words = textOnly.split(' ').filter(w => w.length > 0).slice(0, 12);
     return words.join(' ') + (textOnly.split(' ').length > 12 ? '...' : '');
   };
 
-  // Heuristic analysis data for display
   const getMailAnalysis = (mail: MailItem) => {
-    // Simple heuristic categorization based on content
     let category: Category = 'Overig';
     let urgency: Urgency = 'Normaal';
-    let sentiment: Sentiment = 'Neutraal';
-
     const content = (mail.subject + ' ' + mail.body).toLowerCase();
     
     if (content.includes('retour') || content.includes('return')) category = 'Retour';
@@ -141,44 +125,53 @@ export function MailList({
     else if (content.includes('snel')) urgency = 'Normaal';
     else urgency = 'Laag';
 
-    if (content.includes('bedankt') || content.includes('geweldig')) sentiment = 'Positief';
-    else if (content.includes('boos') || content.includes('teleurstellend') || content.includes('onacceptabel')) sentiment = 'Negatief';
-
-    return { category, urgency, sentiment };
+    return { category, urgency };
   };
 
   const getCategoryClassName = (category: Category): string => {
-    const classes = {
-      'Retour': 'category-retour',
-      'Klacht': 'category-klacht', 
-      'Factuur': 'category-factuur',
-      'Vraag': 'category-vraag',
-      'Technisch': 'category-technisch',
-      'Overig': 'category-overig'
-    };
+    const classes = { 'Retour': 'category-retour', 'Klacht': 'category-klacht', 'Factuur': 'category-factuur', 'Vraag': 'category-vraag', 'Technisch': 'category-technisch', 'Overig': 'category-overig' };
     return classes[category];
   };
 
   const getUrgencyClassName = (urgency: Urgency): string => {
-    const classes = {
-      'Hoog': 'urgency-high',
-      'Normaal': 'urgency-normal', 
-      'Laag': 'urgency-low'
-    };
+    const classes = { 'Hoog': 'urgency-high', 'Normaal': 'urgency-normal', 'Laag': 'urgency-low' };
     return classes[urgency];
   };
 
   return (
-    <div className={cn('bg-card border-r border-border overflow-hidden shadow-card', className)}>
+    <div className={cn('bg-card border-r border-border overflow-hidden shadow-card flex flex-col', className)}>
       {/* Header */}
       <div className="p-6 border-b border-border bg-secondary/30">
-        <h2 className="text-xl font-bold text-foreground flex items-center">
-          📧 {filterLabels[filter] || 'Inbox'} ({filteredMails.length})
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Gesynchroniseerde mailboxberichten
-        </p>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground flex items-center">
+            📧 {filterLabels[filter] || 'Inbox'} ({filteredMails.length})
+          </h2>
+          <Button variant="ghost" size="sm" onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}>
+            <CheckSquare className="h-4 w-4" />
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">Gesynchroniseerde mailboxberichten</p>
       </div>
+
+      {/* Bulk action bar */}
+      {bulkMode && selectedIds.size > 0 && (
+        <div className="px-4 py-2 border-b border-border bg-primary/5 flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={selectAll}>
+            {selectedIds.size === filteredMails.length ? 'Deselecteer alles' : 'Selecteer alles'}
+          </Button>
+          <span className="text-sm text-muted-foreground">{selectedIds.size} geselecteerd</span>
+          <div className="flex-1" />
+          <Button variant="ghost" size="sm" onClick={() => handleBulkAction('read')} title="Markeer als gelezen">
+            <MailOpen className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleBulkAction('unread')} title="Markeer als ongelezen">
+            <Mail className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleBulkAction('delete')} className="text-destructive" title="Verwijderen">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Mail list */}
       <div className="overflow-y-auto flex-1">
@@ -190,16 +183,8 @@ export function MailList({
                 {safeSearchQuery ? 'Geen resultaten' : 'Geen nieuwe mails'}
               </h3>
               <p className="text-sm">
-                {safeSearchQuery 
-                  ? `Geen emails gevonden voor "${safeSearchQuery}"`
-                  : 'Er zijn momenteel geen emails in je inbox'
-                }
+                {safeSearchQuery ? `Geen emails gevonden voor "${safeSearchQuery}"` : 'Er zijn momenteel geen emails in je inbox'}
               </p>
-              {safeSearchQuery && (
-                <p className="text-xs mt-2 text-muted-foreground">
-                  Probeer een andere zoekterm of verwijder de filters
-                </p>
-              )}
             </div>
           </div>
         ) : (
@@ -207,81 +192,53 @@ export function MailList({
             {filteredMails.map((mail) => {
               const isSelected = mail.id === selectedMailId;
               const analysis = getMailAnalysis(mail);
-              const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { 
-                addSuffix: true, 
-                locale: nl 
-              });
+              const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true, locale: nl });
               const emailPreview = getEmailPreview(mail.body);
               const senderName = mail.from.split('@')[0].replace('.', ' ');
+              const isChecked = selectedIds.has(mail.id);
 
               return (
                 <div
                   key={mail.id}
-                  onClick={() => handleMailClick(mail)}
+                  onClick={() => !bulkMode && onSelectMail(mail)}
                   className={cn(
                     'p-5 cursor-pointer transition-all duration-200 border-b border-border hover:bg-secondary/50',
                     isSelected && 'bg-primary/10 border-l-4 border-l-primary shadow-card ring-1 ring-primary/20',
-                    mail.unread && 'bg-secondary/30'
+                    mail.unread && 'bg-secondary/30',
+                    isChecked && 'bg-accent/20'
                   )}
                 >
-                   {/* Header row */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      {/* Avatar */}
-                      <div className="avatar-placeholder">
-                        {senderName.charAt(0).toUpperCase()}
-                      </div>
-                      
+                      {bulkMode && (
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={() => toggleSelect(mail.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                      <div className="avatar-placeholder">{senderName.charAt(0).toUpperCase()}</div>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-foreground text-sm">
-                          {senderName}
-                        </span>
-                        {mail.unread && (
-                          <span className="text-xs text-primary font-medium">Nieuw</span>
-                        )}
+                        <span className="font-semibold text-foreground text-sm">{senderName}</span>
+                        {mail.unread && <span className="text-xs text-primary font-medium">Nieuw</span>}
                       </div>
-                      
-                      {/* Urgency indicator */}
-                      <div className={cn(
-                        'w-3 h-3 rounded-full shadow-sm',
-                        getUrgencyClassName(analysis.urgency)
-                      )} />
+                      <div className={cn('w-3 h-3 rounded-full shadow-sm', getUrgencyClassName(analysis.urgency))} />
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {timeAgo}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{timeAgo}</span>
                   </div>
 
-                  {/* Subject */}
-                  <h3 className="font-semibold text-foreground mb-2 line-clamp-1 text-base">
-                    {mail.subject}
-                  </h3>
+                  <h3 className="font-semibold text-foreground mb-2 line-clamp-1 text-base">{mail.subject}</h3>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{emailPreview}</p>
 
-                  {/* Email preview - first 10 words */}
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {emailPreview}
-                  </p>
-
-                  {/* Category badge and attachments */}
                   <div className="flex items-center justify-between">
-                    <Badge 
-                      variant="outline" 
-                      className={cn('text-xs font-medium border', getCategoryClassName(analysis.category))}
-                    >
+                    <Badge variant="outline" className={cn('text-xs font-medium border', getCategoryClassName(analysis.category))}>
                       {analysis.category}
                     </Badge>
-                    
                     <div className="flex items-center space-x-2">
                       {mail.attachments && mail.attachments.length > 0 && (
-                        <Badge variant="outline" className="text-xs">
-                          📎 {mail.attachments.length}
-                        </Badge>
+                        <Badge variant="outline" className="text-xs">📎 {mail.attachments.length}</Badge>
                       )}
-                      {mail.unread && (
-                        <Badge variant="default" className="text-xs bg-primary">
-                          Nieuw
-                        </Badge>
-                      )}
+                      {mail.unread && <Badge variant="default" className="text-xs bg-primary">Nieuw</Badge>}
                     </div>
                   </div>
                 </div>
