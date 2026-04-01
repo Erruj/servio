@@ -8,6 +8,11 @@ export default function Terms() {
       <Helmet>
         <title>Algemene Voorwaarden | Servio</title>
         <meta name="description" content="Lees de algemene voorwaarden van Servio voor het gebruik van onze diensten." />
+        <link rel="canonical" href="https://getservio.co/terms" />
+        <meta property="og:title" content="Algemene Voorwaarden | Servio" />
+        <meta property="og:description" content="De algemene voorwaarden voor het gebruik van Servio." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://getservio.co/terms" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

@@ -90,7 +90,7 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   return (
-    <div className={cn('w-64 bg-card border-r border-border flex flex-col shadow-card', className)}>
+    <div className={cn('hidden md:flex w-64 bg-card border-r border-border flex-col shadow-card', className)}>
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center space-x-3">
