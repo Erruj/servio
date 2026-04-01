@@ -290,6 +290,13 @@ export type Database = {
             referencedRelation: "email_connections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "emails_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "email_connections_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       invoices: {
@@ -647,7 +654,57 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      email_connections_safe: {
+        Row: {
+          created_at: string | null
+          email_address: string | null
+          id: string | null
+          imap_host: string | null
+          imap_port: number | null
+          is_active: boolean | null
+          last_sync_at: string | null
+          provider: string | null
+          smtp_host: string | null
+          smtp_port: number | null
+          sync_error: string | null
+          updated_at: string | null
+          use_ssl: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_address?: string | null
+          id?: string | null
+          imap_host?: string | null
+          imap_port?: number | null
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          provider?: string | null
+          smtp_host?: string | null
+          smtp_port?: number | null
+          sync_error?: string | null
+          updated_at?: string | null
+          use_ssl?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_address?: string | null
+          id?: string | null
+          imap_host?: string | null
+          imap_port?: number | null
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          provider?: string | null
+          smtp_host?: string | null
+          smtp_port?: number | null
+          sync_error?: string | null
+          updated_at?: string | null
+          use_ssl?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
