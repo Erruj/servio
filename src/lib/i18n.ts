@@ -28,6 +28,12 @@ const resources = {
       documentsDescription: 'Contracts, offers and other documents',
       exports: 'Exports',
       exportsDescription: 'Export your financial data',
+      customers: 'Customers',
+      customersDescription: 'Manage your customers and contacts',
+      quotes: 'Quotes',
+      quotesDescription: 'Create and manage quotes',
+      timeTracking: 'Time Tracking',
+      timeTrackingDescription: 'Track and manage your working hours',
       
       // Financial terms
       totalIncome: 'Total Income',
