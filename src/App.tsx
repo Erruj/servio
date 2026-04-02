@@ -32,6 +32,9 @@ import Documents from "./pages/administration/Documents";
 import Exports from "./pages/administration/Exports";
 import AuditLog from "./pages/administration/AuditLog";
 import TeamManagement from "./pages/administration/TeamManagement";
+import Customers from "./pages/administration/Customers";
+import Quotes from "./pages/administration/Quotes";
+import TimeTracking from "./pages/administration/TimeTracking";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 
