@@ -188,6 +188,27 @@ function AppRoutes() {
           <AuditLog />
         </ProtectedRoute>
       } />
+      <Route path="/administration/customers" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <SubscriptionGate feature="Klanten">
+            <Customers />
+          </SubscriptionGate>
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/quotes" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <SubscriptionGate feature="Offertes">
+            <Quotes />
+          </SubscriptionGate>
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/time-tracking" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <SubscriptionGate feature="Urenregistratie">
+            <TimeTracking />
+          </SubscriptionGate>
+        </ProtectedRoute>
+      } />
       
       {/* Catch-all for 404 */}
       <Route path="*" element={<NotFound />} />
