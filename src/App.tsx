@@ -32,6 +32,9 @@ import Documents from "./pages/administration/Documents";
 import Exports from "./pages/administration/Exports";
 import AuditLog from "./pages/administration/AuditLog";
 import TeamManagement from "./pages/administration/TeamManagement";
+import Customers from "./pages/administration/Customers";
+import Quotes from "./pages/administration/Quotes";
+import TimeTracking from "./pages/administration/TimeTracking";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 
@@ -183,6 +186,27 @@ function AppRoutes() {
       <Route path="/administration/audit-log" element={
         <ProtectedRoute requiredRoles={['owner', 'admin']}>
           <AuditLog />
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/customers" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <SubscriptionGate feature="Klanten">
+            <Customers />
+          </SubscriptionGate>
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/quotes" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <SubscriptionGate feature="Offertes">
+            <Quotes />
+          </SubscriptionGate>
+        </ProtectedRoute>
+      } />
+      <Route path="/administration/time-tracking" element={
+        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
+          <SubscriptionGate feature="Urenregistratie">
+            <TimeTracking />
+          </SubscriptionGate>
         </ProtectedRoute>
       } />
       

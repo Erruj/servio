@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield } from 'lucide-react';
+import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield, ClipboardList, Clock, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
@@ -23,7 +23,10 @@ const getAdministrationNavigation = (t: any) => [
   { name: t('financialOverview'), href: '/administration/overview', icon: Wallet, feature: 'administration' },
   { name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain, feature: 'ai_assistant' },
   { name: t('invoices'), href: '/administration/invoices', icon: Receipt, feature: 'administration' },
+  { name: 'Offertes', href: '/administration/quotes', icon: ClipboardList, feature: 'administration' },
   { name: t('receipts'), href: '/administration/receipts', icon: Upload, feature: 'administration' },
+  { name: 'Klanten', href: '/administration/customers', icon: UserCircle, feature: 'administration' },
+  { name: 'Uren', href: '/administration/time-tracking', icon: Clock, feature: 'administration' },
   { name: t('documents'), href: '/administration/documents', icon: FileBox, feature: 'documents' },
   { name: t('exports'), href: '/administration/exports', icon: Upload, feature: 'exports' },
   { name: 'Audit Log', href: '/administration/audit-log', icon: Shield, feature: null },

@@ -28,6 +28,12 @@ const resources = {
       documentsDescription: 'Contracts, offers and other documents',
       exports: 'Exports',
       exportsDescription: 'Export your financial data',
+      customers: 'Customers',
+      customersDescription: 'Manage your customers and contacts',
+      quotes: 'Quotes',
+      quotesDescription: 'Create and manage quotes',
+      timeTracking: 'Time Tracking',
+      timeTrackingDescription: 'Track and manage your working hours',
       
       // Financial terms
       totalIncome: 'Total Income',
@@ -243,6 +249,12 @@ const resources = {
       documentsDescription: 'Contracten, offertes en andere documenten',
       exports: 'Exports',
       exportsDescription: 'Exporteer je financiële gegevens',
+      customers: 'Klanten',
+      customersDescription: 'Beheer je klanten en relaties',
+      quotes: 'Offertes',
+      quotesDescription: 'Maak en beheer je offertes',
+      timeTracking: 'Urenregistratie',
+      timeTrackingDescription: 'Registreer en beheer je werkuren',
       
       // Financial terms
       totalIncome: 'Totale Inkomsten',

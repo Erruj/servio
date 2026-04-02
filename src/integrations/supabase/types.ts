@@ -107,6 +107,57 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          postal_code: string | null
+          updated_at: string
+          user_id: string
+          vat_number: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string
+          user_id: string
+          vat_number?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string
+          user_id?: string
+          vat_number?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           ai_key_points: Json | null
@@ -223,6 +274,7 @@ export type Database = {
           connection_id: string
           created_at: string
           external_id: string
+          follow_up_at: string | null
           from_email: string
           from_name: string | null
           has_attachments: boolean | null
@@ -232,6 +284,7 @@ export type Database = {
           labels: string[] | null
           received_at: string
           snippet: string | null
+          snoozed_until: string | null
           subject: string | null
           thread_id: string | null
           to_emails: string[] | null
@@ -245,6 +298,7 @@ export type Database = {
           connection_id: string
           created_at?: string
           external_id: string
+          follow_up_at?: string | null
           from_email: string
           from_name?: string | null
           has_attachments?: boolean | null
@@ -254,6 +308,7 @@ export type Database = {
           labels?: string[] | null
           received_at: string
           snippet?: string | null
+          snoozed_until?: string | null
           subject?: string | null
           thread_id?: string | null
           to_emails?: string[] | null
@@ -267,6 +322,7 @@ export type Database = {
           connection_id?: string
           created_at?: string
           external_id?: string
+          follow_up_at?: string | null
           from_email?: string
           from_name?: string | null
           has_attachments?: boolean | null
@@ -276,6 +332,7 @@ export type Database = {
           labels?: string[] | null
           received_at?: string
           snippet?: string | null
+          snoozed_until?: string | null
           subject?: string | null
           thread_id?: string | null
           to_emails?: string[] | null
@@ -305,6 +362,7 @@ export type Database = {
           amount: number | null
           category: Database["public"]["Enums"]["transaction_category"] | null
           created_at: string | null
+          customer_id: string | null
           due_date: string | null
           file_path: string
           id: string
@@ -322,6 +380,7 @@ export type Database = {
           amount?: number | null
           category?: Database["public"]["Enums"]["transaction_category"] | null
           created_at?: string | null
+          customer_id?: string | null
           due_date?: string | null
           file_path: string
           id?: string
@@ -339,6 +398,7 @@ export type Database = {
           amount?: number | null
           category?: Database["public"]["Enums"]["transaction_category"] | null
           created_at?: string | null
+          customer_id?: string | null
           due_date?: string | null
           file_path?: string
           id?: string
@@ -352,6 +412,13 @@ export type Database = {
           vat_amount?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_supplier_id_fkey"
             columns: ["supplier_id"]
@@ -390,6 +457,106 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quote_lines: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          quantity: number
+          quote_id: string
+          sort_order: number
+          total: number
+          unit_price: number
+          vat_rate: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          quantity?: number
+          quote_id: string
+          sort_order?: number
+          total?: number
+          unit_price?: number
+          vat_rate?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          quantity?: number
+          quote_id?: string
+          sort_order?: number
+          total?: number
+          unit_price?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_lines_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          id: string
+          notes: string | null
+          quote_number: string | null
+          status: string
+          subtotal: number | null
+          total: number | null
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+          vat_amount: number | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          notes?: string | null
+          quote_number?: string | null
+          status?: string
+          subtotal?: number | null
+          total?: number | null
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+          vat_amount?: number | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          notes?: string | null
+          quote_number?: string | null
+          status?: string
+          subtotal?: number | null
+          total?: number | null
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+          vat_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       receipts: {
         Row: {
@@ -498,6 +665,62 @@ export type Database = {
           token?: string
         }
         Relationships: []
+      }
+      time_entries: {
+        Row: {
+          billable: boolean | null
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          duration_minutes: number | null
+          end_time: string | null
+          hourly_rate: number | null
+          id: string
+          invoiced: boolean | null
+          project: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billable?: boolean | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          invoiced?: boolean | null
+          project?: string | null
+          start_time: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billable?: boolean | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          invoiced?: boolean | null
+          project?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
