@@ -248,11 +248,17 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      // Save AI correction if user edited the reply
+      if (activeTab === 'ai' && originalAiReplyRef.current && currentReply !== originalAiReplyRef.current) {
+        saveAiCorrection(mail.id, originalAiReplyRef.current, currentReply, tone);
+      }
+
       toast({
         title: "✅ E-mail verzonden",
         description: "Je antwoord is succesvol verzonden.",
       });
 
+      originalAiReplyRef.current = '';
       setAiSuggestions([]);
       setSelectedSuggestion(null);
       setCustomReply('');
