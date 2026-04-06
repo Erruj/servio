@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { MailItem, AnalysisResult, ToneOfVoice, Language } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,7 @@ import { detectFaq, addAiLog, getAiLogs } from '@/lib/ai';
 import { generateSmartReplies, getLocalizedErrorMessage, AiError } from '@/lib/ai/orchestrator';
 import type { ReplyVariant } from '@/lib/ai/providers';
 import { useToast } from '@/hooks/use-toast';
+import { usePersonalization } from '@/hooks/usePersonalization';
 import { useTranslation } from 'react-i18next';
 
 // Using ReplyVariant from providers instead of local interface
@@ -59,6 +60,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { saveAiCorrection } = usePersonalization();
+  const originalAiReplyRef = useRef<string>('');
 
   // Auto-generate suggestions when mail or analysis changes
   useEffect(() => {
@@ -93,6 +96,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
         setAiSuggestions(result.variants);
         setSelectedSuggestion(result.variants[0]);
         setCustomReply(result.variants[0].content);
+        originalAiReplyRef.current = result.variants[0].content;
         setCanRetry(false);
       }
     } catch (error) {
@@ -174,6 +178,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const handleSuggestionSelect = (suggestion: ReplyVariant) => {
     setSelectedSuggestion(suggestion);
     setCustomReply(suggestion.content);
+    originalAiReplyRef.current = suggestion.content;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,11 +249,17 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      // Save AI correction if user edited the reply
+      if (activeTab === 'ai' && originalAiReplyRef.current && currentReply !== originalAiReplyRef.current) {
+        saveAiCorrection(mail.id, originalAiReplyRef.current, currentReply, tone);
+      }
+
       toast({
         title: "✅ E-mail verzonden",
         description: "Je antwoord is succesvol verzonden.",
       });
 
+      originalAiReplyRef.current = '';
       setAiSuggestions([]);
       setSelectedSuggestion(null);
       setCustomReply('');

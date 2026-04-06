@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_corrections: {
+        Row: {
+          corrected_reply: string
+          created_at: string | null
+          email_id: string | null
+          id: string
+          original_reply: string
+          tone: string | null
+          user_id: string
+        }
+        Insert: {
+          corrected_reply: string
+          created_at?: string | null
+          email_id?: string | null
+          id?: string
+          original_reply: string
+          tone?: string | null
+          user_id: string
+        }
+        Update: {
+          corrected_reply?: string
+          created_at?: string | null
+          email_id?: string | null
+          id?: string
+          original_reply?: string
+          tone?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_corrections_email_id_fkey"
+            columns: ["email_id"]
+            isOneToOne: false
+            referencedRelation: "emails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_insights: {
         Row: {
           answer: string
@@ -811,14 +849,23 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          accent_color: string | null
+          ai_custom_personality: string | null
+          ai_personality: string | null
           ai_tone: string | null
           auto_categorize: boolean | null
           auto_reply_enabled: boolean | null
           auto_vat_calculation: boolean | null
+          compact_layout: boolean | null
           created_at: string
+          dashboard_widgets: Json | null
+          email_signature: string | null
           id: string
           language: string | null
           monthly_summary: boolean | null
+          quick_actions: Json | null
+          sidebar_favorites: string[] | null
+          sidebar_order: Json | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_current_period_end: string | null
@@ -832,14 +879,23 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accent_color?: string | null
+          ai_custom_personality?: string | null
+          ai_personality?: string | null
           ai_tone?: string | null
           auto_categorize?: boolean | null
           auto_reply_enabled?: boolean | null
           auto_vat_calculation?: boolean | null
+          compact_layout?: boolean | null
           created_at?: string
+          dashboard_widgets?: Json | null
+          email_signature?: string | null
           id?: string
           language?: string | null
           monthly_summary?: boolean | null
+          quick_actions?: Json | null
+          sidebar_favorites?: string[] | null
+          sidebar_order?: Json | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_current_period_end?: string | null
@@ -853,14 +909,23 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accent_color?: string | null
+          ai_custom_personality?: string | null
+          ai_personality?: string | null
           ai_tone?: string | null
           auto_categorize?: boolean | null
           auto_reply_enabled?: boolean | null
           auto_vat_calculation?: boolean | null
+          compact_layout?: boolean | null
           created_at?: string
+          dashboard_widgets?: Json | null
+          email_signature?: string | null
           id?: string
           language?: string | null
           monthly_summary?: boolean | null
+          quick_actions?: Json | null
+          sidebar_favorites?: string[] | null
+          sidebar_order?: Json | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_current_period_end?: string | null
