@@ -33,6 +33,7 @@ import { detectFaq, addAiLog, getAiLogs } from '@/lib/ai';
 import { generateSmartReplies, getLocalizedErrorMessage, AiError } from '@/lib/ai/orchestrator';
 import type { ReplyVariant } from '@/lib/ai/providers';
 import { useToast } from '@/hooks/use-toast';
+import { usePersonalization } from '@/hooks/usePersonalization';
 import { useTranslation } from 'react-i18next';
 
 // Using ReplyVariant from providers instead of local interface
