@@ -96,6 +96,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
         setAiSuggestions(result.variants);
         setSelectedSuggestion(result.variants[0]);
         setCustomReply(result.variants[0].content);
+        originalAiReplyRef.current = result.variants[0].content;
         setCanRetry(false);
       }
     } catch (error) {
