@@ -60,6 +60,8 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { saveAiCorrection } = usePersonalization();
+  const originalAiReplyRef = useRef<string>('');
 
   // Auto-generate suggestions when mail or analysis changes
   useEffect(() => {
