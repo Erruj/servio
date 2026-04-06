@@ -1,50 +1,56 @@
+import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield, ClipboardList, Clock, UserCircle } from 'lucide-react';
+import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield, ClipboardList, Clock, UserCircle, Star, GripVertical, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { UsageBadge } from '@/components/UsageBadge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { usePersonalization } from '@/hooks/usePersonalization';
+import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
   className?: string;
 }
 
 const getNavigation = (t: any) => [
-  { name: t('inbox'), href: '/app', icon: Mail, feature: null },
-  { name: t('dashboard'), href: '/dashboard', icon: PieChart, feature: null },
-  { name: t('statistics'), href: '/stats', icon: BarChart3, feature: 'advanced_stats' },
-  { name: t('templates'), href: '/templates', icon: FileText, feature: null },
-  { name: t('settings'), href: '/settings', icon: Settings, feature: null },
+  { id: 'inbox', name: t('inbox'), href: '/app', icon: Mail, feature: null },
+  { id: 'dashboard', name: t('dashboard'), href: '/dashboard', icon: PieChart, feature: null },
+  { id: 'statistics', name: t('statistics'), href: '/stats', icon: BarChart3, feature: 'advanced_stats' },
+  { id: 'templates', name: t('templates'), href: '/templates', icon: FileText, feature: null },
+  { id: 'settings', name: t('settings'), href: '/settings', icon: Settings, feature: null },
 ];
 
 const getAdministrationNavigation = (t: any) => [
-  { name: t('financialOverview'), href: '/administration/overview', icon: Wallet, feature: 'administration' },
-  { name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain, feature: 'ai_assistant' },
-  { name: t('invoices'), href: '/administration/invoices', icon: Receipt, feature: 'administration' },
-  { name: 'Offertes', href: '/administration/quotes', icon: ClipboardList, feature: 'administration' },
-  { name: t('receipts'), href: '/administration/receipts', icon: Upload, feature: 'administration' },
-  { name: 'Klanten', href: '/administration/customers', icon: UserCircle, feature: 'administration' },
-  { name: 'Uren', href: '/administration/time-tracking', icon: Clock, feature: 'administration' },
-  { name: t('documents'), href: '/administration/documents', icon: FileBox, feature: 'documents' },
-  { name: t('exports'), href: '/administration/exports', icon: Upload, feature: 'exports' },
-  { name: 'Audit Log', href: '/administration/audit-log', icon: Shield, feature: null },
+  { id: 'admin-overview', name: t('financialOverview'), href: '/administration/overview', icon: Wallet, feature: 'administration' },
+  { id: 'admin-ai', name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain, feature: 'ai_assistant' },
+  { id: 'admin-invoices', name: t('invoices'), href: '/administration/invoices', icon: Receipt, feature: 'administration' },
+  { id: 'admin-quotes', name: 'Offertes', href: '/administration/quotes', icon: ClipboardList, feature: 'administration' },
+  { id: 'admin-receipts', name: t('receipts'), href: '/administration/receipts', icon: Upload, feature: 'administration' },
+  { id: 'admin-customers', name: 'Klanten', href: '/administration/customers', icon: UserCircle, feature: 'administration' },
+  { id: 'admin-time', name: 'Uren', href: '/administration/time-tracking', icon: Clock, feature: 'administration' },
+  { id: 'admin-docs', name: t('documents'), href: '/administration/documents', icon: FileBox, feature: 'documents' },
+  { id: 'admin-exports', name: t('exports'), href: '/administration/exports', icon: Upload, feature: 'exports' },
+  { id: 'admin-audit', name: 'Audit Log', href: '/administration/audit-log', icon: Shield, feature: null },
 ];
 
 interface NavItemProps {
-  item: { name: string; href: string; icon: any; feature: string | null };
+  item: { id?: string; name: string; href: string; icon: any; feature: string | null };
   isActive: boolean;
   isLocked: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
   requiredLabel?: string;
+  showFavControls?: boolean;
 }
 
-function NavItem({ item, isActive, isLocked, requiredLabel }: NavItemProps) {
+function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requiredLabel, showFavControls }: NavItemProps) {
   const content = (
     <NavLink
       to={item.href}
       className={cn(
-        'flex items-center px-4 py-4 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
+        'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
         isActive
           ? 'bg-primary text-primary-foreground shadow-card'
           : isLocked
@@ -52,9 +58,20 @@ function NavItem({ item, isActive, isLocked, requiredLabel }: NavItemProps) {
             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
       )}
     >
-      <item.icon className="mr-3 h-5 w-5" />
-      <span className="flex-1">{item.name}</span>
+      <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+      <span className="flex-1 truncate">{item.name}</span>
       {isLocked && <Lock className="h-4 w-4 ml-2 text-muted-foreground/50" />}
+      {showFavControls && !isLocked && onToggleFavorite && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(); }}
+          className={cn(
+            'ml-1 opacity-0 group-hover:opacity-100 transition-opacity',
+            isFavorite && 'opacity-100'
+          )}
+        >
+          <Star className={cn('h-3.5 w-3.5', isFavorite ? 'fill-primary text-primary' : 'text-muted-foreground')} />
+        </button>
+      )}
     </NavLink>
   );
 
@@ -62,9 +79,7 @@ function NavItem({ item, isActive, isLocked, requiredLabel }: NavItemProps) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>{content}</TooltipTrigger>
-        <TooltipContent side="right">
-          Beschikbaar vanaf {requiredLabel}
-        </TooltipContent>
+        <TooltipContent side="right">Beschikbaar vanaf {requiredLabel}</TooltipContent>
       </Tooltip>
     );
   }
@@ -77,8 +92,18 @@ export function Sidebar({ className }: SidebarProps) {
   const { t } = useTranslation();
   const { permissions } = useRoleAccess();
   const { canAccessAdministration, canAccessAIAssistant, canAccessDocuments, canAccessExports, canAccessAdvancedStats, canManageTeam, requiredTierLabel } = useFeatureAccess();
+  const { settings: personalization, updateSettings } = usePersonalization();
+  const [showFavControls, setShowFavControls] = useState(false);
+
   const navigation = getNavigation(t);
   const adminNavigation = getAdministrationNavigation(t);
+
+  const favorites = personalization.sidebarFavorites || [];
+
+  const toggleFavorite = (id: string) => {
+    const newFavs = favorites.includes(id) ? favorites.filter(f => f !== id) : [...favorites, id];
+    updateSettings({ sidebarFavorites: newFavs });
+  };
 
   const isFeatureLocked = (feature: string | null): boolean => {
     if (!feature) return false;
@@ -92,6 +117,18 @@ export function Sidebar({ className }: SidebarProps) {
       default: return false;
     }
   };
+
+  // Build ordered main nav
+  const orderedMainNav = personalization.sidebarOrder
+    ? personalization.sidebarOrder.map(id => navigation.find(n => n.id === id)).filter(Boolean) as typeof navigation
+    : navigation;
+  // Add any items not in the order
+  const remainingMain = navigation.filter(n => !orderedMainNav.some(o => o.id === n.id));
+  const finalMainNav = [...orderedMainNav, ...remainingMain];
+
+  // Favorites section - items from any section that are favorited
+  const allItems = [...navigation, ...adminNavigation];
+  const favoriteItems = favorites.map(id => allItems.find(i => i.id === id)).filter(Boolean) as typeof allItems;
 
   return (
     <div className={cn('hidden md:flex w-64 bg-card border-r border-border flex-col shadow-card', className)}>
@@ -109,33 +146,50 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-6 space-y-6 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+        {/* Favorites */}
+        {favoriteItems.length > 0 && (
+          <div className="space-y-1">
+            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+              <Star className="h-3 w-3 fill-primary text-primary" /> Favorieten
+            </h3>
+            {favoriteItems.map((item) => (
+              <NavItem
+                key={`fav-${item.id}`}
+                item={item}
+                isActive={location.pathname === item.href}
+                isLocked={isFeatureLocked(item.feature)}
+                requiredLabel={item.feature ? requiredTierLabel(item.feature) : undefined}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Main Navigation */}
-        <div className="space-y-3">
-          {navigation.filter(item => {
+        <div className="space-y-1">
+          {finalMainNav.filter(item => {
             if (item.href === '/app' && !permissions.canAccessInbox) return false;
             if (item.href === '/stats' && !permissions.canAccessStatistics) return false;
             if (item.href === '/templates' && !permissions.canAccessTemplates) return false;
             if (item.href === '/settings' && !permissions.canAccessSettings) return false;
             return true;
-          }).map((item) => {
-            const isActive = location.pathname === item.href;
-            const locked = isFeatureLocked(item.feature);
-            return (
-              <NavItem
-                key={item.name}
-                item={item}
-                isActive={isActive}
-                isLocked={locked}
-                requiredLabel={item.feature ? requiredTierLabel(item.feature) : undefined}
-              />
-            );
-          })}
+          }).map((item) => (
+            <NavItem
+              key={item.id}
+              item={item}
+              isActive={location.pathname === item.href}
+              isLocked={isFeatureLocked(item.feature)}
+              isFavorite={favorites.includes(item.id)}
+              onToggleFavorite={() => toggleFavorite(item.id)}
+              requiredLabel={item.feature ? requiredTierLabel(item.feature) : undefined}
+              showFavControls={showFavControls}
+            />
+          ))}
         </div>
 
         {/* Administration Section */}
         {permissions.canAccessAdministration && (
-          <div className="space-y-3">
+          <div className="space-y-1">
             <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t('administration')}
             </h3>
@@ -143,36 +197,58 @@ export function Sidebar({ className }: SidebarProps) {
               if (item.href === '/administration/ai-assistant' && !permissions.canUseAI) return false;
               if (item.href === '/administration/exports' && !permissions.canExportData) return false;
               return true;
-            }).map((item) => {
-              const isActive = location.pathname === item.href;
-              const locked = isFeatureLocked(item.feature);
-              return (
-                <NavItem
-                  key={item.name}
-                  item={item}
-                  isActive={isActive}
-                  isLocked={locked}
-                  requiredLabel={item.feature ? requiredTierLabel(item.feature) : undefined}
-                />
-              );
-            })}
+            }).map((item) => (
+              <NavItem
+                key={item.id}
+                item={item}
+                isActive={location.pathname === item.href}
+                isLocked={isFeatureLocked(item.feature)}
+                isFavorite={favorites.includes(item.id)}
+                onToggleFavorite={() => toggleFavorite(item.id)}
+                requiredLabel={item.feature ? requiredTierLabel(item.feature) : undefined}
+                showFavControls={showFavControls}
+              />
+            ))}
           </div>
         )}
 
         {/* Team Management */}
         {permissions.canManageTeam && (
-          <div className="space-y-3 mt-6">
+          <div className="space-y-1 mt-2">
             <NavItem
-              item={{ name: t('teamManagement'), href: '/team', icon: Users, feature: 'team_management' }}
+              item={{ id: 'team', name: t('teamManagement'), href: '/team', icon: Users, feature: 'team_management' }}
               isActive={location.pathname === '/team'}
               isLocked={isFeatureLocked('team_management')}
               requiredLabel={requiredTierLabel('team_management')}
             />
           </div>
         )}
+
+        {/* Sidebar customize toggle */}
+        <div className="pt-2 border-t border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-xs text-muted-foreground"
+            onClick={() => setShowFavControls(!showFavControls)}
+          >
+            <Star className="h-3.5 w-3.5 mr-2" />
+            {showFavControls ? 'Klaar met aanpassen' : 'Favorieten beheren'}
+          </Button>
+          {showFavControls && favorites.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-xs text-muted-foreground"
+              onClick={() => updateSettings({ sidebarFavorites: [] })}
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-2" />
+              Reset favorieten
+            </Button>
+          )}
+        </div>
       </nav>
 
-      {/* Usage tracker for Starter */}
       <UsageBadge />
 
       {/* Footer */}

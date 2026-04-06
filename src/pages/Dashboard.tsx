@@ -9,14 +9,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useUsageTracking } from '@/hooks/useUsageTracking';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
-import { 
+import { usePersonalization } from '@/hooks/usePersonalization';
+import {
   Mail, Clock, Zap, CheckCircle, BarChart3, Calendar, ArrowRight,
-  FileText, Loader2, TrendingUp, Receipt, FileBox, Sparkles, Users
+  FileText, Loader2, TrendingUp, Receipt, FileBox, Sparkles, Users,
+  Eye, EyeOff, GripVertical, RotateCcw, Settings as SettingsIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -44,19 +47,46 @@ interface RecentEmail {
   is_read: boolean;
 }
 
+const DEFAULT_WIDGETS: Record<string, { visible: boolean; order: number }> = {
+  metrics: { visible: true, order: 0 },
+  administration: { visible: true, order: 1 },
+  usage: { visible: true, order: 2 },
+  quickActions: { visible: true, order: 3 },
+  recentEmails: { visible: true, order: 4 },
+};
+
+const WIDGET_LABELS: Record<string, string> = {
+  metrics: 'Statistieken',
+  administration: 'Administratie',
+  usage: 'Gebruik',
+  quickActions: 'Snelle Acties',
+  recentEmails: 'Recente Emails',
+};
+
+const DEFAULT_QUICK_ACTIONS = [
+  { label: 'Inbox', desc: 'ongelezen', href: '/app', icon: 'Mail' },
+  { label: 'Templates', desc: 'Beheer antwoorden', href: '/templates', icon: 'FileText' },
+  { label: 'Statistieken', desc: 'Bekijk details', href: '/stats', icon: 'BarChart3' },
+];
+
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { usage, isLoading: usageLoading } = useUsageTracking();
   const { tier, tierLabel } = useFeatureAccess();
+  const { settings: personalization, updateSettings } = usePersonalization();
   const [timeFilter, setTimeFilter] = useState('today');
+  const [isEditing, setIsEditing] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     totalEmails: 0, unreadEmails: 0, todayEmails: 0, weekEmails: 0, monthEmails: 0,
     totalInvoices: 0, totalReceipts: 0, totalDocuments: 0, connectionsCount: 0,
   });
   const [recentEmails, setRecentEmails] = useState<RecentEmail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const widgets = personalization.dashboardWidgets || DEFAULT_WIDGETS;
+  const quickActions = personalization.quickActions || DEFAULT_QUICK_ACTIONS;
 
   useEffect(() => { if (user) loadDashboardData(); }, [user]);
 
@@ -102,6 +132,156 @@ const Dashboard = () => {
     }
   };
 
+  const toggleWidget = (key: string) => {
+    const updated = { ...widgets, [key]: { ...widgets[key], visible: !widgets[key]?.visible } };
+    updateSettings({ dashboardWidgets: updated });
+  };
+
+  const resetWidgets = () => {
+    updateSettings({ dashboardWidgets: DEFAULT_WIDGETS });
+  };
+
+  const isVisible = (key: string) => widgets[key]?.visible !== false;
+
+  const sortedWidgetKeys = Object.keys(widgets).sort((a, b) => (widgets[a]?.order || 0) - (widgets[b]?.order || 0));
+
+  const renderWidget = (key: string) => {
+    if (!isVisible(key) && !isEditing) return null;
+
+    switch (key) {
+      case 'metrics':
+        return (
+          <div key={key} className={`grid grid-cols-2 lg:grid-cols-4 gap-4 ${!isVisible(key) ? 'opacity-40' : ''}`}>
+            {[
+              { label: timeFilter === 'today' ? 'Vandaag' : timeFilter === 'week' ? 'Deze Week' : 'Deze Maand', value: getMailCount(), sub: `${stats.totalEmails} totaal`, icon: Mail, color: 'primary' },
+              { label: 'Ongelezen', value: stats.unreadEmails, sub: 'wachtend op actie', icon: Zap, color: 'warning' },
+              { label: 'Mailboxen', value: stats.connectionsCount, sub: 'gekoppeld', icon: Users, color: 'accent' },
+              { label: 'Gelezen', value: stats.totalEmails - stats.unreadEmails, sub: 'afgehandeld', icon: CheckCircle, color: 'success' },
+            ].map((m, i) => (
+              <Card key={i} className="shadow-card hover:shadow-elevated transition-all duration-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">{m.label}</CardTitle>
+                  <div className={`p-2 bg-${m.color}/10 rounded-lg`}><m.icon className={`h-4 w-4 md:h-5 md:w-5 text-${m.color}`} /></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl md:text-3xl font-bold text-foreground">{m.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">{m.sub}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        );
+
+      case 'administration':
+        return (
+          <div key={key} className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${!isVisible(key) ? 'opacity-40' : ''}`}>
+            <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer" onClick={() => navigate('/administration/invoices')}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl"><Receipt className="h-6 w-6 text-primary" /></div>
+                <div className="flex-1"><p className="text-2xl font-bold text-foreground">{stats.totalInvoices}</p><p className="text-sm text-muted-foreground">Facturen</p></div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+            <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer" onClick={() => navigate('/administration/receipts')}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="p-3 bg-success/10 rounded-xl"><TrendingUp className="h-6 w-6 text-success" /></div>
+                <div className="flex-1"><p className="text-2xl font-bold text-foreground">{stats.totalReceipts}</p><p className="text-sm text-muted-foreground">Bonnetjes</p></div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+            <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer" onClick={() => navigate('/administration/documents')}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="p-3 bg-accent/10 rounded-xl"><FileBox className="h-6 w-6 text-accent" /></div>
+                <div className="flex-1"><p className="text-2xl font-bold text-foreground">{stats.totalDocuments}</p><p className="text-sm text-muted-foreground">Documenten</p></div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case 'usage':
+        if (usageLoading || !usage.emailLimit) return null;
+        return (
+          <Card key={key} className={`shadow-card ${!isVisible(key) ? 'opacity-40' : ''}`}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Gebruik deze maand</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">E-mails</span><span className="font-medium">{usage.emailCount}/{usage.emailLimit}</span></div>
+                <Progress value={usage.emailLimit ? (usage.emailCount / usage.emailLimit) * 100 : 0} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">AI-calls</span><span className="font-medium">{usage.aiCallCount}/{usage.aiCallLimit}</span></div>
+                <Progress value={usage.aiCallLimit ? (usage.aiCallCount / usage.aiCallLimit) * 100 : 0} className="h-2" />
+              </div>
+              {(usage.isEmailLimitReached || usage.isAiLimitReached) && (
+                <Button size="sm" onClick={() => navigate('/pricing')} className="w-full">Upgrade naar Pro</Button>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      case 'quickActions':
+        return (
+          <Card key={key} className={`shadow-card ${!isVisible(key) ? 'opacity-40' : ''}`}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2"><CheckCircle className="h-5 w-5 text-primary" /> Snelle Acties</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-3">
+                {(quickActions as any[]).map((a: any, i: number) => (
+                  <Button key={i} variant="outline" className="h-auto p-3 flex items-center justify-start gap-3" onClick={() => navigate(a.href)}>
+                    <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0"><Zap className="h-4 w-4 text-primary" /></div>
+                    <div className="text-left flex-1">
+                      <h3 className="font-semibold text-foreground text-sm">{a.label}</h3>
+                      <p className="text-xs text-muted-foreground">{a.desc || ''}</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'recentEmails':
+        return (
+          <Card key={key} className={`shadow-card ${!isVisible(key) ? 'opacity-40' : ''}`}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Recente Emails</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/app')}>Bekijk alles <ArrowRight className="h-4 w-4 ml-1" /></Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {recentEmails.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nog geen emails gesynchroniseerd.</p>
+              ) : (
+                <div className="space-y-1">
+                  {recentEmails.map((email) => (
+                    <div key={email.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/app')}>
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${!email.is_read ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-foreground text-sm truncate">{email.from_name || email.from_email}</span>
+                          <span className="text-xs text-muted-foreground flex-shrink-0">{formatDistanceToNow(new Date(email.received_at), { addSuffix: true, locale: nl })}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">{email.subject || '(Geen onderwerp)'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header user={user} onLogout={signOut} />
@@ -112,7 +292,7 @@ const Dashboard = () => {
           <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6">
             <SubscriptionBanner />
             <OnboardingDialog />
-            
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
@@ -122,8 +302,12 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center gap-3">
                 <Badge variant="outline" className="text-sm">{tierLabel}</Badge>
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
+                  <SettingsIcon className="h-4 w-4 mr-1" />
+                  {isEditing ? 'Klaar' : 'Aanpassen'}
+                </Button>
                 <Select value={timeFilter} onValueChange={setTimeFilter}>
-                  <SelectTrigger className="w-40"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-36"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="today">Vandaag</SelectItem>
                     <SelectItem value="week">Deze week</SelectItem>
@@ -133,163 +317,43 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* Widget toggles when editing */}
+            {isEditing && (
+              <Card className="shadow-card border-dashed border-2 border-primary/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-foreground">Widgets aan/uit</h3>
+                    <Button variant="ghost" size="sm" onClick={resetWidgets}>
+                      <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {Object.keys(DEFAULT_WIDGETS).map(key => (
+                      <div key={key} className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2">
+                        <Switch checked={isVisible(key)} onCheckedChange={() => toggleWidget(key)} />
+                        <span className="text-sm">{WIDGET_LABELS[key]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {isLoading ? (
               <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : (
-              <>
-                {/* Key Metrics */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    { label: timeFilter === 'today' ? 'Vandaag' : timeFilter === 'week' ? 'Deze Week' : 'Deze Maand', value: getMailCount(), sub: `${stats.totalEmails} totaal`, icon: Mail, color: 'primary' },
-                    { label: 'Ongelezen', value: stats.unreadEmails, sub: 'wachtend op actie', icon: Zap, color: 'warning' },
-                    { label: 'Mailboxen', value: stats.connectionsCount, sub: 'gekoppeld', icon: Users, color: 'accent' },
-                    { label: 'Gelezen', value: stats.totalEmails - stats.unreadEmails, sub: 'afgehandeld', icon: CheckCircle, color: 'success' },
-                  ].map((m, i) => (
-                    <Card key={i} className="shadow-card hover:shadow-elevated transition-all duration-200">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">{m.label}</CardTitle>
-                        <div className={`p-2 bg-${m.color}/10 rounded-lg`}><m.icon className={`h-4 w-4 md:h-5 md:w-5 text-${m.color}`} /></div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl md:text-3xl font-bold text-foreground">{m.value}</div>
-                        <p className="text-xs text-muted-foreground mt-1">{m.sub}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Administration widgets */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer" onClick={() => navigate('/administration/invoices')}>
-                    <CardContent className="p-6 flex items-center gap-4">
-                      <div className="p-3 bg-primary/10 rounded-xl"><Receipt className="h-6 w-6 text-primary" /></div>
-                      <div className="flex-1">
-                        <p className="text-2xl font-bold text-foreground">{stats.totalInvoices}</p>
-                        <p className="text-sm text-muted-foreground">Facturen</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer" onClick={() => navigate('/administration/receipts')}>
-                    <CardContent className="p-6 flex items-center gap-4">
-                      <div className="p-3 bg-success/10 rounded-xl"><TrendingUp className="h-6 w-6 text-success" /></div>
-                      <div className="flex-1">
-                        <p className="text-2xl font-bold text-foreground">{stats.totalReceipts}</p>
-                        <p className="text-sm text-muted-foreground">Bonnetjes</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-card hover:shadow-elevated transition-all cursor-pointer" onClick={() => navigate('/administration/documents')}>
-                    <CardContent className="p-6 flex items-center gap-4">
-                      <div className="p-3 bg-accent/10 rounded-xl"><FileBox className="h-6 w-6 text-accent" /></div>
-                      <div className="flex-1">
-                        <p className="text-2xl font-bold text-foreground">{stats.totalDocuments}</p>
-                        <p className="text-sm text-muted-foreground">Documenten</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Usage & Quick Actions row */}
+              <div className="space-y-6">
+                {/* Render widgets based on usage/quickActions grouping */}
+                {renderWidget('metrics')}
+                {renderWidget('administration')}
+                
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {/* Usage widget */}
-                  {!usageLoading && usage.emailLimit && (
-                    <Card className="shadow-card">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                          <Sparkles className="h-5 w-5 text-primary" /> Gebruik deze maand
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">E-mails</span>
-                            <span className="font-medium">{usage.emailCount}/{usage.emailLimit}</span>
-                          </div>
-                          <Progress value={usage.emailLimit ? (usage.emailCount / usage.emailLimit) * 100 : 0} className="h-2" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">AI-calls</span>
-                            <span className="font-medium">{usage.aiCallCount}/{usage.aiCallLimit}</span>
-                          </div>
-                          <Progress value={usage.aiCallLimit ? (usage.aiCallCount / usage.aiCallLimit) * 100 : 0} className="h-2" />
-                        </div>
-                        {(usage.isEmailLimitReached || usage.isAiLimitReached) && (
-                          <Button size="sm" onClick={() => navigate('/pricing')} className="w-full">Upgrade naar Pro</Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Quick Actions */}
-                  <Card className="shadow-card">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-primary" /> Snelle Acties
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 gap-3">
-                        {[
-                          { label: 'Inbox', desc: `${stats.unreadEmails} ongelezen`, href: '/app', icon: Mail, color: 'destructive' },
-                          { label: 'Templates', desc: 'Beheer antwoorden', href: '/templates', icon: FileText, color: 'success' },
-                          { label: 'Statistieken', desc: 'Bekijk details', href: '/stats', icon: BarChart3, color: 'primary' },
-                        ].map((a, i) => (
-                          <Button key={i} variant="outline" className="h-auto p-3 flex items-center justify-start gap-3" onClick={() => navigate(a.href)}>
-                            <div className={`p-2 bg-${a.color} rounded-lg flex-shrink-0`}><a.icon className={`h-4 w-4 text-${a.color}-foreground`} /></div>
-                            <div className="text-left flex-1">
-                              <h3 className="font-semibold text-foreground text-sm">{a.label}</h3>
-                              <p className="text-xs text-muted-foreground">{a.desc}</p>
-                            </div>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {renderWidget('usage')}
+                  {renderWidget('quickActions')}
                 </div>
-
-                {/* Recent Emails */}
-                <Card className="shadow-card">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-primary" /> Recente Emails
-                      </CardTitle>
-                      <Button variant="ghost" size="sm" onClick={() => navigate('/app')}>
-                        Bekijk alles <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {recentEmails.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        Nog geen emails gesynchroniseerd. Ga naar de inbox om je mailbox te koppelen.
-                      </p>
-                    ) : (
-                      <div className="space-y-1">
-                        {recentEmails.map((email) => (
-                          <div key={email.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/app')}>
-                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${!email.is_read ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="font-medium text-foreground text-sm truncate">{email.from_name || email.from_email}</span>
-                                <span className="text-xs text-muted-foreground flex-shrink-0">
-                                  {formatDistanceToNow(new Date(email.received_at), { addSuffix: true, locale: nl })}
-                                </span>
-                              </div>
-                              <p className="text-sm text-muted-foreground truncate">{email.subject || '(Geen onderwerp)'}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
+                
+                {renderWidget('recentEmails')}
+              </div>
             )}
           </div>
         </div>
