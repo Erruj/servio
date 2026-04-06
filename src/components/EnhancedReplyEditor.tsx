@@ -178,6 +178,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
   const handleSuggestionSelect = (suggestion: ReplyVariant) => {
     setSelectedSuggestion(suggestion);
     setCustomReply(suggestion.content);
+    originalAiReplyRef.current = suggestion.content;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
