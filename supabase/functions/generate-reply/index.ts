@@ -30,54 +30,75 @@ serve(async (req) => {
     if (userError || !user) throw new Error('Unauthorized');
     console.log('generate-reply: User authenticated:', user.id);
 
-    // Fetch the email
-    const { data: email, error: emailError } = await supabase
-      .from('emails')
-      .select('*')
-      .eq('id', emailId)
-      .eq('user_id', user.id)
-      .single();
+    // Fetch email, profile, settings, and recent corrections in parallel
+    const [emailRes, profileRes, settingsRes, correctionsRes] = await Promise.all([
+      supabase.from('emails').select('*').eq('id', emailId).eq('user_id', user.id).single(),
+      supabase.from('profiles').select('full_name, company_name').eq('id', user.id).single(),
+      supabase.from('user_settings').select('ai_tone, language, ai_personality, ai_custom_personality, email_signature').eq('user_id', user.id).single(),
+      supabase.from('ai_corrections').select('original_reply, corrected_reply').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3),
+    ]);
 
-    if (emailError || !email) {
-      console.error('generate-reply: Email not found', emailError);
+    const email = emailRes.data;
+    if (emailRes.error || !email) {
+      console.error('generate-reply: Email not found', emailRes.error);
       throw new Error('Email not found');
     }
     console.log('generate-reply: Email found:', email.subject);
 
-    // Fetch user profile for signature
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name, company_name')
-      .eq('id', user.id)
-      .single();
-
-    // Fetch user settings for AI tone preference
-    const { data: settings } = await supabase
-      .from('user_settings')
-      .select('ai_tone, language')
-      .eq('user_id', user.id)
-      .single();
+    const profile = profileRes.data;
+    const settings = settingsRes.data;
+    const corrections = correctionsRes.data || [];
 
     const emailContent = email.body_text || email.body_html?.replace(/<[^>]*>/g, '') || email.snippet || '';
     const senderName = email.from_name || email.from_email.split('@')[0];
     const userName = profile?.full_name || user.email?.split('@')[0] || 'Team';
     const companyName = profile?.company_name || '';
+    const emailSignature = settings?.email_signature || '';
 
     const preferredTone = tone || settings?.ai_tone || 'neutral';
     const replyLanguage = language || settings?.language || 'nl';
 
+    // Determine AI personality
+    const aiPersonality = settings?.ai_personality || 'neutral';
+    const customPersonality = settings?.ai_custom_personality || '';
+    
+    let personalityInstruction = '';
+    switch (aiPersonality) {
+      case 'friendly': personalityInstruction = 'Schrijf warm, persoonlijk en benaderbaar. Gebruik informele maar professionele taal.'; break;
+      case 'direct': personalityInstruction = 'Schrijf kort en bondig. Geen overbodige woorden. Kom direct tot de kern.'; break;
+      case 'enthusiastic': personalityInstruction = 'Schrijf positief en energiek. Toon oprechte interesse en enthousiasme.'; break;
+      case 'custom': personalityInstruction = customPersonality ? `Volg deze stijlinstructie: ${customPersonality}` : ''; break;
+      default: personalityInstruction = 'Schrijf professioneel en zakelijk.'; break;
+    }
+
+    // Build corrections context
+    let correctionsContext = '';
+    if (corrections.length > 0) {
+      correctionsContext = `\n\nLEER VAN EERDERE CORRECTIES - de gebruiker heeft eerder AI-antwoorden aangepast. Gebruik dit als richtlijn voor stijl en toon:\n`;
+      corrections.forEach((c, i) => {
+        correctionsContext += `Correctie ${i + 1}:\n- Origineel: "${c.original_reply.substring(0, 200)}..."\n- Aangepast naar: "${c.corrected_reply.substring(0, 200)}..."\n`;
+      });
+    }
+
+    // Build signature instruction
+    const signatureInstruction = emailSignature
+      ? `\n\nVOEG DEZE HANDTEKENING TOE aan het einde van elk antwoord:\n${emailSignature}`
+      : `\n\nOnderteken met: ${userName}${companyName ? ` | ${companyName}` : ''}`;
+
     const systemPrompt = `Je bent een professionele e-mailassistent. Je taak is om een contextbewust, specifiek antwoord te schrijven op de onderstaande e-mail.
+
+PERSOONLIJKHEID: ${personalityInstruction}
 
 REGELS:
 - Lees de e-mail VOLLEDIG en begrijp de vraag, het verzoek of de context
 - Schrijf een antwoord dat SPECIFIEK ingaat op de inhoud van de e-mail
 - Gebruik de naam van de afzender als aanhef: "${senderName}"
-- Onderteken met de naam van de gebruiker: "${userName}"${companyName ? ` van ${companyName}` : ''}
 - Detecteer de taal van de inkomende e-mail en antwoord in DEZELFDE taal
 - Als de voorkeurstaal "${replyLanguage}" is, gebruik die als fallback
-- Pas de toon aan: "${preferredTone}" (neutral=zakelijk, empathetic=empathisch, formal=formeel, detailed=gedetailleerd)
+- Pas de toon aan: "${preferredTone}"
 - Geen generieke antwoorden - elk antwoord moet uniek zijn voor deze specifieke e-mail
 - Geef 3 varianten: Zakelijk, Empathisch, Uitgebreid
+${signatureInstruction}${correctionsContext}
 
 ANTWOORD: Geef exact dit JSON formaat terug (geen markdown, geen code blocks, alleen raw JSON):
 {"variants":[{"type":"Zakelijk","label":"Zakelijk","content":"<zakelijk antwoord>","icon":"💼"},{"type":"Empathisch","label":"Empathisch","content":"<empathisch antwoord>","icon":"💝"},{"type":"Uitgebreid","label":"Uitgebreid","content":"<uitgebreid antwoord>","icon":"📋"}]}`;
@@ -127,12 +148,10 @@ ${emailContent.substring(0, 3000)}`;
     const data = await response.json();
     console.log('generate-reply: AI response received');
     
-    // Extract content from response
     const content = data.choices?.[0]?.message?.content || '';
     
     let variants;
     try {
-      // Try to parse JSON directly
       const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleaned);
       variants = parsed.variants;
