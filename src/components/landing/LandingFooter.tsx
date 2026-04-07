@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import servioLogo from '@/assets/servio-logo.png';
 
 export function LandingFooter() {
   return (
@@ -8,9 +9,7 @@ export function LandingFooter() {
           {/* Logo & description */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2.5 mb-4" aria-label="Servio logo">
-              <div className="w-7 h-7 rounded-md bg-foreground flex items-center justify-center" aria-hidden="true">
-                <span className="text-background font-semibold text-sm">S</span>
-              </div>
+              <img src={servioLogo} alt="Servio logo" className="w-7 h-7" width={28} height={28} loading="lazy" />
               <span className="font-semibold text-foreground tracking-tight">Servio</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
