@@ -12,27 +12,21 @@ export default function MarketingHome() {
   return (
     <>
       <Helmet>
-        <title>Servio - AI Bedrijfsassistent voor ZZP & MKB | Automatiseer Administratie</title>
-        <meta 
-          name="description" 
-          content="Bespaar 8+ uur per week met Servio. AI-gestuurde klantenservice, automatische factuurverwerking en realtime financieel inzicht. 14 dagen gratis proberen." 
-        />
-        <meta 
-          name="keywords" 
-          content="AI klantenservice, administratie automatiseren, boekhouding voor ZZP, bedrijfsassistent software, facturen verwerken, financieel dashboard, MKB software" 
-        />
+        <title>Servio – AI Bedrijfsassistent voor ZZP & MKB | Automatiseer je Inbox en Administratie</title>
+        <meta name="description" content="Servio is de slimme AI-assistent voor ondernemers. Automatiseer tot 80% van je e-mails, verwerk facturen automatisch en krijg realtime inzicht in je financiën. Probeer 14 dagen gratis." />
+        <meta name="keywords" content="AI klantenservice, administratie automatiseren, boekhouding voor ZZP, bedrijfsassistent software, facturen verwerken, financieel dashboard, MKB software" />
         <link rel="canonical" href="https://getservio.co" />
         
-        {/* Open Graph */}
-        <meta property="og:title" content="Servio - AI Bedrijfsassistent voor ZZP & MKB" />
-        <meta property="og:description" content="Automatiseer je administratie en bespaar 8+ uur per week. 14 dagen gratis." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co" />
         
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Servio - AI Bedrijfsassistent voor ZZP & MKB" />
-        <meta name="twitter:description" content="Automatiseer je administratie en bespaar 8+ uur per week." />
+        <meta name="twitter:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta name="twitter:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
 
         {/* Structured Data - FAQ */}
         <script type="application/ld+json">{`

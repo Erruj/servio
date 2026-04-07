@@ -6,13 +6,16 @@ export default function Terms() {
   return (
     <>
       <Helmet>
-        <title>Algemene Voorwaarden | Servio</title>
-        <meta name="description" content="Lees de algemene voorwaarden van Servio voor het gebruik van onze diensten." />
+        <title>Algemene Voorwaarden – Gebruiksvoorwaarden | Servio</title>
+        <meta name="description" content="Lees de algemene voorwaarden van Servio voor het gebruik van onze AI bedrijfsassistent." />
         <link rel="canonical" href="https://getservio.co/terms" />
-        <meta property="og:title" content="Algemene Voorwaarden | Servio" />
-        <meta property="og:description" content="De algemene voorwaarden voor het gebruik van Servio." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co/terms" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

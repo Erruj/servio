@@ -67,21 +67,18 @@ export default function Features() {
   return (
     <>
       <Helmet>
-        <title>Features - AI Klantenservice & Automatische Boekhouding | Servio</title>
-        <meta 
-          name="description" 
-          content="Ontdek alle features van Servio: AI-gestuurde klantenservice die 80% van je mails beantwoordt, automatische factuurverwerking, en realtime financieel dashboard." 
-        />
-        <meta 
-          name="keywords" 
-          content="AI klantenservice, automatische factuurverwerking, boekhoudsoftware ZZP, financieel dashboard, email automatisering, administratie software" 
-        />
+        <title>Features – AI Inbox, Factuurverwerking & Financieel Dashboard | Servio</title>
+        <meta name="description" content="Ontdek alle features van Servio: AI-gestuurde inbox die 80% van je mails beantwoordt, automatische factuurverwerking, en realtime financieel dashboard voor ZZP & MKB." />
+        <meta name="keywords" content="AI klantenservice, automatische factuurverwerking, boekhoudsoftware ZZP, financieel dashboard, email automatisering, administratie software" />
         <link rel="canonical" href="https://getservio.co/features" />
         
-        <meta property="og:title" content="Features - AI Klantenservice & Automatische Boekhouding | Servio" />
-        <meta property="og:description" content="AI die 80% van je mails beantwoordt, automatische factuurverwerking, en realtime financieel inzicht." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co/features" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

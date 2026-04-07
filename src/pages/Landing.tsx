@@ -13,8 +13,16 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>Servio - De slimme bedrijfsassistent voor ondernemers</title>
-        <meta name="description" content="Automatiseer je klantenservice, beheer je facturen en krijg realtime financiële inzichten — allemaal op één plek. Start vandaag nog gratis." />
+        <title>Servio – AI Bedrijfsassistent voor ZZP & MKB | Automatiseer je Inbox en Administratie</title>
+        <meta name="description" content="Servio is de slimme AI-assistent voor ondernemers. Automatiseer tot 80% van je e-mails, verwerk facturen automatisch en krijg realtime inzicht in je financiën. Probeer 14 dagen gratis." />
+        <link rel="canonical" href="https://getservio.co" />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://getservio.co" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
