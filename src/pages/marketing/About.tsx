@@ -31,21 +31,18 @@ export default function About() {
   return (
     <>
       <Helmet>
-        <title>Over Ons - Servio | AI Bedrijfsassistent voor Nederlandse Ondernemers</title>
-        <meta 
-          name="description" 
-          content="Servio is gebouwd door ondernemers, voor ondernemers. Onze missie: ZZP'ers en MKB'ers helpen met AI-gestuurde administratie en klantenservice." 
-        />
-        <meta 
-          name="keywords" 
-          content="Servio over ons, Nederlandse startup, bedrijfssoftware Nederland, AI software ondernemers" 
-        />
+        <title>Over Servio – De AI Bedrijfsassistent voor Nederlandse Ondernemers</title>
+        <meta name="description" content="Servio is gebouwd door ondernemers, voor ondernemers. Onze missie: ZZP'ers en MKB'ers helpen met AI-gestuurde administratie en klantenservice." />
+        <meta name="keywords" content="Servio over ons, Nederlandse startup, bedrijfssoftware Nederland, AI software ondernemers" />
         <link rel="canonical" href="https://getservio.co/about" />
         
-        <meta property="og:title" content="Over Ons - Servio | AI Bedrijfsassistent" />
-        <meta property="og:description" content="Gebouwd door ondernemers, voor ondernemers. Ontdek onze missie." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co/about" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

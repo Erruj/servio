@@ -6,13 +6,16 @@ export default function PrivacyPolicy() {
   return (
     <>
       <Helmet>
-        <title>Privacybeleid | Servio</title>
-        <meta name="description" content="Lees ons privacybeleid en hoe Servio omgaat met je persoonsgegevens." />
+        <title>Privacybeleid – Hoe Servio Omgaat met je Gegevens | Servio</title>
+        <meta name="description" content="Lees ons privacybeleid en ontdek hoe Servio omgaat met je persoonsgegevens. AVG/GDPR-compliant, EU datacenters." />
         <link rel="canonical" href="https://getservio.co/privacy" />
-        <meta property="og:title" content="Privacybeleid | Servio" />
-        <meta property="og:description" content="Hoe Servio omgaat met je persoonsgegevens en privacy." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co/privacy" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

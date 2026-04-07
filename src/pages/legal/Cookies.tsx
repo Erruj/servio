@@ -6,13 +6,16 @@ export default function Cookies() {
   return (
     <>
       <Helmet>
-        <title>Cookiebeleid | Servio</title>
-        <meta name="description" content="Lees ons cookiebeleid en hoe Servio cookies gebruikt." />
+        <title>Cookiebeleid – Hoe Servio Cookies Gebruikt | Servio</title>
+        <meta name="description" content="Lees ons cookiebeleid en ontdek hoe Servio cookies en vergelijkbare technologieën gebruikt op onze website." />
         <link rel="canonical" href="https://getservio.co/cookies" />
-        <meta property="og:title" content="Cookiebeleid | Servio" />
-        <meta property="og:description" content="Hoe Servio cookies en vergelijkbare technologieën gebruikt." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co/cookies" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

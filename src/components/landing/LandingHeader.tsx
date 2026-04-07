@@ -27,8 +27,8 @@ export function LandingHeader() {
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Clean and simple */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-md bg-foreground flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+          <Link to="/" className="flex items-center gap-2.5 group" aria-label="Servio - Terug naar homepage">
+            <div className="w-7 h-7 rounded-md bg-foreground flex items-center justify-center transition-transform duration-300 group-hover:scale-105" aria-hidden="true">
               <span className="text-background font-semibold text-sm">S</span>
             </div>
             <span className="font-semibold text-foreground tracking-tight">Servio</span>

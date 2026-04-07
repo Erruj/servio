@@ -78,21 +78,18 @@ export default function MarketingPricing() {
   return (
     <>
       <Helmet>
-        <title>Prijzen - Betaalbare AI Software voor ZZP & MKB | Servio</title>
-        <meta 
-          name="description" 
-          content="Transparante prijzen voor elke ondernemer. Vanaf €9,99/maand. 14 dagen gratis proberen, geen creditcard nodig. Kies Starter, Pro of Business." 
-        />
-        <meta 
-          name="keywords" 
-          content="bedrijfssoftware prijzen, boekhoudsoftware kosten, AI klantenservice prijs, ZZP software, MKB administratie software" 
-        />
+        <title>Prijzen – Vanaf €9,99 per maand | Servio AI Bedrijfsassistent</title>
+        <meta name="description" content="Transparante prijzen voor elke ondernemer. Vanaf €9,99/maand. 14 dagen gratis proberen, geen creditcard nodig. Kies Starter, Pro of Business." />
+        <meta name="keywords" content="bedrijfssoftware prijzen, boekhoudsoftware kosten, AI klantenservice prijs, ZZP software, MKB administratie software" />
         <link rel="canonical" href="https://getservio.co/pricing" />
         
-        <meta property="og:title" content="Prijzen - Betaalbare AI Software voor ZZP & MKB | Servio" />
-        <meta property="og:description" content="Vanaf €9,99/maand. 14 dagen gratis, geen creditcard nodig." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co/pricing" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

@@ -23,7 +23,7 @@ const products = [
 
 export function ProductSection() {
   return (
-    <section className="py-24 md:py-32">
+    <section className="py-24 md:py-32" aria-label="Servio producten overzicht">
       <div className="container mx-auto px-6">
         <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in-up">
           <span className="text-sm font-medium text-primary mb-4 block">Producten</span>

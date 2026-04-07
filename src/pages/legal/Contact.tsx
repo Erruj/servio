@@ -58,13 +58,16 @@ export default function Contact() {
   return (
     <>
       <Helmet>
-        <title>Contact | Servio</title>
-        <meta name="description" content="Neem contact op met Servio. We helpen je graag met al je vragen." />
+        <title>Contact – Neem Contact op met Servio | AI Bedrijfsassistent</title>
+        <meta name="description" content="Neem contact op met Servio. We helpen je graag met al je vragen over onze AI bedrijfsassistent. Reactie binnen 24 uur." />
         <link rel="canonical" href="https://getservio.co/contact" />
-        <meta property="og:title" content="Contact | Servio" />
-        <meta property="og:description" content="Neem contact op met Servio. We reageren binnen 24 uur." />
+        <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
+        <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />
+        <meta property="og:image" content="https://getservio.co/og-image.png" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getservio.co/contact" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getservio.co/og-image.png" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
