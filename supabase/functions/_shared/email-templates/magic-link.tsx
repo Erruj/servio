@@ -9,9 +9,12 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+
+const LOGO_URL = 'https://getservio.co/favicon.png'
 
 interface MagicLinkEmailProps {
   siteName: string
@@ -24,6 +27,7 @@ export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProp
     <Preview>Je inloglink voor {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Img src={LOGO_URL} alt="Servio" width="40" height="40" style={logo} />
         <Heading style={h1}>Je inloglink</Heading>
         <Text style={text}>
           Klik op onderstaande knop om in te loggen bij {siteName}. Deze link verloopt binnenkort.
@@ -43,6 +47,7 @@ export default MagicLinkEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
 const container = { padding: '40px 25px' }
+const logo = { marginBottom: '20px' }
 const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#1e293b', margin: '0 0 20px' }
 const text = { fontSize: '15px', color: '#64748b', lineHeight: '1.6', margin: '0 0 25px' }
 const button = { backgroundColor: '#3b82f6', color: '#ffffff', fontSize: '15px', borderRadius: '8px', padding: '12px 24px', textDecoration: 'none', fontWeight: '600' as const }
