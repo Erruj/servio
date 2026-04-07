@@ -30,7 +30,7 @@ const faqs = [
 
 export function FAQSection() {
   return (
-    <section className="py-24 md:py-32 bg-muted/30">
+    <section className="py-24 md:py-32 bg-muted/30" aria-label="Veelgestelde vragen over Servio">
       <div className="container mx-auto px-6">
         <div className="max-w-xl mx-auto text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">

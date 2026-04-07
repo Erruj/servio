@@ -6,7 +6,7 @@ export function HeroSection() {
   const navigate = useNavigate();
 
   return (
-    <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden">
+    <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden" aria-label="Servio AI bedrijfsassistent introductie">
       {/* Ultra-subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-muted/40 via-background to-background pointer-events-none" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/[0.03] rounded-full blur-3xl pointer-events-none" />

@@ -7,8 +7,8 @@ export function LandingFooter() {
         <div className="grid md:grid-cols-5 gap-12 mb-12">
           {/* Logo & description */}
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-7 h-7 rounded-md bg-foreground flex items-center justify-center">
+            <div className="flex items-center gap-2.5 mb-4" aria-label="Servio logo">
+              <div className="w-7 h-7 rounded-md bg-foreground flex items-center justify-center" aria-hidden="true">
                 <span className="text-background font-semibold text-sm">S</span>
               </div>
               <span className="font-semibold text-foreground tracking-tight">Servio</span>

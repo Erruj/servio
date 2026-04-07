@@ -27,7 +27,7 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="py-24 md:py-32">
+    <section className="py-24 md:py-32" aria-label="Ervaringen van Servio gebruikers">
       <div className="container mx-auto px-6">
         <div className="max-w-xl mx-auto text-center mb-16 animate-fade-in-up">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
