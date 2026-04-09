@@ -38,6 +38,7 @@ export function LandingHeader() {
             {[
               { label: 'Features', href: '/features' },
               { label: 'Prijzen', href: '/pricing' },
+              { label: 'Blog', href: '/blog' },
               { label: 'Over ons', href: '/about' },
             ].map((item) => (
               <Link 
