@@ -43,6 +43,8 @@ import MarketingHome from "./pages/marketing/Home";
 import MarketingFeatures from "./pages/marketing/Features";
 import MarketingPricing from "./pages/marketing/Pricing";
 import MarketingAbout from "./pages/marketing/About";
+import Blog from "./pages/marketing/Blog";
+import BlogPost from "./pages/marketing/BlogPost";
 
 // Legal pages
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
@@ -81,6 +83,8 @@ function AppRoutes() {
       <Route path="/features" element={<MarketingFeatures />} />
       <Route path="/pricing" element={<MarketingPricing />} />
       <Route path="/about" element={<MarketingAbout />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
       
       {/* Legal pages - public */}
       <Route path="/privacy" element={<PrivacyPolicy />} />
