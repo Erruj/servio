@@ -744,7 +744,7 @@ serve(async (req) => {
           throw new Error(`Unsupported provider: ${connection.provider}`);
         }
 
-        const { insertedCount, updatedCount } = await persistMessages(supabase, connection, messages);
+        const { insertedCount, updatedCount } = await persistMessages(supabase as any, connection, messages);
 
         await supabase
           .from("email_connections")
