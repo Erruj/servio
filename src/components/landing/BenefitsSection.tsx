@@ -33,8 +33,10 @@ const benefits = [
 
 export function BenefitsSection() {
   return (
-    <section className="py-24 md:py-32 bg-muted/30" aria-label="Voordelen van Servio voor ondernemers">
-      <div className="container mx-auto px-6">
+    <section className="relative py-24 md:py-32 bg-muted/30 overflow-hidden" aria-label="Voordelen van Servio voor ondernemers">
+      <div className="absolute -top-20 right-1/4 w-[500px] h-[500px] bg-primary/[0.05] rounded-full blur-3xl pointer-events-none animate-float" />
+      <div className="absolute -bottom-20 left-1/4 w-[400px] h-[400px] bg-accent/[0.05] rounded-full blur-3xl pointer-events-none" />
+      <div className="container mx-auto px-6 relative">
         <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in-up">
           <span className="text-sm font-medium text-primary mb-4 block">Waarom Servio</span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
