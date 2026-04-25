@@ -15,7 +15,7 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-const LOGO_URL = 'https://getservio.co/favicon.png'
+const LOGO_URL = 'https://getservio.co/servio-logo-full.png'
 
 interface EmailChangeEmailProps {
   siteName: string
