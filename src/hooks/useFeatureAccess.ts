@@ -84,8 +84,10 @@ export function useFeatureAccess(): FeatureAccess {
     if (isOnTrial) return 'trial';
 
     // Active subscription → check product
-    if (hasActiveSubscription && subscriptionStatus?.product_id) {
-      return getTierFromProductId(subscriptionStatus.product_id);
+    if (hasActiveSubscription) {
+      const mapped = getTierFromProductId(subscriptionStatus?.product_id);
+      // Safety net: active subscriber should never be 'none' — default to Pro
+      return mapped === 'none' ? 'pro' : mapped;
     }
 
     // Trial expired, no sub → Starter (locked down)
