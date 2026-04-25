@@ -39,12 +39,20 @@ const TIER_LABELS: Record<SubscriptionTier, string> = {
   none: 'Geen',
 };
 
+// Legacy product IDs that should still map to a tier (backward compatibility)
+const LEGACY_PRODUCT_TIER_MAP: Record<string, SubscriptionTier> = {
+  prod_TUHktvw98PDTTn: 'starter',
+  prod_TUHkdkFCR6tlSm: 'pro',
+  prod_TUHl8Gz4fh6OIL: 'business',
+};
+
 // Map product IDs to tier names
 function getTierFromProductId(productId: string | null | undefined): SubscriptionTier {
   if (!productId) return 'none';
   for (const [key, tier] of Object.entries(SUBSCRIPTION_TIERS)) {
     if (tier.product_id === productId) return key as SubscriptionTier;
   }
+  if (LEGACY_PRODUCT_TIER_MAP[productId]) return LEGACY_PRODUCT_TIER_MAP[productId];
   return 'none';
 }
 
