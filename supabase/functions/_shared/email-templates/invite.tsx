@@ -15,7 +15,7 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-const LOGO_URL = 'https://getservio.co/favicon.png'
+const LOGO_URL = 'https://getservio.co/servio-logo-full.png'
 
 interface InviteEmailProps {
   siteName: string
@@ -29,7 +29,7 @@ export const InviteEmail = ({ siteName, siteUrl, confirmationUrl }: InviteEmailP
     <Preview>Je bent uitgenodigd voor {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt="Servio" width="40" height="40" style={logo} />
+        <Img src={LOGO_URL} alt="Servio" width="120" height="40" style={logo} />
         <Heading style={h1}>Je bent uitgenodigd</Heading>
         <Text style={text}>
           Je bent uitgenodigd om deel te nemen aan{' '}

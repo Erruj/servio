@@ -14,7 +14,7 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-const LOGO_URL = 'https://getservio.co/favicon.png'
+const LOGO_URL = 'https://getservio.co/servio-logo-full.png'
 
 interface MagicLinkEmailProps {
   siteName: string
@@ -27,7 +27,7 @@ export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProp
     <Preview>Je inloglink voor {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt="Servio" width="40" height="40" style={logo} />
+        <Img src={LOGO_URL} alt="Servio" width="120" height="40" style={logo} />
         <Heading style={h1}>Je inloglink</Heading>
         <Text style={text}>
           Klik op onderstaande knop om in te loggen bij {siteName}. Deze link verloopt binnenkort.

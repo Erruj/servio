@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { Sparkles, LogOut, User as UserIcon } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import servioLogoFull from '@/assets/servio-logo-full.png';
 import { User } from '@supabase/supabase-js';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -19,15 +20,14 @@ export function Header({ user, onLogout }: HeaderProps) {
       <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
         <div className="flex items-center space-x-3">
           <MobileNav />
-          <div className="p-1.5 md:p-2 bg-primary/20 rounded-xl">
-            <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-primary">Servio</h1>
-            <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-              {t('tagline')}
-            </p>
-          </div>
+          <img
+            src={servioLogoFull}
+            alt="Servio"
+            className="h-7 md:h-8 w-auto object-contain"
+          />
+          <p className="text-xs md:text-sm text-muted-foreground hidden md:block">
+            {t('tagline')}
+          </p>
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-3">

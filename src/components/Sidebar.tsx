@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield, ClipboardList, Clock, UserCircle, Star, GripVertical, RotateCcw } from 'lucide-react';
-import servioLogo from '@/assets/servio-logo.png';
+import servioLogoFull from '@/assets/servio-logo-full.png';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
@@ -135,13 +135,14 @@ export function Sidebar({ className }: SidebarProps) {
     <div className={cn('hidden md:flex w-64 bg-card border-r border-border flex-col shadow-card', className)}>
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        <div className="flex items-center space-x-3">
-          <img src={servioLogo} alt="Servio logo" className="w-10 h-10" width={40} height={40} />
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Servio</h1>
-            <p className="text-sm text-muted-foreground">AI-powered support</p>
-          </div>
+        <div className="flex items-center">
+          <img
+            src={servioLogoFull}
+            alt="Servio"
+            className="h-9 w-auto max-w-full object-contain"
+          />
         </div>
+        <p className="text-xs text-muted-foreground mt-2">AI-powered support</p>
       </div>
 
       {/* Navigation */}

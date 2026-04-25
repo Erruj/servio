@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Mail, PieChart, Settings, Menu, X, Brain, Receipt, FileBox, Users } from 'lucide-react';
+import servioLogoFull from '@/assets/servio-logo-full.png';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
@@ -38,11 +39,8 @@ export function MobileNav() {
         <SheetContent side="left" className="w-72 p-0">
           <SheetTitle className="sr-only">Navigatie</SheetTitle>
           <div className="p-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary rounded-lg">
-                <Brain className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-bold text-foreground">Servio</span>
+            <div className="flex items-center">
+              <img src={servioLogoFull} alt="Servio" className="h-7 w-auto object-contain" />
             </div>
           </div>
 
