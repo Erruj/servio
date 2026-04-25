@@ -571,7 +571,7 @@ function decodeRFC2047(str: string): string {
     if (encoding.toUpperCase() === "Q") {
       return text
         .replace(/_/g, " ")
-        .replace(/=([0-9A-Fa-f]{2})/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+        .replace(/=([0-9A-Fa-f]{2})/g, (_m: string, hex: string) => String.fromCharCode(parseInt(hex, 16)));
     }
     return text;
   });
@@ -614,12 +614,12 @@ async function persistMessages(
   const chunkSize = 100;
   for (let i = 0; i < inserts.length; i += chunkSize) {
     const chunk = inserts.slice(i, i + chunkSize);
-    const { error } = await supabase.from("emails").insert(chunk);
+    const { error } = await supabase.from("emails").insert(chunk as any);
     if (error) throw new Error(`Failed to insert emails: ${error.message}`);
   }
   for (let i = 0; i < updates.length; i += chunkSize) {
     const chunk = updates.slice(i, i + chunkSize);
-    const { error } = await supabase.from("emails").upsert(chunk, { onConflict: "id" });
+    const { error } = await supabase.from("emails").upsert(chunk as any, { onConflict: "id" });
     if (error) throw new Error(`Failed to update emails: ${error.message}`);
   }
 
@@ -744,7 +744,7 @@ serve(async (req) => {
           throw new Error(`Unsupported provider: ${connection.provider}`);
         }
 
-        const { insertedCount, updatedCount } = await persistMessages(supabase, connection, messages);
+        const { insertedCount, updatedCount } = await persistMessages(supabase as any, connection, messages);
 
         await supabase
           .from("email_connections")
