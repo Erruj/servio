@@ -1,17 +1,92 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+/**
+ * Detect the user's preferred language from:
+ * 1. Explicit URL prefix (/en/...)
+ * 2. localStorage (servio-language)
+ * 3. navigator.language (en-* → 'en', else → 'nl')
+ * 4. Fallback: 'nl'
+ */
+function detectInitialLanguage(): 'nl' | 'en' {
+  if (typeof window === 'undefined') return 'nl';
+
+  // 1. URL prefix
+  if (window.location.pathname.startsWith('/en/') || window.location.pathname === '/en') {
+    return 'en';
+  }
+
+  // 2. Saved preference
+  try {
+    const saved = localStorage.getItem('servio-language');
+    if (saved === 'nl' || saved === 'en') return saved;
+    // Map other previously stored languages to closest match
+    if (saved && saved !== 'nl' && saved !== 'en') {
+      return saved.startsWith('en') ? 'en' : 'nl';
+    }
+  } catch {
+    // ignore
+  }
+
+  // 3. Browser language
+  const nav = navigator.language || (navigator.languages && navigator.languages[0]) || 'nl';
+  if (nav.toLowerCase().startsWith('en')) return 'en';
+  if (nav.toLowerCase().startsWith('nl')) return 'nl';
+
+  // 4. Default
+  return 'nl';
+}
+
 const resources = {
   en: {
     translation: {
-      // Navigation
+      // ============================================
+      // Navigation (App)
+      // ============================================
       inbox: 'Inbox',
       dashboard: 'Dashboard',
       statistics: 'Statistics',
       templates: 'Templates',
       pricing: 'Pricing',
       settings: 'Settings',
-      
+      profile: 'Profile',
+      back: 'Back',
+      backToHome: '← Back to home',
+      manage: 'Manage',
+      cancel: 'Cancel',
+      save: 'Save',
+      saving: 'Saving...',
+      saved: 'Saved',
+      delete: 'Delete',
+      edit: 'Edit',
+      close: 'Close',
+      open: 'Open',
+      view: 'View',
+      download: 'Download',
+      upload: 'Upload',
+      yes: 'Yes',
+      no: 'No',
+      add: 'Add',
+      remove: 'Remove',
+      done: 'Done',
+      reset: 'Reset',
+      create: 'Create',
+      update: 'Update',
+      confirm: 'Confirm',
+      next: 'Next',
+      previous: 'Previous',
+      retry: 'Retry',
+      apply: 'Apply',
+      submit: 'Submit',
+      sending: 'Sending...',
+
+      // Sidebar / labels
+      favorites: 'Favorites',
+      manageFavorites: 'Manage favorites',
+      doneCustomizing: 'Done customizing',
+      resetFavorites: 'Reset favorites',
+      availableFrom: 'Available from {{tier}}',
+
       // Administration
       administration: 'Administration',
       financialOverview: 'Financial Overview',
@@ -25,7 +100,7 @@ const resources = {
       receipts: 'Receipts',
       receiptsDescription: 'Upload and manage your receipts',
       documents: 'Documents',
-      documentsDescription: 'Contracts, offers and other documents',
+      documentsDescription: 'Contracts, quotes and other documents',
       exports: 'Exports',
       exportsDescription: 'Export your financial data',
       customers: 'Customers',
@@ -34,7 +109,8 @@ const resources = {
       quotesDescription: 'Create and manage quotes',
       timeTracking: 'Time Tracking',
       timeTrackingDescription: 'Track and manage your working hours',
-      
+      auditLog: 'Audit Log',
+
       // Financial terms
       totalIncome: 'Total Income',
       totalExpenses: 'Total Expenses',
@@ -44,6 +120,8 @@ const resources = {
       thisMonth: 'This Month',
       thisQuarter: 'This Quarter',
       thisYear: 'This Year',
+      thisWeek: 'This Week',
+      today: 'Today',
       profitMargin: 'Profit Margin',
       vatToReserve: 'VAT to Reserve',
       excellent: 'Excellent',
@@ -62,7 +140,7 @@ const resources = {
       topExpenseCategories: 'Top Expense Categories',
       aiFinancialInsight: 'AI Financial Insight',
       aiFinancialSummary: 'You have a healthy profit margin of 43% this month. Expenses are stable, with the largest costs in software and marketing.',
-      
+
       // AI Assistant
       conversation: 'Conversation',
       askQuestion: 'Ask a question...',
@@ -71,7 +149,7 @@ const resources = {
       aiSuggestion2: 'What was my revenue for the past quarter?',
       aiSuggestion3: 'Which suppliers cost me the most?',
       aiSuggestion4: 'How much VAT should I set aside?',
-      
+
       // Exports
       period: 'Period',
       selectPeriod: 'Select a period',
@@ -82,7 +160,7 @@ const resources = {
       transactions: 'Transactions',
       exportSuccess: 'Export created successfully',
       exportError: 'Error exporting data',
-      
+
       // Automations
       automations: 'Automations',
       automationsDescription: 'Configure automatic functions',
@@ -94,7 +172,7 @@ const resources = {
       monthlySummaryDesc: 'Receive a financial summary every month',
       tagSuggestions: 'Tag Suggestions',
       tagSuggestionsDesc: 'AI suggests tags for transactions',
-      
+
       // Invoice management
       allInvoices: 'All Invoices',
       manageYourInvoices: 'Manage and analyze your invoices',
@@ -110,7 +188,11 @@ const resources = {
       status: 'Status',
       actions: 'Actions',
       unknown: 'Unknown',
-      
+      newSupplier: 'New supplier',
+      paid: 'Paid',
+      pending: 'Open',
+      overdue: 'Overdue',
+
       // Receipt management
       allReceipts: 'All Receipts',
       manageYourReceipts: 'Manage and categorize your receipts',
@@ -118,7 +200,7 @@ const resources = {
       noReceipts: 'No receipts yet',
       uploadReceiptsToStart: 'Upload receipts to get started',
       unknownMerchant: 'Unknown merchant',
-      
+
       // Document management
       allDocuments: 'All Documents',
       manageYourDocuments: 'Manage and analyze your documents',
@@ -131,7 +213,7 @@ const resources = {
       all: 'All',
       analysisInProgress: 'Analysis in progress',
       onlyPdfAllowed: 'Only PDF files are allowed',
-      
+
       // Team Management
       teamManagement: 'Team Management',
       teamManagementDescription: 'Manage team members and their roles',
@@ -153,15 +235,65 @@ const resources = {
       finance: 'Finance',
       viewer: 'Viewer',
       role: 'Role',
-      
-      // Header
+
+      // Header & Auth
       tagline: 'AI customer service that automatically handles up to 80% of your emails',
-      logout: 'Logout',
-      
+      logout: 'Log out',
+      login: 'Log in',
+      signup: 'Sign up',
+      register: 'Register',
+      resetPassword: 'Reset password',
+      email: 'Email',
+      emailAddress: 'Email address',
+      password: 'Password',
+      confirmPassword: 'Confirm password',
+      fullName: 'Full name',
+      yourFullName: 'Your full name',
+      companyName: 'Company name',
+      welcomeBack: 'Welcome back!',
+      successfullySignedIn: "You're signed in.",
+      accountCreated: 'Account created!',
+      verifyEmailDescription: 'Check your email to verify your account.',
+      emailSent: 'Email sent!',
+      checkInboxResetPassword: 'Check your inbox for instructions to reset your password.',
+      invalidCredentials: 'Invalid login credentials',
+      emailAlreadyRegistered: 'This email address is already registered.',
+      passwordRequirements: 'Password requirements:',
+      minSixChars: 'At least 6 characters',
+      atLeastOneLetter: 'At least 1 letter',
+      atLeastOneNumber: 'At least 1 digit (recommended)',
+      passwordsDontMatch: "Passwords don't match",
+      invalidEmail: 'Invalid email address',
+      passwordMinLength: 'Password must be at least 6 characters',
+      nameMinLength: 'Name must be at least 2 characters',
+
       // Welcome
       welcome: 'Welcome to Servio — your AI customer service assistant',
       connectMailbox: 'Connect mailbox',
-      
+      connectYourMailbox: 'Connect your mailbox',
+      connectMailboxDesc: 'Connect your mailbox to see your emails here and reply with AI.',
+      noEmailsFound: 'No emails found',
+      clickSyncToFetch: 'Click sync to fetch emails.',
+      fetchEmails: 'Fetch emails',
+      newEmail: 'New email',
+      backToInbox: '← Back to inbox',
+      noEmailsSynced: 'No emails synced yet.',
+      noSubject: '(No subject)',
+      viewAll: 'View all',
+      recentEmails: 'Recent Emails',
+      quickActions: 'Quick Actions',
+      usageThisMonth: 'Usage this month',
+      emails: 'Emails',
+      aiCalls: 'AI calls',
+      upgradeToPro: 'Upgrade to Pro',
+      mailboxes: 'Mailboxes',
+      connected: 'connected',
+      unread: 'Unread',
+      waitingForAction: 'awaiting action',
+      read: 'Read',
+      handled: 'handled',
+      total: 'total',
+
       // Mail interface
       reply: 'Reply',
       send: 'Send',
@@ -180,27 +312,38 @@ const resources = {
       useFallbackReply: 'Use Fallback Reply',
       generatingReplies: 'Generating AI responses...',
       aiSuggestionsPlaceholder: 'AI will generate response suggestions here...',
-      
+      mailboxConnected: '✅ Mailbox connected!',
+      mailboxConnectedDesc: 'Your {{provider}} is connected. Emails are now syncing...',
+      emailsSynced: '📧 Emails updated',
+      inboxSynced: 'Your inbox is synced.',
+      syncFailed: 'Sync failed',
+      backgroundSyncing: '📧 Emails syncing in background',
+      backgroundSyncingDesc: 'This may take a moment. Your inbox will be updated automatically.',
+
       // AI Response types
       business: 'Business',
       empathetic: 'Empathetic',
       formal: 'Formal',
       detailed: 'Detailed',
-      
+
       // Languages
       dutch: 'Dutch',
       english: 'English',
       german: 'German',
       french: 'French',
       spanish: 'Spanish',
-      
+      language: 'Language',
+      theme: 'Theme',
+      light: 'Light',
+      dark: 'Dark',
+
       // Categories
       return: 'Return',
       complaint: 'Complaint',
       invoice: 'Invoice',
       question: 'Question',
       technical: 'Technical',
-      
+
       // Common
       loading: 'Loading...',
       noEmails: 'No new emails.',
@@ -217,23 +360,386 @@ const resources = {
       errorUploadingInvoice: 'Error uploading invoice',
       errorUploadingReceipt: 'Error uploading receipt',
       errorUploadingDocument: 'Error uploading document',
-      
-      // Footer
+      tryAgainPrompt: 'Please try again.',
+
+      // Settings page
+      settingsTitle: 'Settings',
+      settingsSubtitle: 'Manage your preferences, personalization and automations',
+      appearance: 'Appearance',
+      appearanceDesc: 'Adjust colors and layout to your taste',
+      accentColor: 'Accent color',
+      compactLayout: 'Compact layout',
+      compactLayoutDesc: 'Less whitespace, more content visible',
+      languageAndDisplay: 'Language & Display',
+      languageAndDisplayDesc: 'Adjust language and theme',
+      selectLanguage: 'Select the interface language',
+      themeDesc: 'Choose between light and dark color schemes',
+      aiPersonality: 'AI Personality',
+      aiPersonalityDesc: 'Define how the AI communicates with you and your customers',
+      communicationStyle: 'Communication style',
+      describeStyle: 'Describe your desired style',
+      autoReply: 'Automatic Replies',
+      autoReplyDesc: 'AI replies automatically to standard questions',
+      emailSignature: 'Email Signature',
+      emailSignatureDesc: 'Automatically added to AI-generated replies',
+      quickActionsTitle: 'Quick Actions',
+      quickActionsDesc: 'Configure shortcuts on your dashboard',
+      automationsTitle: 'Automations',
+      automationsDesc: 'Enable automatic functions',
+      saveSettings: 'Save settings',
+      settingsSaved: 'Settings saved',
+      preferencesUpdated: 'Your preferences have been updated.',
+      saveError: 'Save failed',
+
+      // Subscription / feature gates
+      upgradeRequired: 'Upgrade required',
+      featureRequiresUpgrade: '<strong>{{feature}}</strong> is available from the <strong>{{tier}}</strong> plan. Upgrade your subscription to get access.',
+      viewPlans: 'View plans',
+
+      // Profile
+      profileTitle: 'Profile',
+      profileSubtitle: 'Manage your personal details',
+      profilePhoto: 'Profile photo',
+      profilePhotoDesc: 'Upload a profile photo (max 5MB)',
+      uploadPhoto: 'Upload photo',
+      personalInfo: 'Personal information',
+      personalInfoDesc: 'Edit your name and company details',
+      emailCannotBeChanged: 'Your email address cannot be changed.',
+      optional: 'optional',
+      security: 'Security',
+      securityDesc: 'Secure your account with two-factor authentication',
+      twoFactorAuth: 'Two-factor authentication (2FA)',
+      twoFactorAuthDesc: 'Add an extra security layer using an authenticator app',
+      enable2FA: 'Enable 2FA',
+      privacyAndData: 'Privacy & Data (GDPR)',
+      privacyAndDataDesc: 'Manage your personal data in line with GDPR',
+      exportData2: 'Export data',
+      exportDataDesc: 'Download all your stored data as JSON',
+      deleteAccount: 'Delete account',
+      deleteAccountDesc: 'Permanently delete your account and all related data',
+      deleteAccountConfirmTitle: 'Permanently delete account?',
+      deleteAccountConfirmDesc: 'All your data will be permanently deleted: emails, invoices, receipts, documents, settings and profile information. This cannot be undone. Download your data first if you want to keep it.',
+      deletePermanently: 'Delete permanently',
+      accountDeleted: 'Account deleted',
+      accountDeletedDesc: 'Your account and all data have been deleted.',
+      dataExported: 'Data exported',
+      dataExportedDesc: 'Your full data has been downloaded.',
+      exportFailed: 'Export failed',
+
+      // Footer (app)
       footerText: '© Servio. All rights reserved.',
-      version: 'Version'
-    }
+      version: 'Version',
+      secureAndPrivate: 'Secure & Private',
+
+      // ============================================
+      // Marketing — Header
+      // ============================================
+      marketing: {
+        nav: {
+          features: 'Features',
+          pricing: 'Pricing',
+          blog: 'Blog',
+          about: 'About',
+          login: 'Log in',
+          startFree: 'Start Free',
+        },
+        hero: {
+          badge: '500+ entrepreneurs save 8+ hours every week',
+          title1: 'Stop doing admin.',
+          title2: 'Start doing business.',
+          subtitle: 'Servio automates up to 80% of your emails, processes invoices automatically and gives you real-time insight into your finances — so you can focus on growing.',
+          checkAutoEmail: 'Automatic email replies',
+          checkInvoice: 'AI invoice processing',
+          checkDashboard: 'Financial dashboard',
+          ctaPrimary: 'Start 14-day free trial',
+          ctaSecondary: 'Discover all features',
+          trustNoCard: 'No credit card required',
+          trustQuickSetup: 'Active in 2 minutes',
+          trustCancel: 'Cancel anytime',
+        },
+        features: {
+          eyebrow: 'What Servio delivers',
+          title: 'Less work. More results.',
+          subtitle: 'Every feature is designed to give you back time and create overview.',
+          items: [
+            { title: 'Save 8+ hours a week on email', description: 'AI replies to 80% of your mail automatically. You only approve.', result: 'More time for customers' },
+            { title: 'Always know where you stand', description: 'Real-time dashboard with revenue, expenses and profit. No more surprises.', result: 'Financial overview 24/7' },
+            { title: 'Invoices processed in seconds', description: 'Upload an invoice, AI recognizes everything: amounts, VAT, supplier, category.', result: 'No more manual entry' },
+            { title: 'Ask questions to your bookkeeping', description: '"How much did I spend on software this quarter?" Get an instant answer.', result: 'Insight without searching' },
+          ],
+        },
+        product: {
+          eyebrow: 'Products',
+          title: 'Everything you need, nothing you don\'t',
+          subtitle: 'Three powerful tools that work together to run your business.',
+          items: [
+            { title: 'Smart Inbox', description: 'AI reads, categorizes and replies to your emails. You only approve.', metrics: ['80% less typing', 'Auto-categorization', 'Sentiment analysis'] },
+            { title: 'Financial Dashboard', description: 'Real-time insight into revenue, expenses and profit. Never be surprised again.', metrics: ['Live revenue tracking', 'Expense analysis', 'Profit forecast'] },
+            { title: 'Invoice Processing', description: 'Upload an invoice, AI does the rest. Amounts, VAT and category automatically.', metrics: ['OCR recognition', 'Auto-categorization', 'VAT extraction'] },
+          ],
+        },
+        howItWorks: {
+          eyebrow: 'How it works',
+          title: 'Operational in 3 steps',
+          subtitle: 'No complicated setup. No technical knowledge required.',
+          step: 'STEP',
+          steps: [
+            { title: 'Connect your inbox & administration', description: 'Connect your email and upload your first invoices. Done in 2 minutes.' },
+            { title: 'Servio automates and analyzes', description: 'AI replies to mail, processes documents and tracks your finances.' },
+            { title: 'You stay in control and save time', description: 'Focus on your business while Servio does the work. Always insight, never stress.' },
+          ],
+        },
+        benefits: {
+          eyebrow: 'Why Servio',
+          title: 'The problems we solve',
+          subtitle: 'Built for freelancers and small businesses that want to achieve more with less hassle.',
+          items: [
+            { title: 'Hours back per week', description: 'No endless mailing or manual bookkeeping. Servio does the heavy lifting.', stat: '8+ hours', statLabel: 'saved per week' },
+            { title: 'Chaos becomes overview', description: 'All invoices, receipts and emails in one place. Automatically categorized.', stat: '100%', statLabel: 'organized' },
+            { title: 'Financial insight', description: 'Always know your revenue, expenses and profit. In real time, not after the fact.', stat: '24/7', statLabel: 'live dashboard' },
+            { title: 'Safe & reliable', description: 'Your data is encrypted and stays yours. GDPR-compliant and secured.', stat: '256-bit', statLabel: 'encryption' },
+          ],
+        },
+        cta: {
+          title: 'Ready to win back time?',
+          subtitle: 'Join 500+ entrepreneurs who have automated their administration and now focus on what really matters.',
+          trust1: '14 days free',
+          trust2: 'No credit card required',
+          trust3: 'Get started immediately',
+          button: 'Start my free trial',
+          orSee: 'Or',
+          orSeeLink: 'see all features first',
+        },
+        pricing: {
+          eyebrow: 'Pricing',
+          h1Top: 'Affordable for every',
+          h1Bottom: 'entrepreneur.',
+          subtitle: 'No surprises, no hidden costs. Choose the plan that fits and start free today.',
+          trust1: '14-day free trial',
+          trust2: 'No credit card required',
+          trust3: 'Cancel monthly',
+          mostPopular: 'Most popular',
+          perMonth: '/month',
+          ctaTry: 'Try free for 14 days',
+          ctaStart: 'Start free trial',
+          ctaContact: 'Contact us',
+          enterpriseTitle: 'Need an Enterprise solution?',
+          enterpriseDesc: 'For larger organizations we offer tailored support, SLA and custom integrations.',
+          contactUs: 'Contact us',
+          startFree: 'Start Free',
+          sectionTitle: 'Simple, transparent pricing',
+          sectionSubtitle: 'Choose the plan that fits you. Always 14 days free trial.',
+          freeTrialBadge: '14 days free',
+          plans: [
+            { name: 'Starter', price: '9.99', description: 'Perfect to get started', features: ['Limited inbox', 'Limited AI calls', '1 user', 'Basic reports'] },
+            { name: 'Pro', price: '29.99', description: 'Most chosen by entrepreneurs', features: ['Unlimited inbox', 'Full administration module', 'AI accounting assistant', 'Up to 3 users', 'Advanced reports', 'Priority support'] },
+            { name: 'Business', price: '79.99', description: 'For growing businesses', features: ['All features', 'Unlimited users', 'Priority SLA', 'Automations', 'Custom integrations', 'Dedicated support'] },
+          ],
+          plansFull: [
+            { name: 'Starter', tier: 'starter', price: '9.99', description: 'For starting entrepreneurs', features: ['Up to 100 emails per month', '50 AI calls per month', '1 user', 'Basic financial dashboard', 'Email support'], cta: 'Try free for 14 days' },
+            { name: 'Pro', tier: 'pro', price: '29.99', description: "Most chosen by freelancers", features: ['Unlimited emails', 'Unlimited AI calls', 'Full administration module', 'AI accounting assistant', 'Up to 3 users', 'Advanced reports', 'Priority support'], cta: 'Start free trial' },
+            { name: 'Business', tier: 'business', price: '79.99', description: 'For growing SMBs', features: ['Everything from Pro', 'Unlimited users', 'Priority SLA (4 hours)', 'Advanced automations', 'API access & integrations', 'Dedicated account manager', 'Custom onboarding'], cta: 'Contact us' },
+          ],
+        },
+        featuresPage: {
+          eyebrow: 'Features',
+          h1Top: 'Automate your administration',
+          h1Bottom: 'with AI that works.',
+          subtitle: 'Four powerful modules that work together to run your business. Less manual work, more results.',
+          security: {
+            title: 'Secure & GDPR-compliant',
+            description: 'Your data is safe with us. Enterprise-grade 256-bit encryption, GDPR-compliant and stored in secure datacenters within the EU.',
+            points: ['256-bit encryption', 'GDPR compliant', 'EU datacenters', 'Daily backups'],
+          },
+          items: [
+            { id: 'customer-service', title: 'AI Customer Service', subtitle: 'Reply to 80% of your emails automatically', description: 'Servio reads your mails, understands the context and proposes professional replies. You only approve.', details: ['Intelligent reply suggestions based on context', 'Sentiment analysis to prioritize urgent messages', 'Automatic categorization and tagging', 'Learns your communication style in 24 hours'], result: 'Save 6+ hours a week on email' },
+            { id: 'invoices', title: 'Automatic Invoice Processing', subtitle: 'Upload an invoice, done in seconds', description: 'No more manual data entry. AI recognizes amounts, VAT, suppliers and categories automatically.', details: ['OCR recognition for all invoice formats', 'Automatic VAT extraction and calculation', 'Smart supplier and date detection', 'Ready for your bookkeeping immediately'], result: 'No more manual entry' },
+            { id: 'financial', title: 'Real-time Financial Dashboard', subtitle: 'Always know where you stand', description: 'Clear dashboard with your revenue, expenses and profit. Never be surprised by your numbers.', details: ['Live tracking of income and expenses', 'Profit and loss forecasts', 'Category analysis per period', 'Export to Excel, PDF or your accountant'], result: '24/7 financial insight' },
+            { id: 'ai-assistant', title: 'AI Accounting Assistant', subtitle: 'Ask questions in plain English', description: '"How much did I spend on software this quarter?" Ask your question and get an instant answer.', details: ['Ask about revenue, profit or expenses', 'Automatic VAT reservation calculations', 'Compare periods and discover trends', 'No accounting knowledge required'], result: 'Insight without searching' },
+          ],
+        },
+        about: {
+          eyebrow: 'About Servio',
+          h1Top: 'Built for',
+          h1Bottom: 'entrepreneurs.',
+          subtitle: 'Servio exists to give entrepreneurs peace of mind and overview. Less administration, more time for what really matters.',
+          missionTitle: 'Our mission',
+          missionP1: "As an entrepreneur you already have enough on your plate. You want to focus on your customers, your product and your growth — not on endless emails and repetitive admin.",
+          missionP2: "That's why we built Servio: <strong>a smart assistant that helps you with everything that distracts you from what you're truly good at</strong>. From customer service to bookkeeping, from invoices to financial insight.",
+          missionP3: 'With AI as a partner, not a replacement. You always stay in control, but with less hassle and more peace of mind. So you can do what you love: run your business.',
+          stats: [
+            { value: '500+', label: 'Active entrepreneurs' },
+            { value: '8+ hrs', label: 'Saved per week' },
+            { value: '80%', label: 'Mails automated' },
+            { value: '4.8/5', label: 'Customer satisfaction' },
+          ],
+          valuesTitle: 'Our values',
+          valuesSubtitle: 'What drives everything we build.',
+          values: [
+            { title: 'Focus on results', description: 'No unnecessary features. Everything we build must save time or create overview.' },
+            { title: 'Passion for entrepreneurs', description: "We understand your challenges because we are entrepreneurs ourselves. Every feature is built with you in mind." },
+            { title: 'AI with a purpose', description: 'Technology is a means, not an end. We build AI that genuinely helps, not AI that just impresses.' },
+            { title: 'Building together', description: 'Your feedback shapes our roadmap. Servio grows with input from real entrepreneurs.' },
+          ],
+          teamTitle: 'A Dutch product',
+          teamP1: 'Servio is built by a small, dedicated team in the Netherlands. We believe in quality over quantity, and in building software that truly helps you — not just now, but for the long term.',
+          madeIn: 'Made with ❤️ in the Netherlands',
+        },
+        contact: {
+          title: 'Contact us',
+          subtitle: 'Have a question or want to learn more about Servio? We\'re happy to help.',
+          email: 'Email',
+          location: 'Location',
+          locationValue: 'Amsterdam, Netherlands',
+          responseTime: 'Response time',
+          responseTimeValue: 'Within 24 hours',
+          formTitle: 'Send us a message',
+          name: 'Name',
+          yourName: 'Your name',
+          message: 'Message',
+          messagePlaceholder: 'How can we help?',
+          send: 'Send message',
+          sent: 'Message sent!',
+          sentDesc: 'We will get back to you as soon as possible.',
+          nameError: 'Name must be at least 2 characters',
+          emailError: 'Invalid email address',
+          messageError: 'Message must be at least 10 characters',
+        },
+        faq: {
+          title: 'Frequently asked questions',
+          subtitle: 'Have a different question?',
+          contactLink: 'Contact us',
+          subtitleSuffix: 'and reach our support team.',
+          items: [
+            { q: 'How does the AI work?', a: 'Servio uses advanced AI models to analyze your emails and provide intelligent reply suggestions. The AI learns from your business context and adapts to your communication style. You always retain full control over what is sent.' },
+            { q: 'Is my data safe?', a: 'Absolutely. We use enterprise-grade encryption for all data. Your data is stored in secure datacenters within the EU and we never share information with third parties. We comply with all GDPR requirements.' },
+            { q: 'Can I upload invoices?', a: 'Yes, you can upload invoices as PDF, JPG or PNG. Our AI automatically recognizes amounts, VAT, supplier names and other key details. You can manually adjust everything if needed.' },
+            { q: 'Do I get a free trial?', a: "Yes, you get 14 days of free access to all features without a credit card. After the trial you can choose a paid subscription or simply stop with no obligations." },
+            { q: 'Does Servio work with my existing mailbox?', a: 'Servio integrates seamlessly with Gmail, Outlook/Office 365 and other IMAP mailboxes. Connecting takes only a few minutes and your existing emails remain untouched.' },
+            { q: 'Can I use Servio with my team?', a: 'Yes, with the Pro plan you can add up to 3 team members, and with the Business plan you have unlimited users. You can assign different roles with specific access rights.' },
+          ],
+        },
+        footer: {
+          tagline: 'The smart business assistant for entrepreneurs. Automate your customer service and administration.',
+          product: 'Product',
+          support: 'Support',
+          legal: 'Legal',
+          contact: 'Contact',
+          createAccount: 'Create account',
+          privacyPolicy: 'Privacy Policy',
+          terms: 'Terms of Service',
+          cookies: 'Cookie Policy',
+          copyright: '© {{year}} Servio. All rights reserved.',
+          madeIn: 'Made with ❤️ in the Netherlands',
+        },
+        legal: {
+          lastUpdated: 'Last updated:',
+          privacy: {
+            title: 'Privacy Policy',
+            sections: [
+              { h: '1. Introduction', p: 'Servio ("we", "us", "our") respects the privacy of all users of our services. This privacy statement explains what data we collect, how we use it, and what rights you have regarding your personal data.' },
+              { h: '2. Data we collect', p: 'We collect the following categories of personal data:', list: ['Account data: name, email address, company name', 'Usage data: how you use our services', 'Communication data: emails processed via our platform', 'Financial data: invoices and receipts you upload'] },
+              { h: '3. How we use your data', p: 'We use your data for the following purposes:', list: ['Delivering and improving our services', 'Automating your email responses with AI', 'Processing invoices and receipts', 'Sending important service notifications', 'Complying with legal obligations'] },
+              { h: '4. Data security', p: 'We take appropriate technical and organizational measures to protect your personal data against unauthorized access, loss or misuse. All your data is stored and transmitted encrypted.' },
+              { h: '5. Your rights', p: 'Under the GDPR you have the following rights:', list: ['Right to access your personal data', 'Right to rectification of incorrect data', 'Right to erasure of your data', 'Right to restriction of processing', 'Right to data portability', 'Right to object to processing'] },
+              { h: '6. Contact', p: 'Do you have questions about this privacy policy or want to exercise your rights? Contact us at info@getservio.co.' },
+            ],
+          },
+          terms: {
+            title: 'Terms of Service',
+            sections: [
+              { h: '1. Definitions', p: 'In these terms of service the following definitions apply:', list: ['Servio: the provider of the software and services', 'User: the natural or legal person using Servio', 'Services: all products and features offered by Servio', 'Account: personal access to the Servio platform'] },
+              { h: '2. Applicability', p: 'These terms apply to all offers, agreements and deliveries of services by Servio. By using our services you agree to these terms.' },
+              { h: '3. Use of the services', p: 'You are responsible for:', list: ['Providing correct and complete information', 'Keeping your login credentials confidential', 'All activities under your account', 'Compliance with applicable laws and regulations'] },
+              { h: '4. Subscriptions and payment', p: 'Servio offers various subscription plans. All prices exclude VAT unless otherwise stated. Payments must be made in advance. In case of late payment we reserve the right to suspend access to your account.' },
+              { h: '5. Trial period', p: 'New users can use a free trial period of 14 days. During this period you have access to all features. After the trial period your account is automatically converted into a paid subscription, unless you cancel the account.' },
+              { h: '6. Intellectual property', p: 'All intellectual property rights to the software, documentation and other materials remain with Servio. You obtain a non-exclusive, non-transferable right of use for the duration of your subscription.' },
+              { h: '7. Liability', p: 'Servio is not liable for indirect damages, consequential damages or loss of profit. Our total liability is limited to the amount you have paid in the 12 months preceding the claim.' },
+              { h: '8. Termination', p: 'You can cancel your subscription at any time. After cancellation you keep access to your account until the end of the current billing period. We are entitled to terminate your account in case of breach of these terms.' },
+              { h: '9. Changes', p: 'We reserve the right to amend these terms. In case of material changes we will notify you at least 30 days in advance.' },
+              { h: '10. Applicable law', p: 'These terms are governed by Dutch law. Disputes shall be submitted to the competent court in Amsterdam.' },
+              { h: '11. Contact', p: 'For questions about these terms you can contact us at info@getservio.co.' },
+            ],
+          },
+          cookies: {
+            title: 'Cookie Policy',
+            sections: [
+              { h: 'What are cookies?', p: 'Cookies are small text files that are stored on your computer or mobile device when you visit our website. They help us make the website function correctly, improve security, and gain insight into how visitors use the website.' },
+              { h: 'Which cookies do we use?', p: '' },
+              { h: 'Necessary cookies', p: 'These cookies are essential for the website to function. Without these cookies certain features cannot work.', list: ['Session cookies for sign-in and authentication', 'Security cookies for fraud protection', 'Cookies that remember your preferences'] },
+              { h: 'Analytical cookies', p: 'These cookies help us understand how visitors use our website so we can improve it.', list: ['Statistics on website visits', 'Information on which pages are most visited', 'Error messages and performance metrics'] },
+              { h: 'Managing cookies', p: 'You can adjust your browser settings to refuse cookies or to receive a notification when cookies are placed. Note that disabling cookies may affect website functionality.' },
+              { h: 'Retention period', p: 'Session cookies are deleted when you close your browser. Persistent cookies remain on your device until they expire or you remove them manually. Our analytical cookies expire after a maximum of 2 years.' },
+              { h: 'Changes', p: 'We may update this cookie policy from time to time. We recommend reviewing this policy regularly.' },
+              { h: 'Contact', p: 'Do you have questions about our use of cookies? Contact us at info@getservio.co.' },
+            ],
+          },
+        },
+        blog: {
+          title: 'Blog',
+          subtitle: 'Practical tips and insights for freelancers and small entrepreneurs. About AI, administration, productivity and everything in between.',
+          breadcrumbHome: 'Home',
+          breadcrumbBlog: 'Blog',
+          minRead: 'min read',
+          share: 'Share:',
+          linkCopied: 'Link copied!',
+          ctaTitle: 'Ready to save time?',
+          ctaDesc: 'Try Servio free for 14 days. No credit card required.',
+          ctaButton: 'Start free trial',
+          relatedTitle: 'Related articles',
+          backToAll: 'Back to all articles',
+        },
+      },
+    },
   },
   nl: {
     translation: {
-      // Navigation
+      // ============================================
+      // Navigation (App)
+      // ============================================
       inbox: 'Inbox',
       dashboard: 'Dashboard',
       statistics: 'Statistieken',
       templates: 'Templates',
       pricing: 'Prijzen',
       settings: 'Instellingen',
-      
-      // Administration
+      profile: 'Profiel',
+      back: 'Terug',
+      backToHome: '← Terug naar home',
+      manage: 'Beheer',
+      cancel: 'Annuleren',
+      save: 'Opslaan',
+      saving: 'Opslaan...',
+      saved: 'Opgeslagen',
+      delete: 'Verwijderen',
+      edit: 'Bewerken',
+      close: 'Sluiten',
+      open: 'Openen',
+      view: 'Bekijken',
+      download: 'Downloaden',
+      upload: 'Uploaden',
+      yes: 'Ja',
+      no: 'Nee',
+      add: 'Toevoegen',
+      remove: 'Verwijderen',
+      done: 'Klaar',
+      reset: 'Reset',
+      create: 'Aanmaken',
+      update: 'Bijwerken',
+      confirm: 'Bevestigen',
+      next: 'Volgende',
+      previous: 'Vorige',
+      retry: 'Opnieuw',
+      apply: 'Toepassen',
+      submit: 'Versturen',
+      sending: 'Versturen...',
+
+      favorites: 'Favorieten',
+      manageFavorites: 'Favorieten beheren',
+      doneCustomizing: 'Klaar met aanpassen',
+      resetFavorites: 'Reset favorieten',
+      availableFrom: 'Beschikbaar vanaf {{tier}}',
+
       administration: 'Administratie',
       financialOverview: 'Financieel Overzicht',
       financialOverviewDescription: 'Bekijk je financiële situatie in één oogopslag',
@@ -255,8 +761,8 @@ const resources = {
       quotesDescription: 'Maak en beheer je offertes',
       timeTracking: 'Urenregistratie',
       timeTrackingDescription: 'Registreer en beheer je werkuren',
-      
-      // Financial terms
+      auditLog: 'Audit Log',
+
       totalIncome: 'Totale Inkomsten',
       totalExpenses: 'Totale Uitgaven',
       profit: 'Winst',
@@ -265,6 +771,8 @@ const resources = {
       thisMonth: 'Deze maand',
       thisQuarter: 'Dit kwartaal',
       thisYear: 'Dit jaar',
+      thisWeek: 'Deze week',
+      today: 'Vandaag',
       profitMargin: 'Winstmarge',
       vatToReserve: 'BTW te reserveren',
       excellent: 'Uitstekend',
@@ -283,8 +791,7 @@ const resources = {
       topExpenseCategories: 'Top Uitgavencategorieën',
       aiFinancialInsight: 'AI Financieel Inzicht',
       aiFinancialSummary: 'Je hebt deze maand een gezonde winstmarge van 43%. Uitgaven zijn stabiel, met de grootste kosten in software en marketing.',
-      
-      // AI Assistant
+
       conversation: 'Gesprek',
       askQuestion: 'Stel een vraag...',
       thinking: 'Aan het denken...',
@@ -292,8 +799,7 @@ const resources = {
       aiSuggestion2: 'Wat is mijn omzet van het afgelopen kwartaal?',
       aiSuggestion3: 'Welke leveranciers kosten mij het meest?',
       aiSuggestion4: 'Hoeveel btw moet ik ongeveer reserveren?',
-      
-      // Exports
+
       period: 'Periode',
       selectPeriod: 'Selecteer een periode',
       format: 'Formaat',
@@ -303,8 +809,7 @@ const resources = {
       transactions: 'Transacties',
       exportSuccess: 'Export succesvol gemaakt',
       exportError: 'Fout bij exporteren',
-      
-      // Automations
+
       automations: 'Automatiseringen',
       automationsDescription: 'Configureer automatische functies',
       autoCategorize: 'Automatische Categorisatie',
@@ -315,8 +820,7 @@ const resources = {
       monthlySummaryDesc: 'Ontvang elke maand een financiële samenvatting',
       tagSuggestions: 'Tag Suggesties',
       tagSuggestionsDesc: 'AI stelt tags voor bij transacties',
-      
-      // Invoice management
+
       allInvoices: 'Alle Facturen',
       manageYourInvoices: 'Beheer en analyseer je facturen',
       uploadInvoice: 'Factuur Uploaden',
@@ -331,16 +835,18 @@ const resources = {
       status: 'Status',
       actions: 'Acties',
       unknown: 'Onbekend',
-      
-      // Receipt management
+      newSupplier: 'Nieuwe leverancier',
+      paid: 'Betaald',
+      pending: 'Open',
+      overdue: 'Verlopen',
+
       allReceipts: 'Alle Bonnetjes',
       manageYourReceipts: 'Beheer en categoriseer je bonnetjes',
       uploadReceipt: 'Bonnetje Uploaden',
       noReceipts: 'Nog geen bonnetjes',
       uploadReceiptsToStart: 'Upload bonnetjes om te beginnen',
       unknownMerchant: 'Onbekende winkel',
-      
-      // Document management
+
       allDocuments: 'Alle Documenten',
       manageYourDocuments: 'Beheer en analyseer je documenten',
       uploadDocument: 'Document Uploaden',
@@ -352,8 +858,7 @@ const resources = {
       all: 'Alles',
       analysisInProgress: 'Analyse in behandeling',
       onlyPdfAllowed: 'Alleen PDF bestanden zijn toegestaan',
-      
-      // Team Management
+
       teamManagement: 'Teambeheer',
       teamManagementDescription: 'Beheer teamleden en hun rollen',
       inviteTeamMember: 'Teamlid Uitnodigen',
@@ -374,16 +879,63 @@ const resources = {
       finance: 'Financieel',
       viewer: 'Kijker',
       role: 'Rol',
-      
-      // Header
+
       tagline: 'AI-klantenservice die tot 80% van je mails automatisch afhandelt',
       logout: 'Uitloggen',
-      
-      // Welcome
+      login: 'Inloggen',
+      signup: 'Registreren',
+      register: 'Registreren',
+      resetPassword: 'Wachtwoord resetten',
+      email: 'E-mail',
+      emailAddress: 'E-mailadres',
+      password: 'Wachtwoord',
+      confirmPassword: 'Bevestig wachtwoord',
+      fullName: 'Volledige naam',
+      yourFullName: 'Je volledige naam',
+      companyName: 'Bedrijfsnaam',
+      welcomeBack: 'Welkom terug!',
+      successfullySignedIn: 'Je bent succesvol ingelogd.',
+      accountCreated: 'Account aangemaakt!',
+      verifyEmailDescription: 'Controleer je e-mail om je account te verifiëren.',
+      emailSent: 'E-mail verzonden!',
+      checkInboxResetPassword: 'Controleer je inbox voor instructies om je wachtwoord te resetten.',
+      invalidCredentials: 'Ongeldige inloggegevens',
+      emailAlreadyRegistered: 'Dit e-mailadres is al geregistreerd.',
+      passwordRequirements: 'Wachtwoord vereisten:',
+      minSixChars: 'Minimaal 6 karakters',
+      atLeastOneLetter: 'Minstens 1 letter',
+      atLeastOneNumber: 'Minstens 1 cijfer (aanbevolen)',
+      passwordsDontMatch: 'Wachtwoorden komen niet overeen',
+      invalidEmail: 'Ongeldig e-mailadres',
+      passwordMinLength: 'Wachtwoord moet minimaal 6 karakters bevatten',
+      nameMinLength: 'Naam moet minimaal 2 karakters bevatten',
+
       welcome: 'Welkom bij Servio — jouw AI-klantenservice-assistent',
       connectMailbox: 'Mailbox koppelen',
-      
-      // Mail interface
+      connectYourMailbox: 'Koppel je mailbox',
+      connectMailboxDesc: 'Verbind je mailbox om je emails hier te zien en met AI te beantwoorden.',
+      noEmailsFound: 'Geen emails gevonden',
+      clickSyncToFetch: 'Klik op sync om emails op te halen.',
+      fetchEmails: 'Emails ophalen',
+      newEmail: 'Nieuwe e-mail',
+      backToInbox: '← Terug naar inbox',
+      noEmailsSynced: 'Nog geen emails gesynchroniseerd.',
+      noSubject: '(Geen onderwerp)',
+      viewAll: 'Bekijk alles',
+      recentEmails: 'Recente Emails',
+      quickActions: 'Snelle Acties',
+      usageThisMonth: 'Gebruik deze maand',
+      emails: 'E-mails',
+      aiCalls: 'AI-calls',
+      upgradeToPro: 'Upgrade naar Pro',
+      mailboxes: 'Mailboxen',
+      connected: 'gekoppeld',
+      unread: 'Ongelezen',
+      waitingForAction: 'wachtend op actie',
+      read: 'Gelezen',
+      handled: 'afgehandeld',
+      total: 'totaal',
+
       reply: 'Antwoord',
       send: 'Verstuur',
       draft: 'Concept',
@@ -401,28 +953,35 @@ const resources = {
       useFallbackReply: 'Fallback Antwoord Gebruiken',
       generatingReplies: 'AI antwoorden genereren...',
       aiSuggestionsPlaceholder: 'AI zal hier antwoordsuggesties genereren...',
-      
-      // AI Response types
+      mailboxConnected: '✅ Mailbox gekoppeld!',
+      mailboxConnectedDesc: 'Je {{provider}} is gekoppeld. Emails worden nu gesynchroniseerd...',
+      emailsSynced: '📧 Emails bijgewerkt',
+      inboxSynced: 'Je inbox is gesynchroniseerd.',
+      syncFailed: 'Sync mislukt',
+      backgroundSyncing: '📧 Emails worden op de achtergrond gesynchroniseerd',
+      backgroundSyncingDesc: 'Dit kan een moment duren. Je inbox wordt automatisch bijgewerkt.',
+
       business: 'Zakelijk',
       empathetic: 'Empathisch',
       formal: 'Formeel',
       detailed: 'Uitgebreid',
-      
-      // Languages
+
       dutch: 'Nederlands',
       english: 'Engels',
       german: 'Duits',
       french: 'Frans',
       spanish: 'Spaans',
-      
-      // Categories
+      language: 'Taal',
+      theme: 'Thema',
+      light: 'Licht',
+      dark: 'Donker',
+
       return: 'Retour',
       complaint: 'Klacht',
       invoice: 'Factuur',
       question: 'Vraag',
       technical: 'Technisch',
-      
-      // Common
+
       loading: 'Laden...',
       noEmails: 'Geen nieuwe mails.',
       selectEmail: 'Selecteer een email om te antwoorden',
@@ -438,23 +997,369 @@ const resources = {
       errorUploadingInvoice: 'Fout bij uploaden van factuur',
       errorUploadingReceipt: 'Fout bij uploaden van bonnetje',
       errorUploadingDocument: 'Fout bij uploaden van document',
-      
-      // Footer
+      tryAgainPrompt: 'Probeer het opnieuw.',
+
+      settingsTitle: 'Instellingen',
+      settingsSubtitle: 'Beheer je voorkeuren, personalisatie en automatiseringen',
+      appearance: 'Uiterlijk',
+      appearanceDesc: 'Pas kleuren en layout aan naar jouw smaak',
+      accentColor: 'Accentkleur',
+      compactLayout: 'Compact layout',
+      compactLayoutDesc: 'Minder witruimte, meer content zichtbaar',
+      languageAndDisplay: 'Taal & Weergave',
+      languageAndDisplayDesc: 'Pas de taal en het thema aan',
+      selectLanguage: 'Selecteer de taal voor de interface',
+      themeDesc: 'Kies tussen een licht of donker kleurenschema',
+      aiPersonality: 'AI Persoonlijkheid',
+      aiPersonalityDesc: 'Bepaal hoe AI met jou en jouw klanten communiceert',
+      communicationStyle: 'Communicatiestijl',
+      describeStyle: 'Beschrijf je gewenste stijl',
+      autoReply: 'Automatisch Antwoorden',
+      autoReplyDesc: 'AI antwoordt automatisch op standaard vragen',
+      emailSignature: 'E-mail Handtekening',
+      emailSignatureDesc: 'Wordt automatisch toegevoegd aan AI-gegenereerde antwoorden',
+      quickActionsTitle: 'Snelle Acties',
+      quickActionsDesc: 'Configureer snelkoppelingen op je dashboard',
+      automationsTitle: 'Automatiseringen',
+      automationsDesc: 'Schakel automatische functies in',
+      saveSettings: 'Instellingen opslaan',
+      settingsSaved: 'Instellingen opgeslagen',
+      preferencesUpdated: 'Je voorkeuren zijn bijgewerkt.',
+      saveError: 'Fout bij opslaan',
+
+      upgradeRequired: 'Upgrade vereist',
+      featureRequiresUpgrade: '<strong>{{feature}}</strong> is beschikbaar vanaf het <strong>{{tier}}</strong> plan. Upgrade je abonnement om toegang te krijgen.',
+      viewPlans: 'Bekijk Abonnementen',
+
+      profileTitle: 'Profiel',
+      profileSubtitle: 'Beheer je persoonlijke gegevens',
+      profilePhoto: 'Profielfoto',
+      profilePhotoDesc: 'Upload een profielfoto (max 5MB)',
+      uploadPhoto: 'Foto uploaden',
+      personalInfo: 'Persoonlijke informatie',
+      personalInfoDesc: 'Wijzig je naam en bedrijfsgegevens',
+      emailCannotBeChanged: 'Je e-mailadres kan niet worden gewijzigd.',
+      optional: 'optioneel',
+      security: 'Beveiliging',
+      securityDesc: 'Beveilig je account met tweestapsverificatie',
+      twoFactorAuth: 'Tweestapsverificatie (2FA)',
+      twoFactorAuthDesc: 'Voeg een extra beveiligingslaag toe via een authenticator app',
+      enable2FA: '2FA Inschakelen',
+      privacyAndData: 'Privacy & Gegevens (AVG)',
+      privacyAndDataDesc: 'Beheer je persoonlijke gegevens conform de AVG/GDPR',
+      exportData2: 'Gegevens exporteren',
+      exportDataDesc: 'Download al je opgeslagen gegevens als JSON',
+      deleteAccount: 'Account verwijderen',
+      deleteAccountDesc: 'Verwijder je account en alle bijbehorende gegevens permanent',
+      deleteAccountConfirmTitle: 'Account definitief verwijderen?',
+      deleteAccountConfirmDesc: 'Al je gegevens worden permanent verwijderd: emails, facturen, bonnetjes, documenten, instellingen en profielinformatie. Dit kan niet ongedaan worden gemaakt. Download eerst je gegevens als je ze wilt bewaren.',
+      deletePermanently: 'Definitief verwijderen',
+      accountDeleted: 'Account verwijderd',
+      accountDeletedDesc: 'Je account en alle gegevens zijn verwijderd.',
+      dataExported: 'Data geëxporteerd',
+      dataExportedDesc: 'Je volledige data is gedownload.',
+      exportFailed: 'Export mislukt',
+
       footerText: '© Servio. Alle rechten voorbehouden.',
-      version: 'Versie'
-    }
-  }
+      version: 'Versie',
+      secureAndPrivate: 'Veilig & Privé',
+
+      // ============================================
+      // Marketing — NL
+      // ============================================
+      marketing: {
+        nav: {
+          features: 'Features',
+          pricing: 'Prijzen',
+          blog: 'Blog',
+          about: 'Over ons',
+          login: 'Inloggen',
+          startFree: 'Start Gratis',
+        },
+        hero: {
+          badge: '500+ ondernemers besparen wekelijks 8+ uur',
+          title1: 'Stop met administratie.',
+          title2: 'Start met ondernemen.',
+          subtitle: 'Servio automatiseert tot 80% van je e-mails, verwerkt facturen automatisch en geeft je realtime inzicht in je financiën — zodat jij kunt focussen op groeien.',
+          checkAutoEmail: 'Automatische e-mailreacties',
+          checkInvoice: 'AI-factuurverwerking',
+          checkDashboard: 'Financieel dashboard',
+          ctaPrimary: 'Start 14 dagen gratis',
+          ctaSecondary: 'Ontdek alle features',
+          trustNoCard: 'Geen creditcard nodig',
+          trustQuickSetup: 'In 2 minuten actief',
+          trustCancel: 'Annuleren wanneer je wilt',
+        },
+        features: {
+          eyebrow: 'Wat Servio oplevert',
+          title: 'Minder werk. Meer resultaat.',
+          subtitle: 'Elke feature is ontworpen om jou tijd terug te geven en overzicht te creëren.',
+          items: [
+            { title: 'Bespaar 8+ uur per week op e-mail', description: 'AI beantwoordt 80% van je mails automatisch. Jij keurt alleen nog goed.', result: 'Meer tijd voor klanten' },
+            { title: 'Altijd weten waar je staat', description: 'Realtime dashboard met omzet, uitgaven en winst. Geen verrassingen meer.', result: 'Financieel overzicht 24/7' },
+            { title: 'Facturen verwerkt in seconden', description: 'Upload een factuur, AI herkent alles: bedragen, btw, leverancier, categorie.', result: 'Geen handmatig invoeren' },
+            { title: 'Stel vragen aan je boekhouding', description: '"Hoeveel heb ik dit kwartaal aan software uitgegeven?" Direct antwoord.', result: 'Inzicht zonder zoeken' },
+          ],
+        },
+        product: {
+          eyebrow: 'Producten',
+          title: 'Alles wat je nodig hebt, niets dat je niet nodig hebt',
+          subtitle: 'Drie krachtige tools die samenwerken om je bedrijf te runnen.',
+          items: [
+            { title: 'Slimme Inbox', description: 'AI leest, categoriseert en beantwoordt je mails. Jij keurt alleen nog goed.', metrics: ['80% minder typewerk', 'Auto-categorisatie', 'Sentiment analyse'] },
+            { title: 'Financieel Dashboard', description: 'Realtime inzicht in omzet, uitgaven en winst. Nooit meer verrast worden.', metrics: ['Live omzet tracking', 'Uitgaven analyse', 'Winst prognose'] },
+            { title: 'Factuurverwerking', description: 'Upload een factuur, AI doet de rest. Bedragen, btw en categorie automatisch.', metrics: ['OCR herkenning', 'Auto-categorisatie', 'BTW extractie'] },
+          ],
+        },
+        howItWorks: {
+          eyebrow: 'Zo werkt het',
+          title: 'In 3 stappen operationeel',
+          subtitle: 'Geen ingewikkelde setup. Geen technische kennis nodig.',
+          step: 'STAP',
+          steps: [
+            { title: 'Koppel je inbox & administratie', description: 'Verbind je e-mail en upload je eerste facturen. Binnen 2 minuten klaar.' },
+            { title: 'Servio automatiseert en analyseert', description: 'AI beantwoordt mails, verwerkt documenten en houdt je financiën bij.' },
+            { title: 'Jij houdt overzicht en bespaart tijd', description: 'Focus op je bedrijf terwijl Servio het werk doet. Altijd inzicht, nooit stress.' },
+          ],
+        },
+        benefits: {
+          eyebrow: 'Waarom Servio',
+          title: 'De problemen die we oplossen',
+          subtitle: "Gebouwd voor ZZP'ers en kleine bedrijven die meer willen bereiken met minder gedoe.",
+          items: [
+            { title: 'Uren per week terug', description: 'Geen eindeloos mailen of handmatig boekhouden. Servio doet het zware werk.', stat: '8+ uur', statLabel: 'besparing per week' },
+            { title: 'Chaos wordt overzicht', description: 'Alle facturen, bonnetjes en mails op één plek. Automatisch gecategoriseerd.', stat: '100%', statLabel: 'georganiseerd' },
+            { title: 'Financieel inzicht', description: 'Weet altijd wat je omzet, uitgaven en winst is. Realtime, niet achteraf.', stat: '24/7', statLabel: 'actueel dashboard' },
+            { title: 'Veilig & betrouwbaar', description: 'Je data is versleuteld en blijft van jou. GDPR-compliant en beveiligd.', stat: '256-bit', statLabel: 'encryptie' },
+          ],
+        },
+        cta: {
+          title: 'Klaar om tijd terug te winnen?',
+          subtitle: 'Sluit je aan bij 500+ ondernemers die hun administratie hebben geautomatiseerd en nu focussen op wat écht telt.',
+          trust1: '14 dagen gratis',
+          trust2: 'Geen creditcard nodig',
+          trust3: 'Direct aan de slag',
+          button: 'Start mijn gratis proefperiode',
+          orSee: 'Of',
+          orSeeLink: 'bekijk eerst alle features',
+        },
+        pricing: {
+          eyebrow: 'Prijzen',
+          h1Top: 'Betaalbaar voor elke',
+          h1Bottom: 'ondernemer.',
+          subtitle: 'Geen verrassingen, geen verborgen kosten. Kies het plan dat bij jou past en start vandaag nog gratis.',
+          trust1: '14 dagen gratis proberen',
+          trust2: 'Geen creditcard nodig',
+          trust3: 'Maandelijks opzegbaar',
+          mostPopular: 'Meest populair',
+          perMonth: '/maand',
+          ctaTry: 'Probeer 14 dagen gratis',
+          ctaStart: 'Start gratis proefperiode',
+          ctaContact: 'Neem contact op',
+          enterpriseTitle: 'Enterprise oplossing nodig?',
+          enterpriseDesc: 'Voor grotere organisaties bieden we maatwerk met dedicated support, SLA en custom integraties.',
+          contactUs: 'Neem contact op',
+          startFree: 'Start Gratis',
+          sectionTitle: 'Eenvoudige, transparante prijzen',
+          sectionSubtitle: 'Kies het plan dat bij jou past. Altijd 14 dagen gratis proberen.',
+          freeTrialBadge: '14 dagen gratis',
+          plans: [
+            { name: 'Starter', price: '9,99', description: 'Perfect om te starten', features: ['Beperkte inbox', 'Beperkte AI-calls', '1 gebruiker', 'Basis rapportages'] },
+            { name: 'Pro', price: '29,99', description: 'Meest gekozen door ondernemers', features: ['Onbeperkte inbox', 'Volledige administratie module', 'AI boekhoudassistent', 'Tot 3 gebruikers', 'Geavanceerde rapportages', 'Prioriteit support'] },
+            { name: 'Business', price: '79,99', description: 'Voor groeiende bedrijven', features: ['Alle functies', 'Onbeperkte gebruikers', 'Priority SLA', 'Automatiseringen', 'Custom integraties', 'Dedicated support'] },
+          ],
+          plansFull: [
+            { name: 'Starter', tier: 'starter', price: '9,99', description: 'Voor startende ondernemers', features: ['Tot 100 e-mails per maand', '50 AI-calls per maand', '1 gebruiker', 'Basis financieel dashboard', 'E-mail support'], cta: 'Probeer 14 dagen gratis' },
+            { name: 'Pro', tier: 'pro', price: '29,99', description: "Meest gekozen door ZZP'ers", features: ['Onbeperkte e-mails', 'Onbeperkte AI-calls', 'Volledige administratie module', 'AI boekhoudassistent', 'Tot 3 gebruikers', 'Geavanceerde rapportages', 'Prioriteit support'], cta: 'Start gratis proefperiode' },
+            { name: 'Business', tier: 'business', price: '79,99', description: "Voor groeiende MKB's", features: ['Alles uit Pro', 'Onbeperkte gebruikers', 'Priority SLA (4 uur)', 'Geavanceerde automatiseringen', 'API-toegang & integraties', 'Dedicated accountmanager', 'Op-maat onboarding'], cta: 'Neem contact op' },
+          ],
+        },
+        featuresPage: {
+          eyebrow: 'Features',
+          h1Top: 'Automatiseer je administratie',
+          h1Bottom: 'met AI die werkt.',
+          subtitle: 'Vier krachtige modules die samenwerken om je bedrijf te runnen. Minder handwerk, meer resultaat.',
+          security: {
+            title: 'Veilig & AVG-compliant',
+            description: 'Je data is veilig bij ons. Enterprise-grade 256-bit encryptie, GDPR-compliant en opgeslagen in beveiligde datacenters binnen de EU.',
+            points: ['256-bit encryptie', 'GDPR/AVG compliant', 'EU datacenters', 'Dagelijkse backups'],
+          },
+          items: [
+            { id: 'klantenservice', title: 'AI Klantenservice', subtitle: 'Beantwoord 80% van je mails automatisch', description: 'Servio leest je mails, begrijpt de context en stelt professionele antwoorden voor. Jij keurt alleen nog goed.', details: ['Intelligente reply-suggesties op basis van context', 'Sentiment-analyse om urgente berichten te prioriteren', 'Automatische categorisering en tagging', 'Leer je communicatiestijl in 24 uur'], result: 'Bespaar 6+ uur per week op e-mail' },
+            { id: 'facturen', title: 'Automatische Factuurverwerking', subtitle: 'Upload een factuur, klaar in seconden', description: 'Nooit meer handmatig gegevens overtypen. AI herkent bedragen, BTW, leveranciers en categorieën automatisch.', details: ['OCR-herkenning voor alle factuurformaten', 'Automatische BTW-extractie en -berekening', 'Slimme leverancier- en datumdetectie', 'Direct klaar voor je boekhouding'], result: 'Geen handmatig invoeren meer' },
+            { id: 'financieel', title: 'Realtime Financieel Dashboard', subtitle: 'Altijd weten waar je staat', description: 'Overzichtelijk dashboard met je omzet, uitgaven en winst. Nooit meer verrast worden door je cijfers.', details: ['Live tracking van inkomsten en uitgaven', 'Winst- en verliesprognoses', 'Categorieanalyse per periode', 'Exporteer naar Excel, PDF of je boekhouder'], result: '24/7 financieel inzicht' },
+            { id: 'ai-assistent', title: 'AI Boekhoudassistent', subtitle: 'Stel vragen in normale taal', description: '"Hoeveel heb ik dit kwartaal uitgegeven aan software?" Stel je vraag en krijg direct antwoord.', details: ['Vraag naar omzet, winst of kostenposten', 'Automatische BTW-reservering berekeningen', 'Vergelijk periodes en ontdek trends', 'Geen boekhoudkennis nodig'], result: 'Inzicht zonder zoeken' },
+          ],
+        },
+        about: {
+          eyebrow: 'Over Servio',
+          h1Top: 'Gebouwd voor',
+          h1Bottom: 'ondernemers.',
+          subtitle: 'Servio bestaat om ondernemers rust en overzicht te geven. Minder administratie, meer tijd voor wat écht telt.',
+          missionTitle: 'Onze missie',
+          missionP1: 'Als ondernemer heb je al genoeg aan je hoofd. Je wilt focussen op je klanten, je product en je groei — niet op eindeloze e-mails en repetitieve administratie.',
+          missionP2: 'Daarom hebben we Servio gebouwd: <strong>een slimme assistent die je helpt met alles wat je afleidt van waar je écht goed in bent</strong>. Van klantenservice tot boekhouding, van facturen tot financieel inzicht.',
+          missionP3: 'Met AI als partner, niet als vervanging. Je houdt altijd de controle, maar met minder gedoe en meer rust. Zo kun je doen waar je van houdt: ondernemen.',
+          stats: [
+            { value: '500+', label: 'Actieve ondernemers' },
+            { value: '8+ uur', label: 'Bespaard per week' },
+            { value: '80%', label: 'Mails automatisch' },
+            { value: '4.8/5', label: 'Klanttevredenheid' },
+          ],
+          valuesTitle: 'Onze waarden',
+          valuesSubtitle: 'Wat ons drijft bij alles wat we bouwen.',
+          values: [
+            { title: 'Focus op resultaat', description: 'Geen overbodige features. Alles wat we bouwen moet tijd besparen of overzicht geven.' },
+            { title: 'Passie voor ondernemers', description: 'We begrijpen je uitdagingen omdat we zelf ondernemer zijn. Elke feature is met jou in gedachten.' },
+            { title: 'AI met een doel', description: 'Technologie is een middel, geen doel. We bouwen AI die echt helpt, niet alleen indruk maakt.' },
+            { title: 'Samen bouwen', description: 'Jouw feedback vormt onze roadmap. Servio groeit met de input van echte ondernemers.' },
+          ],
+          teamTitle: 'Een Nederlands product',
+          teamP1: 'Servio wordt gebouwd door een klein, toegewijd team in Nederland. We geloven in kwaliteit boven kwantiteit, en in het bouwen van software die je echt helpt — niet alleen nu, maar voor de lange termijn.',
+          madeIn: 'Made with ❤️ in Nederland',
+        },
+        contact: {
+          title: 'Neem contact op',
+          subtitle: 'Heb je een vraag of wil je meer weten over Servio? We helpen je graag verder.',
+          email: 'E-mail',
+          location: 'Locatie',
+          locationValue: 'Amsterdam, Nederland',
+          responseTime: 'Reactietijd',
+          responseTimeValue: 'Binnen 24 uur',
+          formTitle: 'Stuur ons een bericht',
+          name: 'Naam',
+          yourName: 'Je naam',
+          message: 'Bericht',
+          messagePlaceholder: 'Waar kunnen we je mee helpen?',
+          send: 'Verstuur bericht',
+          sent: 'Bericht verzonden!',
+          sentDesc: 'We nemen zo snel mogelijk contact met je op.',
+          nameError: 'Naam moet minimaal 2 karakters bevatten',
+          emailError: 'Ongeldig e-mailadres',
+          messageError: 'Bericht moet minimaal 10 karakters bevatten',
+        },
+        faq: {
+          title: 'Veelgestelde vragen',
+          subtitle: 'Heb je een andere vraag?',
+          contactLink: 'Neem contact op',
+          subtitleSuffix: 'met ons support team.',
+          items: [
+            { q: 'Hoe werkt de AI?', a: 'Servio gebruikt geavanceerde AI-modellen om je e-mails te analyseren en intelligente antwoordsuggesties te geven. De AI leert van je bedrijfscontext en past zich aan je communicatiestijl aan. Je behoudt altijd volledige controle over wat er verstuurd wordt.' },
+            { q: 'Is mijn data veilig?', a: 'Absoluut. We gebruiken enterprise-grade encryptie voor alle data. Je gegevens worden opgeslagen in beveiligde datacenters binnen de EU en we delen nooit informatie met derden. We voldoen aan alle AVG/GDPR-vereisten.' },
+            { q: 'Kan ik facturen uploaden?', a: 'Ja, je kunt facturen uploaden als PDF, JPG of PNG. Onze AI herkent automatisch bedragen, BTW, leveranciersnamen en andere belangrijke gegevens. Je kunt alles handmatig aanpassen indien nodig.' },
+            { q: 'Heb ik een gratis proefperiode?', a: 'Ja, je krijgt 14 dagen gratis toegang tot alle functies zonder creditcard. Na de proefperiode kun je kiezen voor een betaald abonnement of gewoon stoppen zonder verplichtingen.' },
+            { q: 'Werkt Servio met mijn bestaande mailbox?', a: 'Servio integreert naadloos met Gmail, Outlook/Office 365 en andere IMAP-mailboxen. De koppeling duurt slechts een paar minuten en je bestaande e-mails blijven onaangetast.' },
+            { q: 'Kan ik Servio gebruiken met mijn team?', a: 'Ja, met het Pro-plan kun je tot 3 teamleden toevoegen, en met het Business-plan heb je onbeperkte gebruikers. Je kunt verschillende rollen toewijzen met specifieke toegangsrechten.' },
+          ],
+        },
+        footer: {
+          tagline: 'De slimme bedrijfsassistent voor ondernemers. Automatiseer je klantenservice en administratie.',
+          product: 'Product',
+          support: 'Support',
+          legal: 'Juridisch',
+          contact: 'Contact',
+          createAccount: 'Account aanmaken',
+          privacyPolicy: 'Privacy Policy',
+          terms: 'Algemene Voorwaarden',
+          cookies: 'Cookiebeleid',
+          copyright: '© {{year}} Servio. Alle rechten voorbehouden.',
+          madeIn: 'Made with ❤️ in Nederland',
+        },
+        legal: {
+          lastUpdated: 'Laatst bijgewerkt:',
+          privacy: {
+            title: 'Privacy Policy',
+            sections: [
+              { h: '1. Inleiding', p: 'Servio ("wij", "ons", "onze") respecteert de privacy van alle gebruikers van onze diensten. Deze privacyverklaring legt uit welke gegevens wij verzamelen, hoe wij deze gebruiken, en welke rechten u heeft met betrekking tot uw persoonsgegevens.' },
+              { h: '2. Gegevens die wij verzamelen', p: 'Wij verzamelen de volgende categorieën persoonsgegevens:', list: ['Accountgegevens: naam, e-mailadres, bedrijfsnaam', 'Gebruiksgegevens: hoe u onze diensten gebruikt', 'Communicatiegegevens: e-mails die via ons platform worden verwerkt', 'Financiële gegevens: facturen en bonnetjes die u uploadt'] },
+              { h: '3. Hoe wij uw gegevens gebruiken', p: 'Wij gebruiken uw gegevens voor de volgende doeleinden:', list: ['Het leveren en verbeteren van onze diensten', 'Het automatiseren van uw e-mailbeantwoording met AI', 'Het verwerken van facturen en bonnetjes', 'Het versturen van belangrijke servicemededelingen', 'Het voldoen aan wettelijke verplichtingen'] },
+              { h: '4. Gegevensbeveiliging', p: 'Wij nemen passende technische en organisatorische maatregelen om uw persoonsgegevens te beschermen tegen ongeoorloofde toegang, verlies of misbruik. Al uw gegevens worden versleuteld opgeslagen en verzonden.' },
+              { h: '5. Uw rechten', p: 'Op grond van de AVG heeft u de volgende rechten:', list: ['Recht op inzage in uw persoonsgegevens', 'Recht op rectificatie van onjuiste gegevens', 'Recht op verwijdering van uw gegevens', 'Recht op beperking van de verwerking', 'Recht op overdraagbaarheid van gegevens', 'Recht om bezwaar te maken tegen verwerking'] },
+              { h: '6. Contact', p: 'Heeft u vragen over dit privacybeleid of wilt u uw rechten uitoefenen? Neem dan contact met ons op via info@getservio.co.' },
+            ],
+          },
+          terms: {
+            title: 'Algemene Voorwaarden',
+            sections: [
+              { h: '1. Definities', p: 'In deze algemene voorwaarden wordt verstaan onder:', list: ['Servio: de aanbieder van de software en diensten', 'Gebruiker: de natuurlijke of rechtspersoon die gebruik maakt van Servio', 'Diensten: alle door Servio aangeboden producten en functionaliteiten', 'Account: de persoonlijke toegang tot het Servio-platform'] },
+              { h: '2. Toepasselijkheid', p: 'Deze algemene voorwaarden zijn van toepassing op alle aanbiedingen, overeenkomsten en leveringen van diensten door Servio. Door gebruik te maken van onze diensten gaat u akkoord met deze voorwaarden.' },
+              { h: '3. Gebruik van de diensten', p: 'U bent verantwoordelijk voor:', list: ['Het verstrekken van correcte en volledige informatie', 'Het vertrouwelijk houden van uw inloggegevens', 'Alle activiteiten die onder uw account plaatsvinden', 'Naleving van toepasselijke wet- en regelgeving'] },
+              { h: '4. Abonnementen en betaling', p: 'Servio biedt verschillende abonnementsvormen aan. Alle prijzen zijn exclusief BTW tenzij anders vermeld. Betalingen dienen vooraf te geschieden. Bij niet-tijdige betaling behouden wij ons het recht voor om de toegang tot uw account op te schorten.' },
+              { h: '5. Proefperiode', p: 'Nieuwe gebruikers kunnen gebruik maken van een gratis proefperiode van 14 dagen. Tijdens deze periode heeft u toegang tot alle functionaliteiten. Na afloop van de proefperiode wordt uw account automatisch geconverteerd naar een betaald abonnement, tenzij u het account annuleert.' },
+              { h: '6. Intellectueel eigendom', p: 'Alle intellectuele eigendomsrechten op de software, documentatie en andere materialen blijven bij Servio. U verkrijgt een niet-exclusief, niet-overdraagbaar gebruiksrecht voor de duur van uw abonnement.' },
+              { h: '7. Aansprakelijkheid', p: 'Servio is niet aansprakelijk voor indirecte schade, gevolgschade of gederfde winst. Onze totale aansprakelijkheid is beperkt tot het bedrag dat u in de 12 maanden voorafgaand aan de schadeclaim heeft betaald.' },
+              { h: '8. Opzegging', p: 'U kunt uw abonnement op elk moment opzeggen. Na opzegging behoudt u toegang tot uw account tot het einde van de lopende factureringsperiode. Wij zijn gerechtigd om uw account te beëindigen bij schending van deze voorwaarden.' },
+              { h: '9. Wijzigingen', p: 'Wij behouden ons het recht voor om deze voorwaarden te wijzigen. Bij materiële wijzigingen zullen wij u hiervan minimaal 30 dagen van tevoren op de hoogte stellen.' },
+              { h: '10. Toepasselijk recht', p: 'Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter te Amsterdam.' },
+              { h: '11. Contact', p: 'Voor vragen over deze algemene voorwaarden kunt u contact opnemen via info@getservio.co.' },
+            ],
+          },
+          cookies: {
+            title: 'Cookiebeleid',
+            sections: [
+              { h: 'Wat zijn cookies?', p: 'Cookies zijn kleine tekstbestanden die op uw computer of mobiele apparaat worden opgeslagen wanneer u onze website bezoekt. Ze helpen ons om de website correct te laten functioneren, de beveiliging te verbeteren, en inzicht te krijgen in hoe bezoekers de website gebruiken.' },
+              { h: 'Welke cookies gebruiken wij?', p: '' },
+              { h: 'Noodzakelijke cookies', p: 'Deze cookies zijn essentieel voor het functioneren van de website. Zonder deze cookies kunnen bepaalde functies niet werken.', list: ['Sessie-cookies voor inloggen en authenticatie', 'Beveiligingscookies voor bescherming tegen fraude', 'Cookies voor het onthouden van uw voorkeuren'] },
+              { h: 'Analytische cookies', p: 'Deze cookies helpen ons te begrijpen hoe bezoekers onze website gebruiken, zodat we deze kunnen verbeteren.', list: ['Statistieken over websitebezoek', "Informatie over welke pagina's het meest bezocht worden", 'Foutmeldingen en prestatiemetingen'] },
+              { h: 'Cookies beheren', p: 'U kunt uw browserinstellingen aanpassen om cookies te weigeren of om een melding te ontvangen wanneer cookies worden geplaatst. Houd er rekening mee dat het uitschakelen van cookies de functionaliteit van de website kan beïnvloeden.' },
+              { h: 'Bewaartermijn', p: 'Sessie-cookies worden verwijderd wanneer u uw browser sluit. Permanente cookies blijven op uw apparaat totdat ze verlopen of tot u ze handmatig verwijdert. Onze analytische cookies verlopen na maximaal 2 jaar.' },
+              { h: 'Wijzigingen', p: 'Wij kunnen dit cookiebeleid van tijd tot tijd bijwerken. Wij raden u aan dit beleid regelmatig te raadplegen.' },
+              { h: 'Contact', p: 'Heeft u vragen over ons gebruik van cookies? Neem contact met ons op via info@getservio.co.' },
+            ],
+          },
+        },
+        blog: {
+          title: 'Blog',
+          subtitle: "Praktische tips en inzichten voor ZZP'ers en kleine ondernemers. Over AI, administratie, productiviteit en alles daartussenin.",
+          breadcrumbHome: 'Home',
+          breadcrumbBlog: 'Blog',
+          minRead: 'min leestijd',
+          share: 'Delen:',
+          linkCopied: 'Link gekopieerd!',
+          ctaTitle: 'Klaar om tijd te besparen?',
+          ctaDesc: 'Probeer Servio 14 dagen gratis. Geen creditcard nodig.',
+          ctaButton: 'Start gratis proefperiode',
+          relatedTitle: 'Gerelateerde artikelen',
+          backToAll: 'Terug naar alle artikelen',
+        },
+      },
+    },
+  },
 };
+
+const initialLanguage = detectInitialLanguage();
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'nl',
-    fallbackLng: 'en',
+    lng: initialLanguage,
+    fallbackLng: 'nl',
     interpolation: {
       escapeValue: false,
     },
+    returnObjects: true,
   });
+
+// Persist on init so subsequent loads use the same lang
+try {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('servio-language', initialLanguage);
+    document.documentElement.lang = initialLanguage;
+  }
+} catch {
+  // ignore
+}
+
+i18n.on('languageChanged', (lng) => {
+  try {
+    localStorage.setItem('servio-language', lng);
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lng;
+    }
+  } catch {
+    // ignore
+  }
+});
 
 export default i18n;
