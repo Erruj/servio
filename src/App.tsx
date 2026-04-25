@@ -37,6 +37,7 @@ import Quotes from "./pages/administration/Quotes";
 import TimeTracking from "./pages/administration/TimeTracking";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionGate } from "./components/SubscriptionGate";
+import { PageTransition } from "./components/PageTransition";
 
 // Marketing website pages
 import MarketingHome from "./pages/marketing/Home";
@@ -77,6 +78,7 @@ function AppRoutes() {
   }
 
   return (
+    <PageTransition>
     <Routes>
       {/* Marketing website - public, no auth */}
       <Route path="/" element={<MarketingHome />} />
@@ -217,6 +219,7 @@ function AppRoutes() {
       {/* Catch-all for 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </PageTransition>
   );
 }
 
