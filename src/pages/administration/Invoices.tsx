@@ -571,9 +571,7 @@ export default function Invoices() {
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader><DialogTitle>Factuur bekijken</DialogTitle></DialogHeader>
           {previewUrl && (
-            previewType === 'image'
-              ? <img src={previewUrl} alt="Factuur" className="w-full max-h-[70vh] object-contain" />
-              : <iframe src={previewUrl} className="w-full h-[70vh]" title="Factuur preview" />
+            <img src={previewUrl} alt="Factuur" className="w-full max-h-[70vh] object-contain" />
           )}
         </DialogContent>
       </Dialog>
