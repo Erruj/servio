@@ -32,8 +32,7 @@ export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps)
         <Section style={card}>
           {/* Logo area */}
           <Section style={logoSection}>
-            <Img src={LOGO_URL} alt="Servio" width="36" height="36" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '10px' }} />
-            <Text style={logoText}>Servio</Text>
+            <Img src={LOGO_URL} alt="Servio" width="120" height="40" style={{ display: 'block', margin: '0 auto' }} />
           </Section>
 
           <Hr style={divider} />
