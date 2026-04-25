@@ -1,16 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import heroVideo from '@/assets/hero-product-video.mp4.asset.json';
 
 export function HeroSection() {
   const navigate = useNavigate();
 
   return (
     <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden" aria-label="Servio AI bedrijfsassistent introductie">
-      {/* Ultra-subtle gradient background */}
+      {/* Premium gradient background with colored glows */}
       <div className="absolute inset-0 bg-gradient-to-b from-muted/40 via-background to-background pointer-events-none" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/[0.03] rounded-full blur-3xl pointer-events-none" />
-      
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/[0.06] rounded-full blur-3xl pointer-events-none animate-pulse-subtle" />
+      <div className="absolute top-40 -left-20 w-[500px] h-[500px] bg-accent/[0.05] rounded-full blur-3xl pointer-events-none animate-float" />
+      <div className="absolute top-20 -right-20 w-[450px] h-[450px] bg-primary/[0.04] rounded-full blur-3xl pointer-events-none" />
+
       <div className="container mx-auto px-6 relative">
         <div className="max-w-4xl mx-auto text-center">
           {/* Social proof badge */}
