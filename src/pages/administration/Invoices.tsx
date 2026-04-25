@@ -257,13 +257,20 @@ export default function Invoices() {
   const handleViewInvoice = async (invoice: Invoice) => {
     setActionLoading(invoice.id);
     try {
-      const { data } = await supabase.storage.from('financial-documents').createSignedUrl(invoice.file_path, 3600);
-      if (data?.signedUrl) {
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(invoice.file_path);
-        setPreviewType(isImage ? 'image' : 'pdf');
+      const { data, error } = await supabase.storage
+        .from('financial-documents')
+        .createSignedUrl(invoice.file_path, 3600);
+      if (error || !data?.signedUrl) {
+        toast.error('Bestand kon niet worden geopend');
+        return;
+      }
+      const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(invoice.file_path);
+      if (isImage) {
+        // Show image in modal
         setPreviewUrl(data.signedUrl);
       } else {
-        toast.error('Bestand kon niet worden geopend');
+        // Open PDF (or other) in new tab — avoids iframe content blocking
+        window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
       }
     } catch (error) {
       console.error('Error viewing invoice:', error);
