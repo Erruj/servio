@@ -25,7 +25,7 @@ export const SUBSCRIPTION_TIERS = {
     ]
   },
   pro: {
-    product_id: 'prod_TUHkdkFCR6tlSm',
+    product_id: 'prod_U9FG9hWuBCWWMc',
     price_id: 'price_1SXJBPDLXfTDUSDcbIUY8onh',
     name: 'Pro',
     price: 29.99,
