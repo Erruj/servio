@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import servioLogo from '@/assets/servio-logo.png';
+import servioLogoFull from '@/assets/servio-logo-full.png';
 
 export function LandingHeader() {
   const navigate = useNavigate();
@@ -28,9 +28,12 @@ export function LandingHeader() {
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Clean and simple */}
-          <Link to="/" className="flex items-center gap-2.5 group" aria-label="Servio - Terug naar homepage">
-            <img src={servioLogo} alt="Servio logo" className="w-7 h-7 transition-transform duration-300 group-hover:scale-105" width={28} height={28} />
-            <span className="font-semibold text-foreground tracking-tight">Servio</span>
+          <Link to="/" className="flex items-center group" aria-label="Servio - Terug naar homepage">
+            <img
+              src={servioLogoFull}
+              alt="Servio"
+              className="h-7 md:h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Nav - Minimal */}
