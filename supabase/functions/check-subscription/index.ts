@@ -64,6 +64,24 @@ serve(async (req) => {
 
     logStep("Trial check", { trialEndDate, trialExpired });
 
+    // PRIMARY SOURCE: Supabase user_settings (for manually granted access, founder accounts, etc.)
+    // If subscription_status is 'active' in Supabase, grant access immediately without checking Stripe.
+    if (settings?.subscription_status === 'active') {
+      logStep("Active subscription found in user_settings (manual/founder override)", {
+        product_id: settings.subscription_product_id,
+      });
+      return new Response(JSON.stringify({
+        subscribed: true,
+        product_id: settings.subscription_product_id || 'prod_U9FG9hWuBCWWMc',
+        subscription_status: 'active',
+        trial_end_date: trialEndDate?.toISOString() ?? null,
+        subscription_end: settings.subscription_current_period_end ?? null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
     });
