@@ -23,8 +23,10 @@ const products = [
 
 export function ProductSection() {
   return (
-    <section className="py-24 md:py-32" aria-label="Servio producten overzicht">
-      <div className="container mx-auto px-6">
+    <section className="relative py-24 md:py-32 overflow-hidden" aria-label="Servio producten overzicht">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-primary/[0.04] rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-10 right-0 w-[300px] h-[300px] bg-accent/[0.05] rounded-full blur-3xl pointer-events-none" />
+      <div className="container mx-auto px-6 relative">
         <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in-up">
           <span className="text-sm font-medium text-primary mb-4 block">Producten</span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
