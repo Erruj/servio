@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import servioLogoFull from '@/assets/servio-logo-full.png';
+import servioLogo from '@/assets/servio-logo-full.png';
 
 export function LandingFooter() {
   return (
@@ -9,12 +9,7 @@ export function LandingFooter() {
           {/* Logo & description */}
           <div className="md:col-span-2">
             <div className="flex items-center mb-4" aria-label="Servio logo">
-              <img
-                src={servioLogoFull}
-                alt="Servio"
-                className="h-7 w-auto object-contain"
-                loading="lazy"
-              />
+              <img src={servioLogo} alt="Servio logo" className="h-10 w-auto" loading="lazy" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               De slimme bedrijfsassistent voor ondernemers. Automatiseer je klantenservice en administratie.

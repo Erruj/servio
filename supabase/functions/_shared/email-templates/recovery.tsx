@@ -16,7 +16,7 @@ import {
   Hr,
 } from 'npm:@react-email/components@0.0.22'
 
-const LOGO_URL = 'https://getservio.co/servio-logo-full.png'
+const LOGO_URL = 'https://getservio.co/favicon.png'
 
 interface RecoveryEmailProps {
   siteName: string
@@ -32,7 +32,8 @@ export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps)
         <Section style={card}>
           {/* Logo area */}
           <Section style={logoSection}>
-            <Img src={LOGO_URL} alt="Servio" width="120" height="40" style={{ display: 'block', margin: '0 auto' }} />
+            <Img src={LOGO_URL} alt="Servio" width="36" height="36" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '10px' }} />
+            <Text style={logoText}>Servio</Text>
           </Section>
 
           <Hr style={divider} />

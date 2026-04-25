@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Loader2, Mail, Lock, User, AlertCircle, Check, X } from 'lucide-react';
+import { Loader2, Mail, Lock, User, AlertCircle, Check, X } from 'lucide-react';
+import servioLogo from '@/assets/servio-logo-full.png';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import servioLogoFull from '@/assets/servio-logo-full.png';
 
 const signInSchema = z.object({
   email: z.string().email('Ongeldig e-mailadres').max(255),
@@ -169,7 +169,7 @@ export default function Auth() {
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center space-y-4 pb-2">
           <div className="flex justify-center">
-            <img src={servioLogoFull} alt="Servio" className="h-10 w-auto object-contain" />
+            <img src={servioLogo} alt="Servio" className="h-12 w-auto" />
           </div>
           <div className="space-y-2">
             <CardDescription className="text-base leading-relaxed">

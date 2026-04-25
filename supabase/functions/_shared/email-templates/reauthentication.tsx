@@ -13,7 +13,7 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-const LOGO_URL = 'https://getservio.co/servio-logo-full.png'
+const LOGO_URL = 'https://getservio.co/favicon.png'
 
 interface ReauthenticationEmailProps {
   token: string
@@ -25,7 +25,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Preview>Je verificatiecode</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt="Servio" width="120" height="40" style={logo} />
+        <Img src={LOGO_URL} alt="Servio" width="40" height="40" style={logo} />
         <Heading style={h1}>Identiteit bevestigen</Heading>
         <Text style={text}>Gebruik onderstaande code om je identiteit te bevestigen:</Text>
         <Text style={codeStyle}>{token}</Text>
