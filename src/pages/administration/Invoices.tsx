@@ -64,8 +64,8 @@ export default function Invoices() {
   const [bulkCategory, setBulkCategory] = useState<TransactionCategory | ''>('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewType, setPreviewType] = useState<'pdf' | 'image'>('pdf');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const categories: TransactionCategory[] = ['software', 'marketing', 'office', 'travel', 'utilities', 'food', 'hardware', 'insurance', 'salary', 'tax', 'other'];
 
   useEffect(() => {
