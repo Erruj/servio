@@ -9,10 +9,11 @@ export function CTASection() {
     <section className="py-24 md:py-32">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="relative rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border border-primary/20 p-10 md:p-16 text-center overflow-hidden animate-scale-in">
+          <div className="relative rounded-2xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border border-primary/20 p-10 md:p-16 text-center overflow-hidden animate-scale-in">
             {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
+            <div className="absolute bottom-0 left-0 w-56 h-56 bg-accent/15 rounded-full blur-3xl pointer-events-none animate-float" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-primary/[0.06] rounded-full blur-2xl pointer-events-none" />
             
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-[-0.02em] text-foreground mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
