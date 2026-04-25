@@ -130,76 +130,21 @@ export function HeroSection() {
               <div className="w-16" />
             </div>
             
-            {/* Dashboard preview */}
-            <div className="aspect-[16/10] bg-muted/20 p-6 md:p-8">
-              <div className="grid grid-cols-5 gap-4 h-full">
-                {/* Sidebar mock */}
-                <div className="col-span-1 bg-card rounded-lg p-4 shadow-subtle border border-border/30">
-                  <div className="h-6 w-16 bg-primary/20 rounded mb-6" />
-                  <div className="space-y-2">
-                    {[1,2,3,4,5].map(i => (
-                      <div key={i} className={`h-7 rounded ${i === 1 ? 'bg-primary/10 border border-primary/20' : 'bg-muted/50'}`} />
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Main content mock */}
-                <div className="col-span-4 space-y-4">
-                  {/* Stats row */}
-                  <div className="grid grid-cols-4 gap-3">
-                    {[
-                      { label: 'Tijd bespaard', value: '12 uur/week' },
-                      { label: 'Afgehandelde mails', value: '156' },
-                      { label: 'Facturen verwerkt', value: '24' },
-                      { label: 'Omzet inzicht', value: '€12.450' },
-                    ].map((stat, i) => (
-                      <div key={i} className="bg-card rounded-lg p-4 shadow-subtle border border-border/30">
-                        <div className="text-[10px] text-muted-foreground mb-1">{stat.label}</div>
-                        <div className="text-sm font-semibold text-foreground">{stat.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Chart area */}
-                  <div className="bg-card rounded-lg p-4 shadow-subtle border border-border/30 flex-1 h-32 md:h-44">
-                    <div className="h-3 w-20 bg-muted rounded mb-4" />
-                    <div className="h-full flex items-end gap-2 pb-4">
-                      {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 88].map((h, i) => (
-                        <div 
-                          key={i} 
-                          className="flex-1 bg-primary/20 rounded-sm transition-all duration-300"
-                          style={{ height: `${h}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Bottom row */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-card rounded-lg p-4 shadow-subtle border border-border/30">
-                      <div className="h-3 w-16 bg-muted rounded mb-3" />
-                      <div className="space-y-2">
-                        {[1,2,3].map(i => (
-                          <div key={i} className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded bg-muted/50" />
-                            <div className="h-2 flex-1 bg-muted/30 rounded" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-card rounded-lg p-4 shadow-subtle border border-border/30">
-                      <div className="h-3 w-16 bg-muted rounded mb-3" />
-                      <div className="flex items-center gap-3">
-                        <div className="w-16 h-16 rounded-lg bg-primary/10" />
-                        <div className="space-y-2 flex-1">
-                          <div className="h-2 w-full bg-muted/30 rounded" />
-                          <div className="h-2 w-3/4 bg-muted/30 rounded" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Live product motion video */}
+            <div className="aspect-[16/10] bg-muted/20 relative overflow-hidden">
+              <video
+                src={heroVideo.url}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {/* Subtle premium color wash */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/[0.06] via-transparent to-accent/[0.06] pointer-events-none" />
+              <div className="absolute inset-0 ring-1 ring-inset ring-border/40 pointer-events-none" />
             </div>
           </div>
         </div>
