@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield, ClipboardList, Clock, UserCircle, Star, GripVertical, RotateCcw } from 'lucide-react';
-import servioLogo from '@/assets/servio-logo.png';
+import servioLogo from '@/assets/servio-icon.png';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
