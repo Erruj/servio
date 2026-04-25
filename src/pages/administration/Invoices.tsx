@@ -105,6 +105,8 @@ export default function Invoices() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    // reset input so same file can be re-selected
+    event.target.value = '';
 
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
@@ -117,51 +119,80 @@ export default function Invoices() {
     }
 
     setUploading(true);
+    let uploadedPath: string | null = null;
+    let createdInvoiceId: string | null = null;
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      if (!user) throw new Error('Niet ingelogd');
 
-      const fileName = `${user.id}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage.from('financial-documents').upload(fileName, file);
-      if (uploadError) throw uploadError;
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const fileName = `${user.id}/${Date.now()}_${safeName}`;
 
+      // 1. Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('financial-documents')
+        .upload(fileName, file, { contentType: file.type, upsert: false });
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`Upload mislukt: ${uploadError.message}`);
+      }
+      uploadedPath = fileName;
+
+      // 2. Verify the file actually exists in storage
+      const folder = fileName.substring(0, fileName.lastIndexOf('/'));
+      const baseName = fileName.substring(fileName.lastIndexOf('/') + 1);
+      const { data: listed, error: listErr } = await supabase.storage
+        .from('financial-documents')
+        .list(folder, { search: baseName, limit: 1 });
+      if (listErr || !listed || listed.length === 0) {
+        throw new Error('Bestand kon niet worden geverifieerd in opslag');
+      }
+
+      // 3. Insert DB record with file_path
       const { data: newInvoice, error: insertError } = await supabase
         .from('invoices')
-        .insert({ user_id: user.id, file_path: fileName, status: 'pending' })
+        .insert({ user_id: user.id, file_path: fileName, status: 'analyzing' })
         .select()
         .single();
+      if (insertError || !newInvoice) {
+        throw new Error(`Database insert mislukt: ${insertError?.message || 'onbekende fout'}`);
+      }
+      createdInvoiceId = newInvoice.id;
 
-      if (insertError) throw insertError;
-      toast.success('Factuur geüpload');
-      processOCR(newInvoice.id, fileName);
+      toast.success('Factuur geüpload, AI-analyse gestart...');
       loadInvoices();
+
+      // 4. Trigger AI analysis (fire-and-forget but tracked)
+      analyzeInvoice(newInvoice.id, fileName);
     } catch (error) {
       console.error('Error uploading invoice:', error);
-      showToast({ title: 'Fout', description: 'Factuur kon niet worden geüpload.', variant: 'destructive' });
+      // Cleanup on partial failure
+      if (uploadedPath && !createdInvoiceId) {
+        await supabase.storage.from('financial-documents').remove([uploadedPath]).catch(() => {});
+      }
+      const msg = error instanceof Error ? error.message : 'Factuur kon niet worden geüpload.';
+      showToast({ title: 'Upload mislukt', description: msg, variant: 'destructive' });
     } finally {
       setUploading(false);
     }
   };
 
-  const processOCR = async (invoiceId: string, filePath: string) => {
+  const analyzeInvoice = async (invoiceId: string, filePath: string) => {
+    setAnalyzingId(invoiceId);
     try {
-      await supabase.functions.invoke('ai-assistant', {
-        body: { query: `Analyseer factuur: ${filePath}`, type: 'ocr', conversationHistory: [] }
+      const { data, error } = await supabase.functions.invoke('analyze-invoice', {
+        body: { invoiceId, filePath },
       });
-      const simulatedResults = {
-        supplier: 'Software BV',
-        amount: Math.floor(Math.random() * 500) + 100,
-        vat_amount: Math.floor(Math.random() * 100) + 21,
-        invoice_number: `INV-${Date.now().toString().slice(-6)}`,
-        invoice_date: new Date().toISOString().split('T')[0],
-        category: categories[Math.floor(Math.random() * categories.length)],
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      };
-      await supabase.from('invoices').update(simulatedResults).eq('id', invoiceId);
-      toast.success('Factuur automatisch verwerkt via OCR');
-      loadInvoices();
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Factuur geanalyseerd');
     } catch (error) {
-      console.error('OCR processing error:', error);
+      console.error('AI analyse error:', error);
+      const msg = error instanceof Error ? error.message : 'AI analyse mislukt';
+      toast.error(`AI analyse mislukt: ${msg}`);
+    } finally {
+      setAnalyzingId(null);
+      loadInvoices();
     }
   };
 
