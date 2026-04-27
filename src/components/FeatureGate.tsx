@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Lock, CreditCard, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFeatureAccess, SubscriptionTier } from '@/hooks/useFeatureAccess';
@@ -18,12 +19,12 @@ interface FeatureGateProps {
 export function FeatureGate({ children, feature, requiredTier = 'pro', featureLabel }: FeatureGateProps) {
   const { tier, isLoading, requiredTierLabel } = useFeatureAccess();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return <>{children}</>;
   }
 
-  // Trial users get Pro access
   const effectiveTier = tier === 'trial' ? 'pro' : (tier === 'none' ? 'starter' : tier);
   const tierOrder: SubscriptionTier[] = ['starter', 'pro', 'business'];
   const hasAccess = tierOrder.indexOf(effectiveTier) >= tierOrder.indexOf(requiredTier);
@@ -43,19 +44,17 @@ export function FeatureGate({ children, feature, requiredTier = 'pro', featureLa
             <Lock className="h-10 w-10 text-muted-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Upgrade vereist</h2>
-            <p className="text-muted-foreground">
-              <strong>{label}</strong> is beschikbaar vanaf het <strong>{requiredLabel}</strong> plan.
-              Upgrade je abonnement om toegang te krijgen.
-            </p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">{t('upgradeRequired')}</h2>
+            <p
+              className="text-muted-foreground"
+              dangerouslySetInnerHTML={{
+                __html: t('featureRequiresUpgrade', { feature: label, tier: requiredLabel }),
+              }}
+            />
           </div>
-          <Button
-            onClick={() => navigate('/pricing')}
-            size="lg"
-            className="w-full"
-          >
+          <Button onClick={() => navigate('/pricing')} size="lg" className="w-full">
             <CreditCard className="h-5 w-5 mr-2" />
-            Bekijk Abonnementen
+            {t('viewPlans')}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </CardContent>

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
@@ -10,25 +11,21 @@ interface SubscriptionGateProps {
   requiredTier?: 'pro' | 'business';
 }
 
-/**
- * Blocks access to paid features based on subscription tier.
- * Trial users get Pro-level access.
- */
-export function SubscriptionGate({ children, feature = 'deze functie', requiredTier = 'pro' }: SubscriptionGateProps) {
-  const { tier, isLoading, requiredTierLabel } = useFeatureAccess();
+export function SubscriptionGate({ children, feature, requiredTier = 'pro' }: SubscriptionGateProps) {
+  const { tier, isLoading } = useFeatureAccess();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (isLoading) return <>{children}</>;
 
-  // Determine effective tier
   const effectiveTier = tier === 'trial' ? 'pro' : (tier === 'none' ? 'starter' : tier);
   const tierOrder = ['starter', 'pro', 'business'];
   const hasAccess = tierOrder.indexOf(effectiveTier) >= tierOrder.indexOf(requiredTier);
 
   if (hasAccess) return <>{children}</>;
 
-  // Blocked
   const label = requiredTier === 'business' ? 'Business' : 'Pro';
+  const featureText = feature || t('thisFeature');
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
@@ -38,18 +35,17 @@ export function SubscriptionGate({ children, feature = 'deze functie', requiredT
             <Lock className="h-10 w-10 text-destructive" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Upgrade vereist</h2>
-            <p className="text-muted-foreground">
-              <strong>{feature}</strong> is beschikbaar vanaf het <strong>{label}</strong> plan. Upgrade je abonnement om toegang te krijgen.
-            </p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">{t('upgradeRequired')}</h2>
+            <p
+              className="text-muted-foreground"
+              dangerouslySetInnerHTML={{
+                __html: t('featureRequiresUpgrade', { feature: featureText, tier: label }),
+              }}
+            />
           </div>
-          <Button
-            onClick={() => navigate('/pricing')}
-            size="lg"
-            className="w-full"
-          >
+          <Button onClick={() => navigate('/pricing')} size="lg" className="w-full">
             <CreditCard className="h-5 w-5 mr-2" />
-            Bekijk Abonnementen
+            {t('viewPlans')}
           </Button>
         </CardContent>
       </Card>
