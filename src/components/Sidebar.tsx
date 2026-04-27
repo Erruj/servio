@@ -27,13 +27,13 @@ const getAdministrationNavigation = (t: any) => [
   { id: 'admin-overview', name: t('financialOverview'), href: '/administration/overview', icon: Wallet, feature: 'administration' },
   { id: 'admin-ai', name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain, feature: 'ai_assistant' },
   { id: 'admin-invoices', name: t('invoices'), href: '/administration/invoices', icon: Receipt, feature: 'administration' },
-  { id: 'admin-quotes', name: 'Offertes', href: '/administration/quotes', icon: ClipboardList, feature: 'administration' },
+  { id: 'admin-quotes', name: t('quotes'), href: '/administration/quotes', icon: ClipboardList, feature: 'administration' },
   { id: 'admin-receipts', name: t('receipts'), href: '/administration/receipts', icon: Upload, feature: 'administration' },
-  { id: 'admin-customers', name: 'Klanten', href: '/administration/customers', icon: UserCircle, feature: 'administration' },
-  { id: 'admin-time', name: 'Uren', href: '/administration/time-tracking', icon: Clock, feature: 'administration' },
+  { id: 'admin-customers', name: t('customers'), href: '/administration/customers', icon: UserCircle, feature: 'administration' },
+  { id: 'admin-time', name: t('timeTracking'), href: '/administration/time-tracking', icon: Clock, feature: 'administration' },
   { id: 'admin-docs', name: t('documents'), href: '/administration/documents', icon: FileBox, feature: 'documents' },
   { id: 'admin-exports', name: t('exports'), href: '/administration/exports', icon: Upload, feature: 'exports' },
-  { id: 'admin-audit', name: 'Audit Log', href: '/administration/audit-log', icon: Shield, feature: null },
+  { id: 'admin-audit', name: t('auditLog'), href: '/administration/audit-log', icon: Shield, feature: null },
 ];
 
 interface NavItemProps {
@@ -80,7 +80,7 @@ function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requi
     return (
       <Tooltip>
         <TooltipTrigger asChild>{content}</TooltipTrigger>
-        <TooltipContent side="right">Beschikbaar vanaf {requiredLabel}</TooltipContent>
+        <TooltipContent side="right">{requiredLabel}</TooltipContent>
       </Tooltip>
     );
   }
@@ -150,7 +150,7 @@ export function Sidebar({ className }: SidebarProps) {
         {favoriteItems.length > 0 && (
           <div className="space-y-1">
             <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-              <Star className="h-3 w-3 fill-primary text-primary" /> Favorieten
+              <Star className="h-3 w-3 fill-primary text-primary" /> {t('favorites')}
             </h3>
             {favoriteItems.map((item) => (
               <NavItem
@@ -232,7 +232,7 @@ export function Sidebar({ className }: SidebarProps) {
             onClick={() => setShowFavControls(!showFavControls)}
           >
             <Star className="h-3.5 w-3.5 mr-2" />
-            {showFavControls ? 'Klaar met aanpassen' : 'Favorieten beheren'}
+            {showFavControls ? t('doneCustomizing') : t('manageFavorites')}
           </Button>
           {showFavControls && favorites.length > 0 && (
             <Button
@@ -242,7 +242,7 @@ export function Sidebar({ className }: SidebarProps) {
               onClick={() => updateSettings({ sidebarFavorites: [] })}
             >
               <RotateCcw className="h-3.5 w-3.5 mr-2" />
-              Reset favorieten
+              {t('resetFavorites')}
             </Button>
           )}
         </div>
