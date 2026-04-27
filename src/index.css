@@ -296,6 +296,16 @@
   }
 }
 
+@keyframes grow-up {
+  from { transform: scaleY(0); opacity: 0.4; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
 /* Compact layout mode */
 .compact-layout {
   --spacing-scale: 0.75;
