@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import heroVideo from '@/assets/hero-product-video.mp4.asset.json';
+import { ProductPreview } from '@/components/landing/ProductPreview';
 
 export function HeroSection() {
   const navigate = useNavigate();
@@ -127,17 +127,8 @@ export function HeroSection() {
             </div>
 
             <div className="aspect-[16/10] bg-muted/20 relative overflow-hidden">
-              <video
-                src={heroVideo.url}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                aria-hidden="true"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/[0.06] via-transparent to-accent/[0.06] pointer-events-none" />
+              <ProductPreview />
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/[0.04] via-transparent to-accent/[0.04] pointer-events-none" />
               <div className="absolute inset-0 ring-1 ring-inset ring-border/40 pointer-events-none" />
             </div>
           </div>
