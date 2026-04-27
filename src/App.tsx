@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useLanguagePersistence } from "@/hooks/useLanguagePersistence";
+import { useUrlLanguageSync } from "@/hooks/useUrlLanguageSync";
 import { CookieConsent } from "@/components/CookieConsent";
 import "@/lib/i18n";
 import Inbox from "./pages/Inbox";
@@ -65,6 +66,7 @@ const queryClient = new QueryClient({
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   useLanguagePersistence();
+  useUrlLanguageSync();
 
   if (isLoading) {
     return (
@@ -80,14 +82,26 @@ function AppRoutes() {
   return (
     <PageTransition>
     <Routes>
-      {/* Marketing website - public, no auth */}
+      {/* Marketing website - public, no auth (NL default) */}
       <Route path="/" element={<MarketingHome />} />
       <Route path="/features" element={<MarketingFeatures />} />
       <Route path="/pricing" element={<MarketingPricing />} />
       <Route path="/about" element={<MarketingAbout />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
-      
+
+      {/* Marketing website - English (/en/*) */}
+      <Route path="/en" element={<MarketingHome />} />
+      <Route path="/en/features" element={<MarketingFeatures />} />
+      <Route path="/en/pricing" element={<MarketingPricing />} />
+      <Route path="/en/about" element={<MarketingAbout />} />
+      <Route path="/en/blog" element={<Blog />} />
+      <Route path="/en/blog/:slug" element={<BlogPost />} />
+      <Route path="/en/contact" element={<Contact />} />
+      <Route path="/en/privacy" element={<PrivacyPolicy />} />
+      <Route path="/en/terms" element={<Terms />} />
+      <Route path="/en/cookies" element={<Cookies />} />
+
       {/* Legal pages - public */}
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<Terms />} />
