@@ -266,6 +266,16 @@ const resources = {
       invalidEmail: 'Invalid email address',
       passwordMinLength: 'Password must be at least 6 characters',
       nameMinLength: 'Name must be at least 2 characters',
+      authSubtitle: 'Your AI customer service assistant. Manage emails, automate replies and stay on top of your administration.',
+      signinTab: 'Sign in',
+      signupTab: 'Sign up',
+      resetTab: 'Reset',
+      createAccountBtn: 'Create account',
+      resetPasswordBtn: 'Reset password',
+      resetEmailDesc: 'Enter your email and we will send you a link to reset your password.',
+      emailPlaceholder: 'name@company.com',
+      namePlaceholder: 'Jane Smith',
+      confirmPasswordLabel: 'Confirm password',
 
       // Welcome
       welcome: 'Welcome to Servio — your AI customer service assistant',
