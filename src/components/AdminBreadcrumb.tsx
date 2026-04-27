@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Breadcrumb,
@@ -16,8 +17,10 @@ interface AdminBreadcrumbProps {
   parentHref?: string;
 }
 
-export function AdminBreadcrumb({ currentPage, parentLabel = 'Administratie', parentHref = '/dashboard' }: AdminBreadcrumbProps) {
+export function AdminBreadcrumb({ currentPage, parentLabel, parentHref = '/dashboard' }: AdminBreadcrumbProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const resolvedParentLabel = parentLabel ?? t('breadcrumbAdministration');
 
   return (
     <div className="flex items-center gap-3 mb-6">
@@ -28,7 +31,7 @@ export function AdminBreadcrumb({ currentPage, parentLabel = 'Administratie', pa
         className="text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4 mr-1" />
-        Terug
+        {t('breadcrumbBack')}
       </Button>
       <Breadcrumb>
         <BreadcrumbList>
@@ -37,7 +40,7 @@ export function AdminBreadcrumb({ currentPage, parentLabel = 'Administratie', pa
               className="cursor-pointer"
               onClick={() => navigate(parentHref)}
             >
-              {parentLabel}
+              {resolvedParentLabel}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -49,3 +52,4 @@ export function AdminBreadcrumb({ currentPage, parentLabel = 'Administratie', pa
     </div>
   );
 }
+
