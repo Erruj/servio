@@ -76,6 +76,12 @@ export function MailList({
       case 'snoozed': filtered = filtered.filter(m => hasLabel(m, 'SNOOZED')); break;
       case 'spam': filtered = filtered.filter(m => hasLabel(m, 'SPAM')); break;
       case 'sent': filtered = filtered.filter(m => hasLabel(m, 'SENT')); break;
+      case 'blocked': filtered = filtered.filter(m => blockedSenders.includes(m.from)); break;
+    }
+
+    // Hide blocked senders from non-blocked views
+    if (filter !== 'blocked' && blockedSenders.length > 0) {
+      filtered = filtered.filter(m => !blockedSenders.includes(m.from));
     }
 
     return filtered;
