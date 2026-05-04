@@ -118,7 +118,13 @@ const Inbox = () => {
 
   const handleMailSelect = (mail: MailItem) => {
     setSelectedMail(mail);
+    localStorage.setItem('servio_inbox_last_email', mail.id);
     if (mail.unread) markAsRead(mail.id);
+  };
+
+  const handleFilterChange = (f: string) => {
+    setFilter(f);
+    localStorage.setItem('servio_inbox_filter', f);
   };
 
   useEffect(() => {
