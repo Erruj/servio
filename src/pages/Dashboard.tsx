@@ -153,12 +153,12 @@ const Dashboard = () => {
         return (
           <div key={key} className={`grid grid-cols-2 lg:grid-cols-4 gap-4 ${!isVisible(key) ? 'opacity-40' : ''}`}>
             {[
-              { label: timeFilter === 'today' ? 'Vandaag' : timeFilter === 'week' ? 'Deze Week' : 'Deze Maand', value: getMailCount(), sub: `${stats.totalEmails} totaal`, icon: Mail, color: 'primary' },
-              { label: 'Ongelezen', value: stats.unreadEmails, sub: 'wachtend op actie', icon: Zap, color: 'warning' },
-              { label: 'Mailboxen', value: stats.connectionsCount, sub: 'gekoppeld', icon: Users, color: 'accent' },
-              { label: 'Gelezen', value: stats.totalEmails - stats.unreadEmails, sub: 'afgehandeld', icon: CheckCircle, color: 'success' },
+              { label: timeFilter === 'today' ? 'Vandaag' : timeFilter === 'week' ? 'Deze Week' : 'Deze Maand', value: getMailCount(), sub: `${stats.totalEmails} totaal`, icon: Mail, color: 'primary', href: '/app' },
+              { label: 'Ongelezen', value: stats.unreadEmails, sub: 'wachtend op actie', icon: Zap, color: 'warning', href: '/app?filter=unread' },
+              { label: 'Mailboxen', value: stats.connectionsCount, sub: 'gekoppeld', icon: Users, color: 'accent', href: '/mailbox-setup' },
+              { label: 'Gelezen', value: stats.totalEmails - stats.unreadEmails, sub: 'afgehandeld', icon: CheckCircle, color: 'success', href: '/app' },
             ].map((m, i) => (
-              <Card key={i} className="shadow-card hover:shadow-elevated transition-all duration-200">
+              <Card key={i} className="shadow-card hover:shadow-elevated transition-all duration-200 cursor-pointer" onClick={() => navigate(m.href)}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">{m.label}</CardTitle>
                   <div className={`p-2 bg-${m.color}/10 rounded-lg`}><m.icon className={`h-4 w-4 md:h-5 md:w-5 text-${m.color}`} /></div>
