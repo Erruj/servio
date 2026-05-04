@@ -502,7 +502,25 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
           >
             <CheckCircle2 className="h-5 w-5 mr-2" />
-            Markeer als afgehandeld
+            Afgehandeld
+          </Button>
+
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const blocked = JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]');
+              const sender = mail.from;
+              if (!blocked.includes(sender)) {
+                blocked.push(sender);
+                localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
+              }
+              toast({ title: "🚫 Afzender geblokkeerd", description: `${sender} is gemarkeerd als phishing en geblokkeerd.` });
+            }}
+            size="lg"
+            className="bg-destructive/10 text-destructive hover:bg-destructive/20 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
+          >
+            <ShieldAlert className="h-5 w-5 mr-2" />
+            Phishing
           </Button>
         </div>
         </div>
