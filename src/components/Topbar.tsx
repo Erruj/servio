@@ -90,6 +90,7 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
             <SelectItem value="snoozed">Gesnoozed</SelectItem>
             <SelectItem value="spam">Spam</SelectItem>
             <SelectItem value="sent">Verzonden</SelectItem>
+            <SelectItem value="blocked">Geblokkeerd</SelectItem>
           </SelectContent>
         </Select>
       </div>
