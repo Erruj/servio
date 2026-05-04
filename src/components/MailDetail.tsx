@@ -24,7 +24,9 @@ import {
   Brain,
   Mail as MailIcon,
   FileIcon,
-  Trash2
+  Trash2,
+  Pencil,
+  ShieldAlert
 } from 'lucide-react';
 import { generateSmartReplies } from '@/lib/ai/orchestrator';
 import { analyzeEmail } from '@/lib/ai';
