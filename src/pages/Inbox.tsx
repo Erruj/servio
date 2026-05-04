@@ -30,8 +30,9 @@ const Inbox = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState(() => localStorage.getItem('servio_inbox_search') || '');
+  const initialFilter = searchParams.get('filter') || localStorage.getItem('servio_inbox_filter') || 'all';
+  const [filter, setFilter] = useState(initialFilter);
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -67,6 +68,7 @@ const Inbox = () => {
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query);
+    localStorage.setItem('servio_inbox_search', query);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => {
       if (query.trim().length >= 2) {
@@ -74,7 +76,7 @@ const Inbox = () => {
       } else if (query.trim().length === 0) {
         refetchEmails();
       }
-    }, 400);
+    }, 300);
   }, [searchEmails, refetchEmails]);
 
   useEffect(() => {
@@ -99,7 +101,7 @@ const Inbox = () => {
     setIsSyncing(true);
     try {
       const syncPromise = (async () => { await syncEmails(); await refetchEmails(); return { completed: true }; })();
-      const timeoutPromise = new Promise<{ completed: false }>((resolve) => setTimeout(() => resolve({ completed: false }), 10000));
+      const timeoutPromise = new Promise<{ completed: false }>((resolve) => setTimeout(() => resolve({ completed: false }), 15000));
       const result = await Promise.race([syncPromise, timeoutPromise]);
       
       if (result.completed) {
@@ -109,7 +111,19 @@ const Inbox = () => {
         syncPromise.then(() => refetchEmails()).catch(() => {});
       }
     } catch (error) {
-      toast({ title: "Sync mislukt", description: error instanceof Error ? error.message : "Kon emails niet ophalen.", variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Onbekende fout";
+      const isAuthError = msg.toLowerCase().includes('token') || msg.toLowerCase().includes('auth') || msg.toLowerCase().includes('ingelogd');
+      const isConnectionError = msg.toLowerCase().includes('koppel') || msg.toLowerCase().includes('connecti');
+      
+      toast({ 
+        title: isAuthError ? "⚠️ Sessie verlopen" : isConnectionError ? "📧 Geen mailbox gevonden" : "Synchronisatie mislukt", 
+        description: isAuthError 
+          ? "Je sessie is verlopen. Log opnieuw in en probeer het opnieuw." 
+          : isConnectionError 
+            ? "Koppel eerst je mailbox via Mailbox Instellingen." 
+            : `${msg}. Probeer het later opnieuw.`,
+        variant: "destructive",
+      });
     } finally {
       setIsSyncing(false);
     }
@@ -117,11 +131,21 @@ const Inbox = () => {
 
   const handleMailSelect = (mail: MailItem) => {
     setSelectedMail(mail);
+    localStorage.setItem('servio_inbox_last_email', mail.id);
     if (mail.unread) markAsRead(mail.id);
   };
 
+  const handleFilterChange = (f: string) => {
+    setFilter(f);
+    localStorage.setItem('servio_inbox_filter', f);
+  };
+
   useEffect(() => {
-    if (mails.length > 0 && !selectedMail) setSelectedMail(mails[0]);
+    if (mails.length > 0 && !selectedMail) {
+      const lastId = localStorage.getItem('servio_inbox_last_email');
+      const restored = lastId ? mails.find(m => m.id === lastId) : null;
+      setSelectedMail(restored || mails[0]);
+    }
   }, [mails, selectedMail]);
 
   const isLoading = connectionsLoading || emailsLoading;
@@ -148,7 +172,7 @@ const Inbox = () => {
               )}
             </div>
             <div className="flex-1">
-              <Topbar onSearchChange={handleSearchChange} onFilterChange={setFilter} />
+              <Topbar onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
             </div>
             {hasConnections && (
               <div className="pr-4">

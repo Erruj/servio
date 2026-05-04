@@ -57,6 +57,12 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
     onSearchChange?.(value);
   };
 
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    onSearchChange?.('');
+    onFilterChange?.('all');
+  };
+
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
@@ -90,8 +96,15 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
             <SelectItem value="snoozed">Gesnoozed</SelectItem>
             <SelectItem value="spam">Spam</SelectItem>
             <SelectItem value="sent">Verzonden</SelectItem>
+            <SelectItem value="blocked">Geblokkeerd</SelectItem>
           </SelectContent>
         </Select>
+
+        {searchQuery && (
+          <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground text-xs">
+            Wis filters
+          </Button>
+        )}
       </div>
 
       {/* Status and user menu */}

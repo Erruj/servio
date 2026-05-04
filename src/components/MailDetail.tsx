@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { MailItem, AnalysisResult, ToneOfVoice, Language } from '@/types';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,9 @@ import {
   Brain,
   Mail as MailIcon,
   FileIcon,
-  Trash2
+  Trash2,
+  Pencil,
+  ShieldAlert
 } from 'lucide-react';
 import { generateSmartReplies } from '@/lib/ai/orchestrator';
 import { analyzeEmail } from '@/lib/ai';
@@ -39,6 +42,7 @@ interface MailDetailProps {
 }
 
 export function MailDetail({ mail, className }: MailDetailProps) {
+  const navigate = useNavigate();
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [reply, setReply] = useState('');
@@ -50,15 +54,19 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Auto-analyze when mail changes
+  // Reset all state when mail changes
   useEffect(() => {
     if (mail) {
+      setReply('');
+      setAnalysis(null);
+      setIsEditingReply(false);
+      setAttachments([]);
       analyzeCurrentMail();
     } else {
       setAnalysis(null);
       setReply('');
     }
-  }, [mail]);
+  }, [mail?.id]);
 
   // Auto-generate reply when analysis is complete
   useEffect(() => {
@@ -344,12 +352,21 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   <CardTitle className="text-lg">🏷️ Categorie</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Badge 
-                    variant="outline" 
-                    className={`text-sm font-medium border-2 ${getCategoryClassName(analysis.category)}`}
-                  >
-                    {analysis.category}
-                  </Badge>
+                  <Select value={analysis.category} onValueChange={(val) => setAnalysis(prev => prev ? { ...prev, category: val as any } : prev)}>
+                    <SelectTrigger className="w-full">
+                      <div className="flex items-center gap-2">
+                        <Pencil className="h-3 w-3 text-muted-foreground" />
+                        <Badge variant="outline" className={`text-sm font-medium border-2 ${getCategoryClassName(analysis.category)}`}>
+                          {analysis.category}
+                        </Badge>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['Retour', 'Klacht', 'Factuur', 'Vraag', 'Technisch', 'Overig'].map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </CardContent>
               </Card>
 
@@ -358,16 +375,55 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   <CardTitle className="text-lg">⚡ Urgentie</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Badge 
-                    className={`text-sm font-medium ${getUrgencyClassName(analysis.urgency)}`}
-                  >
-                    {analysis.urgency}
-                  </Badge>
+                  <Select value={analysis.urgency} onValueChange={(val) => setAnalysis(prev => prev ? { ...prev, urgency: val as any } : prev)}>
+                    <SelectTrigger className="w-full">
+                      <div className="flex items-center gap-2">
+                        <Pencil className="h-3 w-3 text-muted-foreground" />
+                        <Badge className={`text-sm font-medium ${getUrgencyClassName(analysis.urgency)}`}>
+                          {analysis.urgency}
+                        </Badge>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['Laag', 'Normaal', 'Hoog'].map(urg => (
+                        <SelectItem key={urg} value={urg}>{urg}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </CardContent>
               </Card>
             </div>
           </>
         )}
+
+        {/* Financial Data Detection Banner */}
+        {mail && (() => {
+          const content = (mail.subject + ' ' + (mail.bodyText || mail.body)).toLowerCase();
+          const hasInvoice = /factuur|invoice|factuurnummer|bedrag.*€|€\s*\d/.test(content);
+          const hasReceipt = /bon|receipt|kassabon|betaalbewijs/.test(content);
+          const hasQuote = /offerte|quote|aanbieding|prijsopgave/.test(content);
+          const hasTimesheet = /uren|urenregistratie|timesheet|urenspecificatie/.test(content);
+          const detected = hasInvoice ? 'factuur' : hasReceipt ? 'bonnetje' : hasQuote ? 'offerte' : hasTimesheet ? 'urenregistratie' : null;
+          if (!detected) return null;
+          const routes: Record<string, string> = { factuur: '/administration/invoices', bonnetje: '/administration/receipts', offerte: '/administration/quotes', urenregistratie: '/administration/time-tracking' };
+          const labels: Record<string, string> = { factuur: 'Facturen', bonnetje: 'Bonnetjes', offerte: 'Offertes', urenregistratie: 'Uren' };
+          return (
+            <Card className="shadow-card border-warning/30 bg-warning/5">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📎</span>
+                  <div>
+                    <p className="font-medium text-foreground">Servio heeft een {detected} gedetecteerd in deze email</p>
+                    <p className="text-sm text-muted-foreground">Bron: Email van {mail.from} op {format(new Date(mail.receivedAt), 'd MMM yyyy', { locale: nl })}</p>
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => navigate(routes[detected])}>
+                  Toevoegen aan {labels[detected]}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* AI Reply Suggestion - Prominent Section */}
         <Card className="shadow-elevated border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 ring-1 ring-primary/10">
@@ -477,7 +533,25 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
           >
             <CheckCircle2 className="h-5 w-5 mr-2" />
-            Markeer als afgehandeld
+            Afgehandeld
+          </Button>
+
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const blocked = JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]');
+              const sender = mail.from;
+              if (!blocked.includes(sender)) {
+                blocked.push(sender);
+                localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
+              }
+              toast({ title: "🚫 Afzender geblokkeerd", description: `${sender} is gemarkeerd als phishing en geblokkeerd.` });
+            }}
+            size="lg"
+            className="bg-destructive/10 text-destructive hover:bg-destructive/20 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
+          >
+            <ShieldAlert className="h-5 w-5 mr-2" />
+            Phishing
           </Button>
         </div>
         </div>
