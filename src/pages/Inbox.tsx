@@ -31,7 +31,8 @@ const Inbox = () => {
   const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState('all');
+  const initialFilter = searchParams.get('filter') || 'all';
+  const [filter, setFilter] = useState(initialFilter);
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
