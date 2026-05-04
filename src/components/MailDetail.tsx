@@ -350,12 +350,21 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   <CardTitle className="text-lg">🏷️ Categorie</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Badge 
-                    variant="outline" 
-                    className={`text-sm font-medium border-2 ${getCategoryClassName(analysis.category)}`}
-                  >
-                    {analysis.category}
-                  </Badge>
+                  <Select value={analysis.category} onValueChange={(val) => setAnalysis(prev => prev ? { ...prev, category: val as any } : prev)}>
+                    <SelectTrigger className="w-full">
+                      <div className="flex items-center gap-2">
+                        <Pencil className="h-3 w-3 text-muted-foreground" />
+                        <Badge variant="outline" className={`text-sm font-medium border-2 ${getCategoryClassName(analysis.category)}`}>
+                          {analysis.category}
+                        </Badge>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['Retour', 'Klacht', 'Factuur', 'Vraag', 'Technisch', 'Overig'].map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </CardContent>
               </Card>
 
@@ -364,11 +373,21 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   <CardTitle className="text-lg">⚡ Urgentie</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Badge 
-                    className={`text-sm font-medium ${getUrgencyClassName(analysis.urgency)}`}
-                  >
-                    {analysis.urgency}
-                  </Badge>
+                  <Select value={analysis.urgency} onValueChange={(val) => setAnalysis(prev => prev ? { ...prev, urgency: val as any } : prev)}>
+                    <SelectTrigger className="w-full">
+                      <div className="flex items-center gap-2">
+                        <Pencil className="h-3 w-3 text-muted-foreground" />
+                        <Badge className={`text-sm font-medium ${getUrgencyClassName(analysis.urgency)}`}>
+                          {analysis.urgency}
+                        </Badge>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['Laag', 'Normaal', 'Hoog'].map(urg => (
+                        <SelectItem key={urg} value={urg}>{urg}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </CardContent>
               </Card>
             </div>
