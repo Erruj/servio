@@ -396,6 +396,35 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           </>
         )}
 
+        {/* Financial Data Detection Banner */}
+        {mail && (() => {
+          const content = (mail.subject + ' ' + (mail.bodyText || mail.body)).toLowerCase();
+          const hasInvoice = /factuur|invoice|factuurnummer|bedrag.*€|€\s*\d/.test(content);
+          const hasReceipt = /bon|receipt|kassabon|betaalbewijs/.test(content);
+          const hasQuote = /offerte|quote|aanbieding|prijsopgave/.test(content);
+          const hasTimesheet = /uren|urenregistratie|timesheet|urenspecificatie/.test(content);
+          const detected = hasInvoice ? 'factuur' : hasReceipt ? 'bonnetje' : hasQuote ? 'offerte' : hasTimesheet ? 'urenregistratie' : null;
+          if (!detected) return null;
+          const routes: Record<string, string> = { factuur: '/administration/invoices', bonnetje: '/administration/receipts', offerte: '/administration/quotes', urenregistratie: '/administration/time-tracking' };
+          const labels: Record<string, string> = { factuur: 'Facturen', bonnetje: 'Bonnetjes', offerte: 'Offertes', urenregistratie: 'Uren' };
+          return (
+            <Card className="shadow-card border-warning/30 bg-warning/5">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📎</span>
+                  <div>
+                    <p className="font-medium text-foreground">Servio heeft een {detected} gedetecteerd in deze email</p>
+                    <p className="text-sm text-muted-foreground">Bron: Email van {mail.from} op {format(new Date(mail.receivedAt), 'd MMM yyyy', { locale: nl })}</p>
+                  </div>
+                </div>
+                <Button size="sm" onClick={() => navigate(routes[detected])}>
+                  Toevoegen aan {labels[detected]}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* AI Reply Suggestion - Prominent Section */}
         <Card className="shadow-elevated border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 ring-1 ring-primary/10">
           <CardHeader className="pb-4">
