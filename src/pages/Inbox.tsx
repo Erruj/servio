@@ -160,7 +160,7 @@ const Inbox = () => {
               )}
             </div>
             <div className="flex-1">
-              <Topbar onSearchChange={handleSearchChange} onFilterChange={setFilter} />
+              <Topbar onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
             </div>
             {hasConnections && (
               <div className="pr-4">
