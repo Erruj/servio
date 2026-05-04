@@ -34,7 +34,12 @@ export function MailList({
   const filterLabels: Record<string, string> = {
     all: 'Alle mails', inbox: 'Inbox', unread: 'Ongelezen', starred: 'Met ster',
     important: 'Belangrijk', snoozed: 'Gesnoozed', spam: 'Spam', sent: 'Verzonden',
+    blocked: 'Geblokkeerd',
   };
+
+  const blockedSenders: string[] = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]'); } catch { return []; }
+  }, [filter]);
 
   const safeSearchQuery = useMemo(() => {
     if (!searchQuery) return '';
