@@ -50,15 +50,19 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Auto-analyze when mail changes
+  // Reset all state when mail changes
   useEffect(() => {
     if (mail) {
+      setReply('');
+      setAnalysis(null);
+      setIsEditingReply(false);
+      setAttachments([]);
       analyzeCurrentMail();
     } else {
       setAnalysis(null);
       setReply('');
     }
-  }, [mail]);
+  }, [mail?.id]);
 
   // Auto-generate reply when analysis is complete
   useEffect(() => {
