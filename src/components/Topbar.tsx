@@ -99,6 +99,12 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
             <SelectItem value="blocked">Geblokkeerd</SelectItem>
           </SelectContent>
         </Select>
+
+        {searchQuery && (
+          <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground text-xs">
+            Wis filters
+          </Button>
+        )}
       </div>
 
       {/* Status and user menu */}
