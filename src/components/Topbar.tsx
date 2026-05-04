@@ -57,6 +57,12 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
     onSearchChange?.(value);
   };
 
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    onSearchChange?.('');
+    onFilterChange?.('all');
+  };
+
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
