@@ -42,7 +42,7 @@ interface MailDetailProps {
 }
 
 export function MailDetail({ mail, className }: MailDetailProps) {
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const navigate = useNavigate();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [reply, setReply] = useState('');
   const [isGeneratingReply, setIsGeneratingReply] = useState(false);
