@@ -101,7 +101,7 @@ const Inbox = () => {
     setIsSyncing(true);
     try {
       const syncPromise = (async () => { await syncEmails(); await refetchEmails(); return { completed: true }; })();
-      const timeoutPromise = new Promise<{ completed: false }>((resolve) => setTimeout(() => resolve({ completed: false }), 10000));
+      const timeoutPromise = new Promise<{ completed: false }>((resolve) => setTimeout(() => resolve({ completed: false }), 15000));
       const result = await Promise.race([syncPromise, timeoutPromise]);
       
       if (result.completed) {
@@ -111,7 +111,19 @@ const Inbox = () => {
         syncPromise.then(() => refetchEmails()).catch(() => {});
       }
     } catch (error) {
-      toast({ title: "Sync mislukt", description: error instanceof Error ? error.message : "Kon emails niet ophalen.", variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Onbekende fout";
+      const isAuthError = msg.toLowerCase().includes('token') || msg.toLowerCase().includes('auth') || msg.toLowerCase().includes('ingelogd');
+      const isConnectionError = msg.toLowerCase().includes('koppel') || msg.toLowerCase().includes('connecti');
+      
+      toast({ 
+        title: isAuthError ? "⚠️ Sessie verlopen" : isConnectionError ? "📧 Geen mailbox gevonden" : "Synchronisatie mislukt", 
+        description: isAuthError 
+          ? "Je sessie is verlopen. Log opnieuw in en probeer het opnieuw." 
+          : isConnectionError 
+            ? "Koppel eerst je mailbox via Mailbox Instellingen." 
+            : `${msg}. Probeer het later opnieuw.`,
+        variant: "destructive",
+      });
     } finally {
       setIsSyncing(false);
     }
