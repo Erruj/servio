@@ -129,7 +129,11 @@ const Inbox = () => {
   };
 
   useEffect(() => {
-    if (mails.length > 0 && !selectedMail) setSelectedMail(mails[0]);
+    if (mails.length > 0 && !selectedMail) {
+      const lastId = localStorage.getItem('servio_inbox_last_email');
+      const restored = lastId ? mails.find(m => m.id === lastId) : null;
+      setSelectedMail(restored || mails[0]);
+    }
   }, [mails, selectedMail]);
 
   const isLoading = connectionsLoading || emailsLoading;
