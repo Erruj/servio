@@ -30,8 +30,8 @@ const Inbox = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const initialFilter = searchParams.get('filter') || 'all';
+  const [searchQuery, setSearchQuery] = useState(() => localStorage.getItem('servio_inbox_search') || '');
+  const initialFilter = searchParams.get('filter') || localStorage.getItem('servio_inbox_filter') || 'all';
   const [filter, setFilter] = useState(initialFilter);
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
