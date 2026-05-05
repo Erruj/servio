@@ -228,7 +228,7 @@ export function MailList({
               const isSelected = mail.id === selectedMailId;
               const analysis = getMailAnalysis(mail);
               const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true, locale: nl });
-              const emailPreview = getEmailPreview(mail.body);
+              const emailPreview = getEmailPreview(mail);
               const senderName = mail.from.split('@')[0].replace('.', ' ');
               const isChecked = selectedIds.has(mail.id);
 
