@@ -115,10 +115,34 @@ export function MailList({
     setBulkMode(false);
   };
 
-  const getEmailPreview = (body: string): string => {
-    const textOnly = body.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
-    const words = textOnly.split(' ').filter(w => w.length > 0).slice(0, 12);
-    return words.join(' ') + (textOnly.split(' ').length > 12 ? '...' : '');
+  const getEmailPreview = (mail: MailItem): string => {
+    // Prefer plain-text version to avoid CSS/HTML leaking into preview
+    let text = mail.bodyText || '';
+    if (!text && mail.body) {
+      // Strip style/script blocks first, then tags, then entities
+      text = mail.body
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#\d+;/g, '')
+        .replace(/&\w+;/g, ' ');
+    }
+    // Fix common encoding issues
+    text = text
+      .replace(/Ã©/g, 'é').replace(/Ã¨/g, 'è').replace(/Ã«/g, 'ë')
+      .replace(/Ã¯/g, 'ï').replace(/Ã¶/g, 'ö').replace(/Ã¼/g, 'ü')
+      .replace(/Ã¤/g, 'ä').replace(/Ã§/g, 'ç').replace(/Ã±/g, 'ñ')
+      .replace(/Ã³/g, 'ó').replace(/Ã /g, 'à').replace(/Ã¢/g, 'â')
+      .replace(/Â /g, ' ').replace(/Â(?=[^\w])/g, '');
+    // Collapse whitespace and truncate
+    text = text.replace(/\s+/g, ' ').trim();
+    return text.length > 100 ? text.slice(0, 100) + '...' : text;
   };
 
   const getMailAnalysis = (mail: MailItem) => {
@@ -204,7 +228,7 @@ export function MailList({
               const isSelected = mail.id === selectedMailId;
               const analysis = getMailAnalysis(mail);
               const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true, locale: nl });
-              const emailPreview = getEmailPreview(mail.body);
+              const emailPreview = getEmailPreview(mail);
               const senderName = mail.from.split('@')[0].replace('.', ' ');
               const isChecked = selectedIds.has(mail.id);
 

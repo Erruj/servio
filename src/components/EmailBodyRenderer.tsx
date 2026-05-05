@@ -49,24 +49,20 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
       .replace(/Â(?=[^\w])/g, '');
   };
 
-  // Check if HTML contains external images
+  // Check if HTML contains external images (only <img> tags, not CSS backgrounds)
   const detectExternalImages = useCallback((html: string): boolean => {
+    // Strip <style> blocks first so we don't match CSS url() references
+    const withoutStyle = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
     const imgRegex = /<img[^>]+src\s*=\s*["'](https?:\/\/[^"']+)["'][^>]*>/gi;
-    const bgRegex = /url\s*\(\s*["']?(https?:\/\/[^"')]+)["']?\s*\)/gi;
-    return imgRegex.test(html) || bgRegex.test(html);
+    return imgRegex.test(withoutStyle);
   }, []);
 
-  // Block external images by replacing src with placeholder
+  // Block external images by replacing src with placeholder, preserve data: URIs
   const blockExternalImages = useCallback((html: string): string => {
-    // Block <img> tags with external URLs
+    // Only block <img> tags with external http(s) URLs — leave data: and cid: alone
     let result = html.replace(
       /<img([^>]+)src\s*=\s*["'](https?:\/\/[^"']+)["']([^>]*)>/gi,
       '<img$1src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2\'%3E%3Crect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\'/%3E%3Ccircle cx=\'8.5\' cy=\'8.5\' r=\'1.5\'/%3E%3Cpath d=\'m21 15-5-5L5 21\'/%3E%3C/svg%3E" data-original-src="$2"$3>'
-    );
-    // Block background images in style attributes
-    result = result.replace(
-      /url\s*\(\s*["']?(https?:\/\/[^"')]+)["']?\s*\)/gi,
-      'url(about:blank)'
     );
     return result;
   }, []);
