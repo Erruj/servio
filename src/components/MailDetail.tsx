@@ -324,6 +324,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     return classes[urgency] || 'bg-muted text-muted-foreground';
   };
 
+  const isUnhappy = analysis?.sentiment === 'Negatief' || mail?.customerSentiment === 'unhappy';
+
   return (
     <ErrorBoundary>
       <div className={`bg-background overflow-y-auto ${className}`}>
@@ -337,6 +339,43 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             Bekijk en beantwoord deze support email
           </p>
         </div>
+
+        {/* Unhappy customer banner */}
+        {isUnhappy && (
+          <Card className="shadow-card border-destructive/40 bg-destructive/5">
+            <CardContent className="p-4 flex items-center gap-3">
+              <span className="text-2xl">🔴</span>
+              <div className="flex-1">
+                <p className="font-semibold text-destructive">Ontevreden klant gedetecteerd</p>
+                <p className="text-sm text-muted-foreground">De AI antwoordtoon is automatisch op <strong>Empathisch</strong> gezet. Wees zorgvuldig met je antwoord.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Thread summary */}
+        {(threadSummary || isSummarizing) && threadMessageCount > 1 && (
+          <Card className="shadow-card border-primary/20 bg-primary/5">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-primary" />
+                  Samenvatting van conversatie ({threadMessageCount} berichten)
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={refreshThreadSummary} disabled={isSummarizing}>
+                  <RefreshCw className={`h-3 w-3 ${isSummarizing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {isSummarizing && !threadSummary ? (
+                <Skeleton className="h-12 w-full" />
+              ) : (
+                <p className="text-sm text-foreground leading-relaxed">{threadSummary}</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Email Content Card */}
         <Card className="shadow-card">
