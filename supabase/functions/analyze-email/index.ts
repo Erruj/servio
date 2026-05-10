@@ -37,27 +37,44 @@ serve(async (req) => {
 
     if (emailError || !email) throw new Error('Email not found');
 
+    // Fetch the last 10 user category corrections as few-shot training data
+    const { data: corrections } = await supabase
+      .from('email_category_corrections')
+      .select('email_subject, email_snippet, original_category, corrected_category')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    const correctionsText = (corrections && corrections.length > 0)
+      ? '\n\nEERDERE CORRECTIES VAN DEZE GEBRUIKER (gebruik om vergelijkbare emails correct te categoriseren):\n' +
+        corrections.map((c: any, i: number) =>
+          `${i + 1}. Onderwerp: "${c.email_subject || '-'}" | Snippet: "${(c.email_snippet || '').substring(0, 120)}" → Gebruiker veranderde "${c.original_category}" naar "${c.corrected_category}"`
+        ).join('\n')
+      : '';
+
     const emailContent = email.body_text || email.body_html?.replace(/<[^>]*>/g, '') || email.snippet || '';
     const senderName = email.from_name || email.from_email.split('@')[0];
 
-    const systemPrompt = `Je bent een AI e-mail analist. Analyseer de onderstaande e-mail en geef een gestructureerde analyse.
+    const systemPrompt = `Je bent een AI e-mail analist voor een Nederlandse ZZP'er. Analyseer de e-mail en geef een gestructureerde analyse.
 
 REGELS:
-- Geef een echte, inhoudelijke samenvatting van de e-mail in 1-3 zinnen. Beschrijf WAT de afzender vraagt/zegt, niet het type bericht.
-- Geef 2-4 kernpunten die de belangrijkste informatie uit de e-mail bevatten
-- Categoriseer de e-mail correct:
-  - "Vraag" = als de afzender iets vraagt (prijs, informatie, hulp, etc.)
-  - "Klacht" = als de afzender ontevreden is of klaagt
-  - "Retour" = als het over retourneren/terugsturen gaat
-  - "Factuur" = als het over facturen/betalingen gaat
-  - "Technisch" = als het over technische problemen gaat
-  - "Overig" = alleen als het echt nergens anders past
-- Bepaal urgentie: "Hoog" (dringend, deadline), "Normaal" (standaard), "Laag" (niet tijdgevoelig)
-- Bepaal sentiment: "Positief", "Neutraal", of "Negatief"
-- Detecteer de taal van de e-mail
+- Geef een echte, inhoudelijke samenvatting van de e-mail in 1-3 zinnen
+- Geef 2-4 kernpunten
+- Categoriseer correct: Vraag | Klacht | Retour | Factuur | Technisch | Overig
+- Bepaal urgentie heel zorgvuldig:
+  * "Hoog" = bevat woorden zoals: deadline, dringend, urgent, vandaag, asap, spoed, betalingstermijn, juridisch, advocaat, incasso, laatste herinnering, aanmaning, vervalt, verlopen, binnen 24 uur
+  * "Normaal" = standaard verzoeken zonder tijdsdruk
+  * "Laag" = informatief, nieuwsbrief, update zonder actie nodig
+- Bepaal sentiment heel zorgvuldig - er zijn 4 opties:
+  * "Positief" = tevreden, dankbaar, blij
+  * "Neutraal" = zakelijk, informatief, normaal
+  * "Negatief" = ontevreden maar beheerst
+  * "Ontevreden" = duidelijk gefrustreerd, boos, klagend, dreigend, eist actie, gebruikt woorden zoals: belachelijk, schandalig, onacceptabel, klacht, teleurgesteld, juridisch, slechte service, nooit meer, geld terug
+- Detecteer of dit een ontevreden klant is die empathisch antwoord verdient
+${correctionsText}
 
-ANTWOORD in exact dit JSON formaat (geen markdown, geen code blocks):
-{"summary":"<inhoudelijke samenvatting>","bullets":["<kernpunt 1>","<kernpunt 2>"],"category":"<Vraag|Klacht|Retour|Factuur|Technisch|Overig>","urgency":"<Hoog|Normaal|Laag>","sentiment":"<Positief|Neutraal|Negatief>","policyFlags":[]}`;
+ANTWOORD in exact dit JSON formaat (geen markdown):
+{"summary":"...","bullets":["...","..."],"category":"<Vraag|Klacht|Retour|Factuur|Technisch|Overig>","urgency":"<Hoog|Normaal|Laag>","sentiment":"<Positief|Neutraal|Negatief|Ontevreden>","policyFlags":[]}`;
 
     const userPrompt = `E-mail van: ${senderName} <${email.from_email}>
 Onderwerp: ${email.subject || '(geen onderwerp)'}
@@ -105,6 +122,24 @@ ${emailContent.substring(0, 3000)}`;
         policyFlags: []
       };
     }
+
+    // Map "Ontevreden" to a database-friendly sentiment label
+    let dbSentiment = (analysis.sentiment || 'Neutraal').toLowerCase();
+    if (dbSentiment === 'ontevreden') dbSentiment = 'unhappy';
+    else if (dbSentiment === 'positief') dbSentiment = 'positive';
+    else if (dbSentiment === 'negatief') dbSentiment = 'negative';
+    else dbSentiment = 'neutral';
+
+    // Cache analysis on the email row for priority sorting
+    await supabase
+      .from('emails')
+      .update({
+        ai_category: analysis.category,
+        ai_urgency: analysis.urgency,
+        customer_sentiment: dbSentiment,
+      })
+      .eq('id', emailId)
+      .eq('user_id', user.id);
 
     return new Response(
       JSON.stringify({ success: true, analysis }),

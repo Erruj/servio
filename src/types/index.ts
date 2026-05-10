@@ -17,6 +17,10 @@ export interface MailItem {
   unread: boolean;
   labels: string[];
   attachments?: { name: string; url?: string; sizeKB?: number }[];
+  aiCategory?: string;
+  aiUrgency?: string;
+  customerSentiment?: string;
+  threadId?: string | null;
 }
 
 export interface AnalysisResult {

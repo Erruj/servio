@@ -228,9 +228,42 @@ const Inbox = () => {
             <div className="flex-1 flex overflow-hidden">
               {/* Desktop */}
               <div className="hidden lg:flex flex-1">
-                <div className="w-96 min-w-96">
-                  <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
-                    onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
+                <div className="w-96 min-w-96 flex flex-col">
+                  {/* Priority Inbox - top 3 urgent unread */}
+                  {(() => {
+                    const priority = mails
+                      .filter(m => m.unread && (m.aiUrgency === 'Hoog' || m.customerSentiment === 'unhappy'))
+                      .slice(0, 3);
+                    if (priority.length === 0) return null;
+                    return (
+                      <div className="border-b border-border bg-destructive/5 px-3 py-2">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-xs">⚡</span>
+                          <span className="text-xs font-semibold text-destructive uppercase tracking-wide">Prioriteit inbox</span>
+                          <span className="text-xs text-muted-foreground">({priority.length})</span>
+                        </div>
+                        <div className="space-y-1">
+                          {priority.map(m => (
+                            <button
+                              key={m.id}
+                              onClick={() => handleMailSelect(m)}
+                              className={`w-full text-left px-2 py-1.5 rounded text-xs hover:bg-background transition ${selectedMail?.id === m.id ? 'bg-background' : ''}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {m.customerSentiment === 'unhappy' && <span className="text-xs">🔴</span>}
+                                <span className="font-medium truncate flex-1">{m.from}</span>
+                              </div>
+                              <div className="text-muted-foreground truncate text-[11px]">{m.subject}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="flex-1 overflow-hidden">
+                    <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
+                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
+                  </div>
                 </div>
                 <div className="flex-1">
                   <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>

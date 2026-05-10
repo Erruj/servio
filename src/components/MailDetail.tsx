@@ -51,6 +51,9 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const [tone, setTone] = useState<ToneOfVoice>('Neutraal');
   const [language, setLanguage] = useState<Language>('NL');
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
+  const [threadSummary, setThreadSummary] = useState<string | null>(null);
+  const [threadMessageCount, setThreadMessageCount] = useState<number>(1);
+  const [isSummarizing, setIsSummarizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -61,12 +64,22 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       setAnalysis(null);
       setIsEditingReply(false);
       setAttachments([]);
+      setThreadSummary(null);
+      setThreadMessageCount(1);
       analyzeCurrentMail();
+      loadThreadSummary();
     } else {
       setAnalysis(null);
       setReply('');
     }
   }, [mail?.id]);
+
+  // Auto-switch to empathetic tone when customer is unhappy
+  useEffect(() => {
+    if (analysis?.sentiment === 'Negatief' || (mail?.customerSentiment === 'unhappy')) {
+      setTone('Empathisch');
+    }
+  }, [analysis?.sentiment, mail?.customerSentiment]);
 
   // Auto-generate reply when analysis is complete
   useEffect(() => {
@@ -74,6 +87,74 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       generateAiReply();
     }
   }, [mail, analysis]);
+
+  const loadThreadSummary = async () => {
+    if (!mail) return;
+    setIsSummarizing(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) return;
+      const { data, error } = await supabase.functions.invoke('summarize-thread', {
+        body: { emailId: mail.id },
+        headers: { Authorization: `Bearer ${session.session.access_token}` },
+      });
+      if (!error && data?.success) {
+        setThreadSummary(data.summary);
+        setThreadMessageCount(data.messageCount || 1);
+      }
+    } catch (e) {
+      console.warn('Thread summary failed:', e);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const refreshThreadSummary = async () => {
+    if (!mail) return;
+    setIsSummarizing(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) return;
+      const { data, error } = await supabase.functions.invoke('summarize-thread', {
+        body: { emailId: mail.id, force: true },
+        headers: { Authorization: `Bearer ${session.session.access_token}` },
+      });
+      if (!error && data?.success) {
+        setThreadSummary(data.summary);
+        setThreadMessageCount(data.messageCount || 1);
+        toast({ title: '✅ Samenvatting bijgewerkt' });
+      }
+    } catch (e) {
+      console.warn('Thread summary refresh failed:', e);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const handleCategoryChange = async (newCategory: string) => {
+    if (!mail || !analysis) return;
+    const original = analysis.category;
+    if (original === newCategory) return;
+    setAnalysis(prev => prev ? { ...prev, category: newCategory as any } : prev);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from('email_category_corrections').insert({
+        user_id: user.id,
+        email_id: mail.id,
+        original_category: original,
+        corrected_category: newCategory,
+        email_subject: mail.subject,
+        email_snippet: (mail.snippet || mail.bodyText || '').substring(0, 200),
+      });
+      toast({ title: '✓ Correctie opgeslagen', description: 'De AI leert van je aanpassing.' });
+    } catch (e) {
+      console.warn('Failed to log category correction:', e);
+    }
+  };
 
   const analyzeCurrentMail = async () => {
     if (!mail) return;
@@ -243,6 +324,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     return classes[urgency] || 'bg-muted text-muted-foreground';
   };
 
+  const isUnhappy = analysis?.sentiment === 'Negatief' || mail?.customerSentiment === 'unhappy';
+
   return (
     <ErrorBoundary>
       <div className={`bg-background overflow-y-auto ${className}`}>
@@ -256,6 +339,43 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             Bekijk en beantwoord deze support email
           </p>
         </div>
+
+        {/* Unhappy customer banner */}
+        {isUnhappy && (
+          <Card className="shadow-card border-destructive/40 bg-destructive/5">
+            <CardContent className="p-4 flex items-center gap-3">
+              <span className="text-2xl">🔴</span>
+              <div className="flex-1">
+                <p className="font-semibold text-destructive">Ontevreden klant gedetecteerd</p>
+                <p className="text-sm text-muted-foreground">De AI antwoordtoon is automatisch op <strong>Empathisch</strong> gezet. Wees zorgvuldig met je antwoord.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Thread summary */}
+        {(threadSummary || isSummarizing) && threadMessageCount > 1 && (
+          <Card className="shadow-card border-primary/20 bg-primary/5">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-primary" />
+                  Samenvatting van conversatie ({threadMessageCount} berichten)
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={refreshThreadSummary} disabled={isSummarizing}>
+                  <RefreshCw className={`h-3 w-3 ${isSummarizing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {isSummarizing && !threadSummary ? (
+                <Skeleton className="h-12 w-full" />
+              ) : (
+                <p className="text-sm text-foreground leading-relaxed">{threadSummary}</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Email Content Card */}
         <Card className="shadow-card">
@@ -352,7 +472,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   <CardTitle className="text-lg">🏷️ Categorie</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Select value={analysis.category} onValueChange={(val) => setAnalysis(prev => prev ? { ...prev, category: val as any } : prev)}>
+                  <Select value={analysis.category} onValueChange={handleCategoryChange}>
                     <SelectTrigger className="w-full">
                       <div className="flex items-center gap-2">
                         <Pencil className="h-3 w-3 text-muted-foreground" />

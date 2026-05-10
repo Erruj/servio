@@ -29,3 +29,7 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = false
   [functions.generate-reply]
     verify_jwt = true
+  [functions.analyze-email]
+    verify_jwt = true
+  [functions.summarize-thread]
+    verify_jwt = true

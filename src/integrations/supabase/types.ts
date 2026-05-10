@@ -238,6 +238,39 @@ export type Database = {
         }
         Relationships: []
       }
+      email_category_corrections: {
+        Row: {
+          corrected_category: string
+          created_at: string
+          email_id: string
+          email_snippet: string | null
+          email_subject: string | null
+          id: string
+          original_category: string
+          user_id: string
+        }
+        Insert: {
+          corrected_category: string
+          created_at?: string
+          email_id: string
+          email_snippet?: string | null
+          email_subject?: string | null
+          id?: string
+          original_category: string
+          user_id: string
+        }
+        Update: {
+          corrected_category?: string
+          created_at?: string
+          email_id?: string
+          email_snippet?: string | null
+          email_subject?: string | null
+          id?: string
+          original_category?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_connections: {
         Row: {
           access_token: string | null
@@ -306,11 +339,14 @@ export type Database = {
       }
       emails: {
         Row: {
+          ai_category: string | null
+          ai_urgency: string | null
           body_html: string | null
           body_text: string | null
           cc_emails: string[] | null
           connection_id: string
           created_at: string
+          customer_sentiment: string | null
           external_id: string
           follow_up_at: string | null
           from_email: string
@@ -325,16 +361,21 @@ export type Database = {
           snoozed_until: string | null
           subject: string | null
           thread_id: string | null
+          thread_summary: string | null
+          thread_summary_updated_at: string | null
           to_emails: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          ai_category?: string | null
+          ai_urgency?: string | null
           body_html?: string | null
           body_text?: string | null
           cc_emails?: string[] | null
           connection_id: string
           created_at?: string
+          customer_sentiment?: string | null
           external_id: string
           follow_up_at?: string | null
           from_email: string
@@ -349,16 +390,21 @@ export type Database = {
           snoozed_until?: string | null
           subject?: string | null
           thread_id?: string | null
+          thread_summary?: string | null
+          thread_summary_updated_at?: string | null
           to_emails?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          ai_category?: string | null
+          ai_urgency?: string | null
           body_html?: string | null
           body_text?: string | null
           cc_emails?: string[] | null
           connection_id?: string
           created_at?: string
+          customer_sentiment?: string | null
           external_id?: string
           follow_up_at?: string | null
           from_email?: string
@@ -373,6 +419,8 @@ export type Database = {
           snoozed_until?: string | null
           subject?: string | null
           thread_id?: string | null
+          thread_summary?: string | null
+          thread_summary_updated_at?: string | null
           to_emails?: string[] | null
           updated_at?: string
           user_id?: string
