@@ -433,7 +433,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   <CardTitle className="text-lg">🏷️ Categorie</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Select value={analysis.category} onValueChange={(val) => setAnalysis(prev => prev ? { ...prev, category: val as any } : prev)}>
+                  <Select value={analysis.category} onValueChange={handleCategoryChange}>
                     <SelectTrigger className="w-full">
                       <div className="flex items-center gap-2">
                         <Pencil className="h-3 w-3 text-muted-foreground" />
