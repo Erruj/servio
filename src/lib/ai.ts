@@ -336,12 +336,15 @@ export async function analyzeEmail(mail: MailItem): Promise<AnalysisResult> {
 
         if (!error && data?.success && data?.analysis) {
           const ai = data.analysis;
+          // Normalize "Ontevreden" -> "Negatief" for the typed AnalysisResult
+          let sentiment = ai.sentiment || 'Neutraal';
+          if (sentiment === 'Ontevreden') sentiment = 'Negatief';
           return {
             summary: ai.summary || 'Geen samenvatting beschikbaar',
             bullets: ai.bullets || ['E-mail ontvangen'],
             category: ai.category || 'Overig',
             urgency: ai.urgency || 'Normaal',
-            sentiment: ai.sentiment || 'Neutraal',
+            sentiment,
             policyFlags: ai.policyFlags || [],
           };
         }
