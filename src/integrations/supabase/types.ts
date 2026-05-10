@@ -474,7 +474,10 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          onboarding_completed: boolean
+          phone: string | null
           updated_at: string
+          vat_number: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -483,7 +486,10 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          onboarding_completed?: boolean
+          phone?: string | null
           updated_at?: string
+          vat_number?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -492,7 +498,10 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          onboarding_completed?: boolean
+          phone?: string | null
           updated_at?: string
+          vat_number?: string | null
         }
         Relationships: []
       }
