@@ -170,10 +170,21 @@ async function sendViaSMTP(
     await conn.write(enc.encode(`MAIL FROM:<${email}>\r\n`));
     await expect("250", "MAIL FROM afgewezen");
 
-    // RCPT TO
-    const recipients = [to, ...(cc ? cc.split(",") : [])].map((r) => r.trim()).filter(Boolean);
-    for (const rcpt of recipients) {
-      const rcptEmail = rcpt.match(/<([^>]+)>/)?.[1] || rcpt;
+    // RCPT TO — always extract the pure email address (no display name)
+    const extractEmail = (address: string): string => {
+      // Match anything inside angle brackets first: "Name" <email@x.com>
+      const angleMatch = address.match(/<([^>]+)>/);
+      if (angleMatch) return angleMatch[1].trim();
+      // Otherwise look for the first token that looks like an email
+      const emailMatch = address.match(/[^\s<>"'(),;:]+@[^\s<>"'(),;:]+/);
+      if (emailMatch) return emailMatch[0].trim();
+      return address.trim();
+    };
+
+    const recipients = [to, ...(cc ? cc.split(",") : [])]
+      .map((r) => extractEmail(r))
+      .filter(Boolean);
+    for (const rcptEmail of recipients) {
       await conn.write(enc.encode(`RCPT TO:<${rcptEmail}>\r\n`));
       await expect("250", `RCPT TO afgewezen voor ${rcptEmail}`);
     }
