@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useFeatureAccess, SubscriptionTier } from '@/hooks/useFeatureAccess';
+import { HelpTooltip } from '@/components/HelpTooltip';
 
 interface FeatureGateProps {
   children: React.ReactNode;
@@ -44,7 +45,14 @@ export function FeatureGate({ children, feature, requiredTier = 'pro', featureLa
             <Lock className="h-10 w-10 text-muted-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">{t('upgradeRequired')}</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+              {t('upgradeRequired')}
+              <HelpTooltip
+                tipKey={`feature-gate-${feature}`}
+                title="Vergrendelde functie"
+                text={`Deze functie is beschikbaar in het ${requiredLabel} plan. Upgrade om hem te ontgrendelen.`}
+              />
+            </h2>
             <p
               className="text-muted-foreground"
               dangerouslySetInnerHTML={{
