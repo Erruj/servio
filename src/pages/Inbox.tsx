@@ -8,6 +8,7 @@ import { Topbar } from '@/components/Topbar';
 import { MailList } from '@/components/MailList';
 import { ComposeEmail } from '@/components/ComposeEmail';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
+import { HelpTooltip } from '@/components/HelpTooltip';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell, Keyboard } from 'lucide-react';
