@@ -32,6 +32,11 @@ export interface Email {
   has_attachments: boolean;
   received_at: string;
   created_at: string;
+  ai_category?: string | null;
+  ai_urgency?: string | null;
+  customer_sentiment?: string | null;
+  thread_summary?: string | null;
+  thread_summary_updated_at?: string | null;
 }
 
 export function useEmailConnections() {
