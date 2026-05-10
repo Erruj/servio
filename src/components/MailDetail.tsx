@@ -51,6 +51,9 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const [tone, setTone] = useState<ToneOfVoice>('Neutraal');
   const [language, setLanguage] = useState<Language>('NL');
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
+  const [threadSummary, setThreadSummary] = useState<string | null>(null);
+  const [threadMessageCount, setThreadMessageCount] = useState<number>(1);
+  const [isSummarizing, setIsSummarizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -61,12 +64,22 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       setAnalysis(null);
       setIsEditingReply(false);
       setAttachments([]);
+      setThreadSummary(null);
+      setThreadMessageCount(1);
       analyzeCurrentMail();
+      loadThreadSummary();
     } else {
       setAnalysis(null);
       setReply('');
     }
   }, [mail?.id]);
+
+  // Auto-switch to empathetic tone when customer is unhappy
+  useEffect(() => {
+    if (analysis?.sentiment === 'Negatief' || (mail?.customerSentiment === 'unhappy')) {
+      setTone('Empathisch');
+    }
+  }, [analysis?.sentiment, mail?.customerSentiment]);
 
   // Auto-generate reply when analysis is complete
   useEffect(() => {
@@ -74,6 +87,74 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       generateAiReply();
     }
   }, [mail, analysis]);
+
+  const loadThreadSummary = async () => {
+    if (!mail) return;
+    setIsSummarizing(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) return;
+      const { data, error } = await supabase.functions.invoke('summarize-thread', {
+        body: { emailId: mail.id },
+        headers: { Authorization: `Bearer ${session.session.access_token}` },
+      });
+      if (!error && data?.success) {
+        setThreadSummary(data.summary);
+        setThreadMessageCount(data.messageCount || 1);
+      }
+    } catch (e) {
+      console.warn('Thread summary failed:', e);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const refreshThreadSummary = async () => {
+    if (!mail) return;
+    setIsSummarizing(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) return;
+      const { data, error } = await supabase.functions.invoke('summarize-thread', {
+        body: { emailId: mail.id, force: true },
+        headers: { Authorization: `Bearer ${session.session.access_token}` },
+      });
+      if (!error && data?.success) {
+        setThreadSummary(data.summary);
+        setThreadMessageCount(data.messageCount || 1);
+        toast({ title: '✅ Samenvatting bijgewerkt' });
+      }
+    } catch (e) {
+      console.warn('Thread summary refresh failed:', e);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const handleCategoryChange = async (newCategory: string) => {
+    if (!mail || !analysis) return;
+    const original = analysis.category;
+    if (original === newCategory) return;
+    setAnalysis(prev => prev ? { ...prev, category: newCategory as any } : prev);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from('email_category_corrections').insert({
+        user_id: user.id,
+        email_id: mail.id,
+        original_category: original,
+        corrected_category: newCategory,
+        email_subject: mail.subject,
+        email_snippet: (mail.snippet || mail.bodyText || '').substring(0, 200),
+      });
+      toast({ title: '✓ Correctie opgeslagen', description: 'De AI leert van je aanpassing.' });
+    } catch (e) {
+      console.warn('Failed to log category correction:', e);
+    }
+  };
 
   const analyzeCurrentMail = async () => {
     if (!mail) return;
