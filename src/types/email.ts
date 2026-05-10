@@ -30,6 +30,11 @@ export interface Email {
   has_attachments: boolean;
   received_at: string;
   created_at: string;
+  ai_category?: string | null;
+  ai_urgency?: string | null;
+  customer_sentiment?: string | null;
+  thread_summary?: string | null;
+  thread_summary_updated_at?: string | null;
 }
 
 export function emailToMailItem(email: Email): MailItem {
@@ -46,5 +51,9 @@ export function emailToMailItem(email: Email): MailItem {
     unread: !email.is_read,
     labels: email.labels || [],
     attachments: email.has_attachments ? [{ name: 'attachment' }] : undefined,
+    aiCategory: email.ai_category || undefined,
+    aiUrgency: email.ai_urgency || undefined,
+    customerSentiment: email.customer_sentiment || undefined,
+    threadId: email.thread_id,
   };
 }
