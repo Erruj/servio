@@ -8,6 +8,7 @@ import { Topbar } from '@/components/Topbar';
 import { MailList } from '@/components/MailList';
 import { ComposeEmail } from '@/components/ComposeEmail';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
+import { HelpTooltip } from '@/components/HelpTooltip';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell, Keyboard } from 'lucide-react';
@@ -175,11 +176,16 @@ const Inbox = () => {
               <Topbar onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
             </div>
             {hasConnections && (
-              <div className="pr-4">
+              <div className="pr-4 flex items-center gap-1">
                 <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing}>
                   {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                   <span className="ml-2 hidden sm:inline">Sync</span>
                 </Button>
+                <HelpTooltip
+                  tipKey="inbox-sync"
+                  title="Synchroniseren"
+                  text="Haalt nieuwe emails op uit je gekoppelde mailbox. Dit gebeurt ook automatisch elke paar minuten."
+                />
               </div>
             )}
           </div>

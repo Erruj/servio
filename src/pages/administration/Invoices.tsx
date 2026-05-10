@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { HelpTooltip } from '@/components/HelpTooltip';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -416,7 +417,7 @@ export default function Invoices() {
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-5">
         <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground">Totaal</div><div className="text-2xl font-bold">€{totals.total.toLocaleString()}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground">BTW Totaal</div><div className="text-2xl font-bold text-primary">€{totals.vat.toLocaleString()}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground flex items-center gap-1">BTW Totaal <HelpTooltip tipKey="invoice-vat-total" title="BTW Totaal" text="Het BTW bedrag wordt automatisch berekend op basis van je facturen. Reserveer dit voor je volgende BTW-aangifte." /></div><div className="text-2xl font-bold text-primary">€{totals.vat.toLocaleString()}</div></CardContent></Card>
         <Card><CardContent className="pt-4"><div className="text-sm text-green-600">Betaald</div><div className="text-2xl font-bold text-green-600">€{totals.paid.toLocaleString()}</div></CardContent></Card>
         <Card><CardContent className="pt-4"><div className="text-sm text-yellow-600">Open</div><div className="text-2xl font-bold text-yellow-600">€{totals.pending.toLocaleString()}</div></CardContent></Card>
         <Card><CardContent className="pt-4"><div className="text-sm text-red-600">Verlopen</div><div className="text-2xl font-bold text-red-600">€{totals.overdue.toLocaleString()}</div></CardContent></Card>

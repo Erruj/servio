@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { generateReply, regenerateReply, detectFaq } from '@/lib/ai';
 import { useToast } from '@/hooks/use-toast';
+import { HelpTooltip } from '@/components/HelpTooltip';
 
 interface ReplyEditorProps {
   mail: MailItem | null;
@@ -225,9 +226,15 @@ export function ReplyEditor({ mail, analysis, className }: ReplyEditorProps) {
       <div className="flex-1 p-4">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ai' | 'manual')}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="ai" className="flex items-center">
-              <Sparkles className="h-4 w-4 mr-2" />
+            <TabsTrigger value="ai" className="flex items-center gap-1">
+              <Sparkles className="h-4 w-4 mr-1" />
               AI-voorstel
+              <HelpTooltip
+                tipKey="ai-suggestion"
+                title="AI-voorstel"
+                text="AI genereert automatisch een antwoord op basis van de emailinhoud. Je kunt het altijd nog aanpassen voor verzenden."
+                className="ml-1"
+              />
             </TabsTrigger>
             <TabsTrigger value="manual">Handmatig</TabsTrigger>
           </TabsList>
