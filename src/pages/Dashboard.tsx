@@ -4,7 +4,8 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Topbar } from '@/components/Topbar';
 import { SubscriptionBanner } from '@/components/SubscriptionBanner';
-import { OnboardingDialog } from '@/components/OnboardingDialog';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { TimeSavedWidget } from '@/components/dashboard/TimeSavedWidget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -291,7 +292,8 @@ const Dashboard = () => {
           <Topbar />
           <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6">
             <SubscriptionBanner />
-            <OnboardingDialog />
+            <OnboardingWizard />
+            <TimeSavedWidget />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>

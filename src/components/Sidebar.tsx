@@ -10,6 +10,7 @@ import { UsageBadge } from '@/components/UsageBadge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePersonalization } from '@/hooks/usePersonalization';
 import { Button } from '@/components/ui/button';
+import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 
 interface SidebarProps {
   className?: string;
@@ -248,6 +249,7 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </nav>
 
+      <OnboardingChecklist />
       <UsageBadge />
 
       {/* Footer */}
