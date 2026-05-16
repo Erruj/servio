@@ -154,6 +154,14 @@ const Inbox = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        <title>Inbox – Servio</title>
+        <meta name="description" content="Je AI-gestuurde Servio inbox: e-mails categoriseren, beantwoorden en prioriteren." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://getservio.co/app" />
+        <meta property="og:title" content="Inbox – Servio" />
+        <meta property="og:url" content="https://getservio.co/app" />
+      </Helmet>
       <Header user={user} onLogout={signOut} />
       <RateLimitBanner />
       
