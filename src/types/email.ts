@@ -41,6 +41,7 @@ export function emailToMailItem(email: Email): MailItem {
   return {
     id: email.id,
     from: email.from_name || email.from_email,
+    fromEmail: email.from_email,
     to: email.to_emails || [],
     subject: email.subject || '(Geen onderwerp)',
     snippet: email.snippet || '',

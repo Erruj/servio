@@ -235,7 +235,7 @@ export function EnhancedReplyEditor({ mail, analysis, className }: EnhancedReply
 
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
-          to: mail.from,
+          to: mail.fromEmail || mail.from,
           subject: `Re: ${mail.subject}`,
           body: currentReply,
           replyToEmailId: mail.id,
