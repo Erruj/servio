@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 
 interface DashboardStats {
   totalEmails: number;

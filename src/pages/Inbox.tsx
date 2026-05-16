@@ -18,6 +18,7 @@ import { useEmailConnections, useEmails, requestNotificationPermission } from '@
 import { emailToMailItem } from '@/types/email';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Helmet } from 'react-helmet-async';
 
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
