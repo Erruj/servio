@@ -1059,6 +1059,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_audit_event: {
+        Args: {
+          _action: string
+          _endpoint?: string
+          _ip_address?: string
+          _status: string
+          _user_agent?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "agent" | "finance" | "viewer"
