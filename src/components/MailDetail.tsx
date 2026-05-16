@@ -256,7 +256,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
 
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
-          to: mail!.from,
+          to: mail!.fromEmail || mail!.from,
           subject: `Re: ${mail!.subject}`,
           body: reply,
           replyToEmailId: mail!.id,
