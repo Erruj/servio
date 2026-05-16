@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 
 interface DashboardStats {
   totalEmails: number;
@@ -285,6 +286,14 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        <title>Dashboard – Servio</title>
+        <meta name="description" content="Je persoonlijke Servio dashboard met realtime inzicht in e-mails, facturen en financiën." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://getservio.co/dashboard" />
+        <meta property="og:title" content="Dashboard – Servio" />
+        <meta property="og:url" content="https://getservio.co/dashboard" />
+      </Helmet>
       <Header user={user} onLogout={signOut} />
       <div className="flex-1 flex">
         <Sidebar />
