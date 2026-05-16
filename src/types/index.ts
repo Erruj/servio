@@ -7,6 +7,7 @@ export type ToneOfVoice = 'Neutraal' | 'Empathisch' | 'Formeel' | 'Vrolijk';
 export interface MailItem {
   id: string;
   from: string;
+  fromEmail?: string;
   to: string[];
   subject: string;
   snippet: string;
