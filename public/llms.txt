@@ -1,0 +1,28 @@
+# Servio
+
+> AI-gedreven bedrijfsassistent voor ZZP'ers en MKB. Automatiseert e-mailafhandeling, factuurverwerking en geeft realtime financieel inzicht.
+
+Servio combineert een slimme inbox, automatische administratie (facturen, bonnetjes, BTW), CRM en financieel dashboard in één plek. AI categoriseert e-mails, stelt antwoorden voor, detecteert ontevreden klanten en herkent gegevens uit documenten via OCR. Beschikbaar in NL, EN, DE, FR en ES.
+
+## Pages
+
+- [Home](/): Productoverzicht en waardepropositie.
+- [Features](/features): Alle functies — AI-inbox, administratie, dashboard, CRM.
+- [Pricing](/pricing): Abonnementen en prijzen, inclusief 14 dagen gratis proefperiode.
+- [About](/about): Over Servio, missie en team.
+- [Blog](/blog): Artikelen over AI, productiviteit en ondernemerschap voor ZZP/MKB.
+- [Contact](/contact): Neem contact op met het Servio-team.
+
+## English
+
+- [Home (EN)](/en): English product overview.
+- [Features (EN)](/en/features): All product features in English.
+- [Pricing (EN)](/en/pricing): Plans and pricing in English.
+- [About (EN)](/en/about): About Servio in English.
+- [Blog (EN)](/en/blog): English-language articles.
+
+## Optional
+
+- [Privacy](/privacy): Privacybeleid (AVG/GDPR).
+- [Terms](/terms): Algemene voorwaarden.
+- [Cookies](/cookies): Cookiebeleid.
