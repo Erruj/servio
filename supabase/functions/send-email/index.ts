@@ -145,10 +145,13 @@ async function sendViaSMTP(
   };
 
   try {
+    console.log('[smtp] TO value received:', to);
     await expect("220", "SMTP server niet bereikbaar");
+    console.log('[smtp] Connected');
 
     await conn.write(enc.encode("EHLO servio.co\r\n"));
     await read(); // EHLO response
+    console.log('[smtp] EHLO ok');
 
     if (smtpPort === 587) {
       await conn.write(enc.encode("STARTTLS\r\n"));
@@ -156,19 +159,24 @@ async function sendViaSMTP(
       conn = await Deno.startTls(conn as Deno.TcpConn, { hostname: smtpHost });
       await conn.write(enc.encode("EHLO servio.co\r\n"));
       await read();
+      console.log('[smtp] STARTTLS ok');
     }
 
     // AUTH LOGIN
     await conn.write(enc.encode("AUTH LOGIN\r\n"));
     await expect("334", "AUTH LOGIN niet ondersteund");
+    console.log('[smtp] AUTH started');
     await conn.write(enc.encode(btoa(email) + "\r\n"));
     await expect("334", "Gebruikersnaam afgewezen");
+    console.log('[smtp] Username sent');
     await conn.write(enc.encode(btoa(password) + "\r\n"));
     await expect("235", "Authenticatie mislukt");
+    console.log('[smtp] Password sent');
 
     // MAIL FROM
     await conn.write(enc.encode(`MAIL FROM:<${email}>\r\n`));
     await expect("250", "MAIL FROM afgewezen");
+    console.log('[smtp] MAIL FROM ok');
 
     // RCPT TO — always extract the pure email address (no display name)
     const extractEmail = (address: string): string => {
@@ -187,11 +195,13 @@ async function sendViaSMTP(
     for (const rcptEmail of recipients) {
       await conn.write(enc.encode(`RCPT TO:<${rcptEmail}>\r\n`));
       await expect("250", `RCPT TO afgewezen voor ${rcptEmail}`);
+      console.log('[smtp] RCPT TO ok:', rcptEmail);
     }
 
     // DATA
     await conn.write(enc.encode("DATA\r\n"));
     await expect("354", "DATA commando afgewezen");
+    console.log('[smtp] DATA ok');
 
     // Send message (escape dots at start of line)
     const escapedMessage = rawMessage.replace(/\r\n\./g, "\r\n..");
