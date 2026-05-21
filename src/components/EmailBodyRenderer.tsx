@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Shield, ImageIcon } from 'lucide-react';
+import { fixEncoding as fixEnc, stripToPlainText } from '@/lib/emailText';
 
 interface EmailBodyRendererProps {
   bodyHtml?: string;
