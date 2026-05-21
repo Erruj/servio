@@ -661,7 +661,8 @@ const resources = {
               { h: '3. How we use your data', p: 'We use your data for the following purposes:', list: ['Delivering and improving our services', 'Automating your email responses with AI', 'Processing invoices and receipts', 'Sending important service notifications', 'Complying with legal obligations'] },
               { h: '4. Data security', p: 'We take appropriate technical and organizational measures to protect your personal data against unauthorized access, loss or misuse. All your data is stored and transmitted encrypted.' },
               { h: '5. Your rights', p: 'Under the GDPR you have the following rights:', list: ['Right to access your personal data', 'Right to rectification of incorrect data', 'Right to erasure of your data', 'Right to restriction of processing', 'Right to data portability', 'Right to object to processing'] },
-              { h: '6. Contact', p: 'Do you have questions about this privacy policy or want to exercise your rights? Contact us at info@getservio.co.' },
+              { h: '6. Gmail integration', p: 'Servio uses your Gmail access exclusively to read and reply to emails through the app. We store your emails in a secure database and never share them with third parties. Your messages are not used to train AI models. You can disconnect Gmail at any time via Settings, which immediately revokes our access and removes your stored credentials.' },
+              { h: '7. Contact', p: 'Do you have questions about this privacy policy or want to exercise your rights? Contact us at info@getservio.co.' },
             ],
           },
           terms: {
@@ -1313,7 +1314,8 @@ const resources = {
               { h: '3. Hoe wij uw gegevens gebruiken', p: 'Wij gebruiken uw gegevens voor de volgende doeleinden:', list: ['Het leveren en verbeteren van onze diensten', 'Het automatiseren van uw e-mailbeantwoording met AI', 'Het verwerken van facturen en bonnetjes', 'Het versturen van belangrijke servicemededelingen', 'Het voldoen aan wettelijke verplichtingen'] },
               { h: '4. Gegevensbeveiliging', p: 'Wij nemen passende technische en organisatorische maatregelen om uw persoonsgegevens te beschermen tegen ongeoorloofde toegang, verlies of misbruik. Al uw gegevens worden versleuteld opgeslagen en verzonden.' },
               { h: '5. Uw rechten', p: 'Op grond van de AVG heeft u de volgende rechten:', list: ['Recht op inzage in uw persoonsgegevens', 'Recht op rectificatie van onjuiste gegevens', 'Recht op verwijdering van uw gegevens', 'Recht op beperking van de verwerking', 'Recht op overdraagbaarheid van gegevens', 'Recht om bezwaar te maken tegen verwerking'] },
-              { h: '6. Contact', p: 'Heeft u vragen over dit privacybeleid of wilt u uw rechten uitoefenen? Neem dan contact met ons op via info@getservio.co.' },
+              { h: '6. Gmail-integratie', p: 'Servio gebruikt je Gmail-toegang uitsluitend om e-mails te lezen en te beantwoorden via de app. We slaan je e-mails op in een beveiligde database en delen deze nooit met derden. Je berichten worden niet gebruikt om AI-modellen te trainen. Je kunt de Gmail-koppeling op elk moment verwijderen via Instellingen, waarmee onze toegang direct wordt ingetrokken en je opgeslagen gegevens worden verwijderd.' },
+              { h: '7. Contact', p: 'Heeft u vragen over dit privacybeleid of wilt u uw rechten uitoefenen? Neem dan contact met ons op via info@getservio.co.' },
             ],
           },
           terms: {
