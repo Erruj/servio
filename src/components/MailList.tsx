@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { searchQuerySchema, sanitizeText, SecurityError } from '@/lib/security';
+import { buildPreview } from '@/lib/emailText';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, MailOpen, Trash2, CheckSquare } from 'lucide-react';
 
