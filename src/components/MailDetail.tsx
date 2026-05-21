@@ -35,6 +35,8 @@ import { useToast } from '@/hooks/use-toast';
 import { SecurityError, handleSecurityError } from '@/lib/security';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { EmailBodyRenderer } from '@/components/EmailBodyRenderer';
+import { dummyTemplates } from '@/lib/dummy';
+import { FileText } from 'lucide-react';
 
 interface MailDetailProps {
   mail: MailItem | null;
@@ -74,12 +76,37 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     }
   }, [mail?.id]);
 
-  // Auto-switch to empathetic tone when customer is unhappy
+  // Auto-suggest tone based on sentiment + urgency
   useEffect(() => {
-    if (analysis?.sentiment === 'Negatief' || (mail?.customerSentiment === 'unhappy')) {
+    const unhappy = analysis?.sentiment === 'Negatief' || mail?.customerSentiment === 'unhappy';
+    if (unhappy) {
       setTone('Empathisch');
+    } else if (analysis?.urgency === 'Hoog') {
+      setTone('Formeel');
     }
-  }, [analysis?.sentiment, mail?.customerSentiment]);
+  }, [analysis?.sentiment, analysis?.urgency, mail?.customerSentiment]);
+
+  // Template recommendation: best match by category + language, fallback to Algemeen
+  const recommendedTemplate = useMemo(() => {
+    if (!analysis) return null;
+    const cat = analysis.category;
+    const exact = dummyTemplates.find(t => t.category === cat && t.language === language);
+    if (exact) return exact;
+    const sameCat = dummyTemplates.find(t => t.category === cat);
+    if (sameCat) return sameCat;
+    return dummyTemplates.find(t => t.category === 'Algemeen' && t.language === language)
+      || dummyTemplates.find(t => t.category === 'Algemeen')
+      || null;
+  }, [analysis?.category, language]);
+
+  const applyTemplate = () => {
+    if (!recommendedTemplate || !mail) return;
+    const customerName = (mail.from || '').split(/[<\s]/)[0] || 'klant';
+    const body = recommendedTemplate.body.replace(/\{\{naam\}\}/g, customerName);
+    setReply(body);
+    setIsEditingReply(true);
+    toast({ title: '📋 Template toegepast', description: recommendedTemplate.name });
+  };
 
   // Auto-generate reply when analysis is complete
   useEffect(() => {
@@ -544,6 +571,28 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             </Card>
           );
         })()}
+
+        {/* Template recommendation */}
+        {recommendedTemplate && (
+          <Card className="shadow-card border-accent/30 bg-accent/5">
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <FileText className="h-5 w-5 text-accent-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground truncate">
+                    Aanbevolen template: {recommendedTemplate.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Categorie {recommendedTemplate.category} · {recommendedTemplate.language} · past bij deze email
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={applyTemplate}>
+                Gebruik template
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* AI Reply Suggestion - Prominent Section */}
         <Card className="shadow-elevated border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 ring-1 ring-primary/10">
