@@ -122,13 +122,14 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
     };
   }, [content, isHtml, buildIframeDoc, detectExternalImages]);
 
-  // Plain text rendering
+  // Plain text rendering — if text accidentally contains CSS/HTML fragments, strip them
   if (!isHtml) {
-    const fixedText = fixEncoding(content);
+    const looksLikeMarkup = /<\/?[a-z][^>]*>|@font-face|@media|\{[^}]*:[^}]*\}/i.test(content);
+    const cleanText = looksLikeMarkup ? stripToPlainText(content) : fixEncoding(content);
     return (
       <div className={`bg-secondary/30 rounded-xl p-4 ${className}`}>
         <pre className="whitespace-pre-wrap text-foreground leading-relaxed font-sans text-sm">
-          {fixedText}
+          {cleanText}
         </pre>
       </div>
     );
