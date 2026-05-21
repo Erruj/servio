@@ -76,12 +76,37 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     }
   }, [mail?.id]);
 
-  // Auto-switch to empathetic tone when customer is unhappy
+  // Auto-suggest tone based on sentiment + urgency
   useEffect(() => {
-    if (analysis?.sentiment === 'Negatief' || (mail?.customerSentiment === 'unhappy')) {
+    const unhappy = analysis?.sentiment === 'Negatief' || mail?.customerSentiment === 'unhappy';
+    if (unhappy) {
       setTone('Empathisch');
+    } else if (analysis?.urgency === 'Hoog') {
+      setTone('Formeel');
     }
-  }, [analysis?.sentiment, mail?.customerSentiment]);
+  }, [analysis?.sentiment, analysis?.urgency, mail?.customerSentiment]);
+
+  // Template recommendation: best match by category + language, fallback to Algemeen
+  const recommendedTemplate = useMemo(() => {
+    if (!analysis) return null;
+    const cat = analysis.category;
+    const exact = dummyTemplates.find(t => t.category === cat && t.language === language);
+    if (exact) return exact;
+    const sameCat = dummyTemplates.find(t => t.category === cat);
+    if (sameCat) return sameCat;
+    return dummyTemplates.find(t => t.category === 'Algemeen' && t.language === language)
+      || dummyTemplates.find(t => t.category === 'Algemeen')
+      || null;
+  }, [analysis?.category, language]);
+
+  const applyTemplate = () => {
+    if (!recommendedTemplate || !mail) return;
+    const customerName = (mail.from || '').split(/[<\s]/)[0] || 'klant';
+    const body = recommendedTemplate.body.replace(/\{\{naam\}\}/g, customerName);
+    setReply(body);
+    setIsEditingReply(true);
+    toast({ title: '📋 Template toegepast', description: recommendedTemplate.name });
+  };
 
   // Auto-generate reply when analysis is complete
   useEffect(() => {
