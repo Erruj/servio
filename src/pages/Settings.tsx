@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from 'next-themes';
 import { usePersonalization } from '@/hooks/usePersonalization';
-import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap } from 'lucide-react';
+import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap, Download } from 'lucide-react';
 
 const ACCENT_OPTIONS = [
   { value: 'blue', label: 'Blauw', class: 'bg-[hsl(217,91%,60%)]' },
@@ -52,6 +52,7 @@ const Settings = () => {
     autoCategorize: true,
     autoVatCalculation: true,
     monthlySummary: false,
+    autoExportEnabled: false,
     tagSuggestions: true,
   });
 
@@ -90,6 +91,7 @@ const Settings = () => {
           autoCategorize: data.auto_categorize ?? true,
           autoVatCalculation: data.auto_vat_calculation ?? true,
           monthlySummary: data.monthly_summary ?? false,
+          autoExportEnabled: (data as any).auto_export_enabled ?? false,
           tagSuggestions: data.tag_suggestions ?? true,
         };
         setSettings(loaded);
@@ -136,6 +138,7 @@ const Settings = () => {
           auto_categorize: settings.autoCategorize,
           auto_vat_calculation: settings.autoVatCalculation,
           monthly_summary: settings.monthlySummary,
+          auto_export_enabled: settings.autoExportEnabled,
           tag_suggestions: settings.tagSuggestions,
           updated_at: new Date().toISOString(),
         })
@@ -349,6 +352,10 @@ const Settings = () => {
                 <Separator />
                 <SettingItem icon={FileText} label="Maandelijkse Samenvatting" description="Ontvang een AI-gegenereerd financieel overzicht">
                   <Switch checked={settings.monthlySummary} onCheckedChange={(checked) => setSettings({ ...settings, monthlySummary: checked })} />
+                </SettingItem>
+                <Separator />
+                <SettingItem icon={Download} label="Automatische Maandelijkse Export" description="ZIP met facturen, bonnetjes en uren wordt elke maand klaargezet in opslag">
+                  <Switch checked={settings.autoExportEnabled} onCheckedChange={(checked) => setSettings({ ...settings, autoExportEnabled: checked })} />
                 </SettingItem>
                 <Separator />
                 <SettingItem icon={Tags} label="Tag Suggesties" description="AI-suggesties voor tags bij nieuwe items">
