@@ -151,12 +151,9 @@ const Pricing = () => {
                     key={index}
                     className={`relative shadow-card hover:shadow-elevated transition-all duration-300 flex flex-col ${
                       plan.popular
-                        ? 'border-2 border-primary ring-4 ring-primary/20 md:scale-110 shadow-glow z-10'
+                        ? 'border-2 border-primary ring-4 ring-primary/20 md:scale-110 z-10'
                         : 'border-border'
                     } ${isCurrentPlan(plan.productId) ? 'ring-2 ring-success bg-success/5' : ''}`}
-                    style={plan.popular ? {
-                      animation: 'pulse-border 3s ease-in-out infinite',
-                    } : undefined}
                   >
                     {plan.popular && (
                       <>
