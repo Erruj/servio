@@ -572,6 +572,28 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           );
         })()}
 
+        {/* Template recommendation */}
+        {recommendedTemplate && (
+          <Card className="shadow-card border-accent/30 bg-accent/5">
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <FileText className="h-5 w-5 text-accent-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground truncate">
+                    Aanbevolen template: {recommendedTemplate.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Categorie {recommendedTemplate.category} · {recommendedTemplate.language} · past bij deze email
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={applyTemplate}>
+                Gebruik template
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* AI Reply Suggestion - Prominent Section */}
         <Card className="shadow-elevated border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 ring-1 ring-primary/10">
           <CardHeader className="pb-4">
