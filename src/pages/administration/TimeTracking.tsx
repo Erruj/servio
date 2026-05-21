@@ -8,9 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Square, Plus, Clock, Timer, Download, Trash2, Pencil } from 'lucide-react';
+import { Play, Square, Plus, Clock, Timer, Download, Trash2, Pencil, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { CreateInvoiceFromHoursDialog } from '@/components/CreateInvoiceFromHoursDialog';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -26,6 +27,7 @@ export default function TimeTracking() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showManual, setShowManual] = useState(false);
+  const [showCreateInvoice, setShowCreateInvoice] = useState(false);
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [timerStartTime, setTimerStartTime] = useState<Date | null>(null);
@@ -220,10 +222,19 @@ export default function TimeTracking() {
             <p className="text-muted-foreground">Registreer en beheer je werkuren</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="default" onClick={() => setShowCreateInvoice(true)}><FileText className="h-4 w-4 mr-2" /> Factuur van uren</Button>
             <Button variant="outline" onClick={handleExportCSV}><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
             <Button variant="outline" onClick={() => setShowManual(true)}><Plus className="h-4 w-4 mr-2" /> Handmatig</Button>
           </div>
         </div>
+
+        <CreateInvoiceFromHoursDialog
+          open={showCreateInvoice}
+          onOpenChange={setShowCreateInvoice}
+          entries={entries}
+          customers={customers}
+          onDone={loadData}
+        />
 
         {/* Timer */}
         <Card className="mb-6">
