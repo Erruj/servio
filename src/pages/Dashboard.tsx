@@ -6,6 +6,8 @@ import { Topbar } from '@/components/Topbar';
 import { SubscriptionBanner } from '@/components/SubscriptionBanner';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { TimeSavedWidget } from '@/components/dashboard/TimeSavedWidget';
+import { VatReminderWidget } from '@/components/dashboard/VatReminderWidget';
+import { CustomerSatisfactionWidget } from '@/components/dashboard/CustomerSatisfactionWidget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,14 +54,18 @@ interface RecentEmail {
 const DEFAULT_WIDGETS: Record<string, { visible: boolean; order: number }> = {
   metrics: { visible: true, order: 0 },
   administration: { visible: true, order: 1 },
-  usage: { visible: true, order: 2 },
-  quickActions: { visible: true, order: 3 },
-  recentEmails: { visible: true, order: 4 },
+  vatReminder: { visible: true, order: 2 },
+  satisfaction: { visible: true, order: 3 },
+  usage: { visible: true, order: 4 },
+  quickActions: { visible: true, order: 5 },
+  recentEmails: { visible: true, order: 6 },
 };
 
 const WIDGET_LABELS: Record<string, string> = {
   metrics: 'Statistieken',
   administration: 'Administratie',
+  vatReminder: 'BTW Reminder',
+  satisfaction: 'Klanttevredenheid',
   usage: 'Gebruik',
   quickActions: 'Snelle Acties',
   recentEmails: 'Recente Emails',
@@ -354,15 +360,19 @@ const Dashboard = () => {
               <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : (
               <div className="space-y-6">
-                {/* Render widgets based on usage/quickActions grouping */}
                 {renderWidget('metrics')}
                 {renderWidget('administration')}
-                
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {isVisible('vatReminder') && <VatReminderWidget />}
+                  {isVisible('satisfaction') && <CustomerSatisfactionWidget />}
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {renderWidget('usage')}
                   {renderWidget('quickActions')}
                 </div>
-                
+
                 {renderWidget('recentEmails')}
               </div>
             )}
