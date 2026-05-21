@@ -146,6 +146,11 @@ export default function Exports() {
         fetchTable('time_entries', user.id, start, 'start_time'),
       ]);
 
+      if (!invoices.length && !receipts.length && !transactions.length && !timeEntries.length) {
+        toast.info('Geen data beschikbaar voor deze export');
+        return;
+      }
+
       const sum = (arr: any[], k: string) => arr.reduce((s, r) => s + (Number(r[k]) || 0), 0);
       const totalRevenue = sum(transactions.filter((t: any) => t.type === 'income'), 'amount');
       const totalCosts = sum(transactions.filter((t: any) => t.type === 'expense'), 'amount') + sum(receipts, 'amount');
@@ -198,6 +203,10 @@ export default function Exports() {
       const { start, label } = getRange(period === 'month' ? 'quarter' : period);
       const invoices = await fetchTable('invoices', user.id, start, 'invoice_date');
       const receipts = await fetchTable('receipts', user.id, start, 'receipt_date');
+      if (!invoices.length && !receipts.length) {
+        toast.info('Geen data beschikbaar voor deze export');
+        return;
+      }
 
       const outVat = invoices.reduce((s: number, r: any) => s + (Number(r.vat_amount) || 0), 0);
       const outAmount = invoices.reduce((s: number, r: any) => s + (Number(r.amount) || 0), 0);
@@ -245,6 +254,10 @@ export default function Exports() {
       if (!user) throw new Error('Niet ingelogd');
       const { start, label } = getRange(period);
       const entries = await fetchTable('time_entries', user.id, start, 'start_time');
+      if (!entries.length) {
+        toast.info('Geen data beschikbaar voor deze export');
+        return;
+      }
 
       const totalHours = entries.reduce((s: number, e: any) => s + (Number(e.duration_minutes) || 0), 0) / 60;
       const billableHours = entries.filter((e: any) => e.billable).reduce((s: number, e: any) => s + (Number(e.duration_minutes) || 0), 0) / 60;
@@ -298,15 +311,21 @@ export default function Exports() {
       const { start, label } = getRange(period);
       const tables = ['invoices', 'receipts', 'transactions', 'time_entries', 'documents', 'customers'];
       const zip = new JSZip();
+      let anyData = false;
       for (const t of tables) {
         const rows = await fetchTable(t, user.id, start);
         if (!rows.length) continue;
+        anyData = true;
         zip.file(`${t}.csv`, toCSV(rows));
         const ws = XLSX.utils.json_to_sheet(rows);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, t.slice(0, 31));
         const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
         zip.file(`${t}.xlsx`, buf);
+      }
+      if (!anyData) {
+        toast.info('Geen data beschikbaar voor deze export');
+        return;
       }
       const blob = await zip.generateAsync({ type: 'blob' });
       triggerDownload(blob, `servio_export_${label.replace(/\s+/g, '_')}.zip`);

@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { MailItem, Category, Urgency, Sentiment } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -183,79 +184,120 @@ export function MailList({
         </div>
       )}
 
-      {/* Mail list */}
-      <div className="overflow-y-auto flex-1">
-        {filteredMails.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground space-y-4">
-            <div className="p-6 bg-secondary/30 rounded-2xl">
-              <div className="text-6xl mb-4">📭</div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {safeSearchQuery ? 'Geen resultaten' : 'Geen nieuwe mails'}
-              </h3>
-              <p className="text-sm">
-                {safeSearchQuery ? `Geen emails gevonden voor "${safeSearchQuery}"` : 'Er zijn momenteel geen emails in je inbox'}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-0">
-            {filteredMails.map((mail) => {
-              const isSelected = mail.id === selectedMailId;
-              const analysis = getMailAnalysis(mail);
-              const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true, locale: nl });
-              const emailPreview = getEmailPreview(mail);
-              const senderName = mail.from.split('@')[0].replace('.', ' ');
-              const isChecked = selectedIds.has(mail.id);
+      {/* Mail list (virtualized) */}
+      <VirtualMailList
+        mails={filteredMails}
+        bulkMode={bulkMode}
+        selectedIds={selectedIds}
+        selectedMailId={selectedMailId}
+        onSelectMail={onSelectMail}
+        toggleSelect={toggleSelect}
+        getEmailPreview={getEmailPreview}
+        getMailAnalysis={getMailAnalysis}
+        getCategoryClassName={getCategoryClassName}
+        getUrgencyClassName={getUrgencyClassName}
+        emptyMessage={safeSearchQuery ? `Geen emails gevonden voor "${safeSearchQuery}"` : 'Er zijn momenteel geen emails in je inbox'}
+        emptyTitle={safeSearchQuery ? 'Geen resultaten' : 'Geen nieuwe mails'}
+      />
+    </div>
+  );
+}
 
-              return (
-                <div
-                  key={mail.id}
-                  onClick={() => !bulkMode && onSelectMail(mail)}
-                  className={cn(
-                    'p-5 cursor-pointer transition-all duration-200 border-b border-border hover:bg-secondary/50',
-                    isSelected && 'bg-primary/10 border-l-4 border-l-primary shadow-card ring-1 ring-primary/20',
-                    mail.unread && 'bg-secondary/30',
-                    isChecked && 'bg-accent/20'
+interface VirtualMailListProps {
+  mails: MailItem[];
+  bulkMode: boolean;
+  selectedIds: Set<string>;
+  selectedMailId?: string;
+  onSelectMail: (mail: MailItem) => void;
+  toggleSelect: (id: string) => void;
+  getEmailPreview: (mail: MailItem) => string;
+  getMailAnalysis: (mail: MailItem) => { category: Category; urgency: Urgency };
+  getCategoryClassName: (c: Category) => string;
+  getUrgencyClassName: (u: Urgency) => string;
+  emptyTitle: string;
+  emptyMessage: string;
+}
+
+function VirtualMailList(props: VirtualMailListProps) {
+  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, toggleSelect, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
+  const parentRef = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: mails.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 148,
+    overscan: 8,
+  });
+
+  if (mails.length === 0) {
+    return (
+      <div className="p-8 text-center text-muted-foreground space-y-4 flex-1 overflow-y-auto">
+        <div className="p-6 bg-secondary/30 rounded-2xl">
+          <div className="text-6xl mb-4">📭</div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{emptyTitle}</h3>
+          <p className="text-sm">{emptyMessage}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={parentRef} className="overflow-y-auto flex-1">
+      <div style={{ height: rowVirtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const mail = mails[virtualRow.index];
+          const isSelected = mail.id === selectedMailId;
+          const analysis = getMailAnalysis(mail);
+          const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true, locale: nl });
+          const emailPreview = getEmailPreview(mail);
+          const senderName = mail.from.split('@')[0].replace('.', ' ');
+          const isChecked = selectedIds.has(mail.id);
+
+          return (
+            <div
+              key={mail.id}
+              ref={rowVirtualizer.measureElement}
+              data-index={virtualRow.index}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${virtualRow.start}px)` }}
+              onClick={() => !bulkMode && onSelectMail(mail)}
+              className={cn(
+                'p-5 cursor-pointer transition-all duration-200 border-b border-border hover:bg-secondary/50',
+                isSelected && 'bg-primary/10 border-l-4 border-l-primary shadow-card ring-1 ring-primary/20',
+                mail.unread && 'bg-secondary/30',
+                isChecked && 'bg-accent/20'
+              )}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  {bulkMode && (
+                    <Checkbox checked={isChecked} onCheckedChange={() => toggleSelect(mail.id)} onClick={(e) => e.stopPropagation()} />
                   )}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      {bulkMode && (
-                        <Checkbox
-                          checked={isChecked}
-                          onCheckedChange={() => toggleSelect(mail.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      )}
-                      <div className="avatar-placeholder">{senderName.charAt(0).toUpperCase()}</div>
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-foreground text-sm">{senderName}</span>
-                        {mail.unread && <span className="text-xs text-primary font-medium">Nieuw</span>}
-                      </div>
-                      <div className={cn('w-3 h-3 rounded-full shadow-sm', getUrgencyClassName(analysis.urgency))} />
-                    </div>
-                    <span className="text-xs text-muted-foreground">{timeAgo}</span>
+                  <div className="avatar-placeholder">{senderName.charAt(0).toUpperCase()}</div>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-foreground text-sm">{senderName}</span>
+                    {mail.unread && <span className="text-xs text-primary font-medium">Nieuw</span>}
                   </div>
-
-                  <h3 className="font-semibold text-foreground mb-2 line-clamp-1 text-base">{mail.subject}</h3>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{emailPreview}</p>
-
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className={cn('text-xs font-medium border', getCategoryClassName(analysis.category))}>
-                      {analysis.category}
-                    </Badge>
-                    <div className="flex items-center space-x-2">
-                      {mail.attachments && mail.attachments.length > 0 && (
-                        <Badge variant="outline" className="text-xs">📎 {mail.attachments.length}</Badge>
-                      )}
-                      {mail.unread && <Badge variant="default" className="text-xs bg-primary">Nieuw</Badge>}
-                    </div>
-                  </div>
+                  <div className={cn('w-3 h-3 rounded-full shadow-sm', getUrgencyClassName(analysis.urgency))} />
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <span className="text-xs text-muted-foreground">{timeAgo}</span>
+              </div>
+
+              <h3 className="font-semibold text-foreground mb-2 line-clamp-1 text-base">{mail.subject}</h3>
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{emailPreview}</p>
+
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className={cn('text-xs font-medium border', getCategoryClassName(analysis.category))}>
+                  {analysis.category}
+                </Badge>
+                <div className="flex items-center space-x-2">
+                  {mail.attachments && mail.attachments.length > 0 && (
+                    <Badge variant="outline" className="text-xs">📎 {mail.attachments.length}</Badge>
+                  )}
+                  {mail.unread && <Badge variant="default" className="text-xs bg-primary">Nieuw</Badge>}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

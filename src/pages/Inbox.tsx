@@ -200,10 +200,30 @@ const Inbox = () => {
           </div>
 
           {isLoading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-                <p className="text-muted-foreground">{t('loading')}</p>
+            <div className="flex-1 flex">
+              <div className="w-96 min-w-96 border-r border-border bg-card">
+                <div className="p-6 border-b border-border bg-secondary/30">
+                  <div className="h-6 w-40 bg-muted rounded animate-pulse mb-2" />
+                  <div className="h-4 w-56 bg-muted/60 rounded animate-pulse" />
+                </div>
+                <div className="divide-y divide-border">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="p-5 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+                          <div className="h-2.5 w-16 bg-muted/60 rounded animate-pulse" />
+                        </div>
+                      </div>
+                      <div className="h-3.5 w-3/4 bg-muted rounded animate-pulse" />
+                      <div className="h-3 w-full bg-muted/60 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             </div>
           ) : !hasConnections ? (
