@@ -105,14 +105,33 @@ export function useEmailConnections() {
   const syncEmails = async () => {
     if (!user) return;
     const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) throw new Error('Niet ingelogd');
+    if (!sessionData.session) throw new Error('Je bent niet ingelogd. Log opnieuw in.');
 
-    const { data, error } = await supabase.functions.invoke('sync-emails', {
+    const invokeOnce = () => supabase.functions.invoke('sync-emails', {
       body: { user_id: user.id },
-      headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+      headers: { Authorization: `Bearer ${sessionData.session!.access_token}` },
     });
 
-    if (error) throw error;
+    // Automatic retry once on transient (network / 5xx / timeout) errors
+    let response = await invokeOnce();
+    let raw = String((response.error as any)?.message || response.data?.error || '');
+    const transient = (m: string) => /timeout|network|fetch|failed to fetch|5\d\d|temporarily|unavailable|ECONN/i.test(m);
+    if ((response.error || response.data?.error) && transient(raw)) {
+      await new Promise(r => setTimeout(r, 1500));
+      response = await invokeOnce();
+      raw = String((response.error as any)?.message || response.data?.error || '');
+    }
+
+    if (response.error) {
+      let userMsg = 'Synchronisatie mislukt. Controleer je mailboxverbinding en probeer opnieuw.';
+      if (/timeout/i.test(raw)) userMsg = 'De mailserver reageerde te traag. Probeer het zo opnieuw.';
+      else if (/unauthor|401|invalid_grant|token|reconnect/i.test(raw)) userMsg = 'Je mailbox-koppeling is verlopen. Koppel je mailbox opnieuw via Instellingen.';
+      else if (/network|fetch/i.test(raw)) userMsg = 'Geen verbinding met de sync-service. Controleer je internetverbinding.';
+      else if (raw) userMsg = `Synchronisatie mislukt: ${raw}`;
+      throw new Error(userMsg);
+    }
+
+    const data = response.data;
     if (data?.error) throw new Error(data.error);
 
     const results = Array.isArray(data?.results) ? data.results : [];
@@ -121,7 +140,7 @@ export function useEmailConnections() {
     const successfulSyncs = results.filter((r: { status?: string }) => r.status === 'success');
     if (successfulSyncs.length === 0) {
       const firstError = results.find((r: { error?: string }) => r.error)?.error;
-      throw new Error(firstError || 'Synchronisatie mislukt. Koppel je mailbox opnieuw.');
+      throw new Error(firstError || 'Synchronisatie mislukt voor alle mailboxen. Koppel je mailbox opnieuw.');
     }
 
     await fetchConnections();

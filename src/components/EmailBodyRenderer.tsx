@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Shield, ImageIcon } from 'lucide-react';
+import { fixEncoding as fixEnc, stripToPlainText } from '@/lib/emailText';
 
 interface EmailBodyRendererProps {
   bodyHtml?: string;
@@ -23,31 +24,8 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
   const isHtml = Boolean(bodyHtml && bodyHtml.trim().length > 0);
   const content = isHtml ? bodyHtml! : (bodyText || '');
 
-  // Fix common encoding issues (mojibake from latin1/windows-1252 misinterpreted as UTF-8)
-  const fixEncoding = (text: string): string => {
-    return text
-      .replace(/Â€/g, '€')
-      .replace(/Â£/g, '£')
-      .replace(/Â©/g, '©')
-      .replace(/Â®/g, '®')
-      .replace(/Â´/g, '´')
-      .replace(/Ã©/g, 'é')
-      .replace(/Ã¨/g, 'è')
-      .replace(/Ã«/g, 'ë')
-      .replace(/Ã¯/g, 'ï')
-      .replace(/Ã¶/g, 'ö')
-      .replace(/Ã¼/g, 'ü')
-      .replace(/Ã¤/g, 'ä')
-      .replace(/Ã /g, 'à')
-      .replace(/Ã¢/g, 'â')
-      .replace(/Ã®/g, 'î')
-      .replace(/Ã´/g, 'ô')
-      .replace(/Ã»/g, 'û')
-      .replace(/Ã§/g, 'ç')
-      .replace(/Ã±/g, 'ñ')
-      .replace(/Â\s/g, ' ')
-      .replace(/Â(?=[^\w])/g, '');
-  };
+  // Use shared encoding fixer (covers more cases than the inline list)
+  const fixEncoding = (text: string): string => fixEnc(text);
 
   // Check if HTML contains external images (only <img> tags, not CSS backgrounds)
   const detectExternalImages = useCallback((html: string): boolean => {
@@ -144,13 +122,14 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
     };
   }, [content, isHtml, buildIframeDoc, detectExternalImages]);
 
-  // Plain text rendering
+  // Plain text rendering — if text accidentally contains CSS/HTML fragments, strip them
   if (!isHtml) {
-    const fixedText = fixEncoding(content);
+    const looksLikeMarkup = /<\/?[a-z][^>]*>|@font-face|@media|\{[^}]*:[^}]*\}/i.test(content);
+    const cleanText = looksLikeMarkup ? stripToPlainText(content) : fixEncoding(content);
     return (
       <div className={`bg-secondary/30 rounded-xl p-4 ${className}`}>
         <pre className="whitespace-pre-wrap text-foreground leading-relaxed font-sans text-sm">
-          {fixedText}
+          {cleanText}
         </pre>
       </div>
     );
