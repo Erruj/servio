@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from 'next-themes';
 import { usePersonalization } from '@/hooks/usePersonalization';
-import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap } from 'lucide-react';
+import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap, Download } from 'lucide-react';
 
 const ACCENT_OPTIONS = [
   { value: 'blue', label: 'Blauw', class: 'bg-[hsl(217,91%,60%)]' },
