@@ -33,3 +33,5 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = true
   [functions.summarize-thread]
     verify_jwt = true
+  [functions.auto-export]
+    verify_jwt = false
