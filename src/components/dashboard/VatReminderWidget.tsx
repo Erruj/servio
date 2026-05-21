@@ -45,8 +45,10 @@ export const VatReminderWidget = () => {
         supabase.from('receipts').select('amount').eq('user_id', user.id)
           .gte('receipt_date', qStart).lte('receipt_date', qEnd),
       ]);
-      const paid = (inv.data || []).reduce((s, r: any) => s + (Number(r.vat_amount) || 0), 0);
-      const collected = (rec.data || []).reduce((s, r: any) => s + (Number(r.amount) || 0) * 0.21 / 1.21, 0);
+      // BTW geïnd via uitgaande facturen aan klanten
+      const collected = (inv.data || []).reduce((s, r: any) => s + (Number(r.vat_amount) || 0), 0);
+      // BTW betaald aan leveranciers (aftrekbaar) - geschat op 21% van bruto bon
+      const paid = (rec.data || []).reduce((s, r: any) => s + (Number(r.amount) || 0) * 0.21 / 1.21, 0);
       setVatBalance({ collected, paid });
     };
     load();
