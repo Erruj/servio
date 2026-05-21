@@ -142,6 +142,20 @@ export function CreateInvoiceFromHoursDialog({ open, onOpenChange, entries, cust
       });
       if (upErr) throw upErr;
 
+      // Maak invoice record zodat factuur in lijst verschijnt
+      const { error: invErr } = await supabase.from('invoices').insert({
+        user_id: userRes.user.id,
+        file_path: filePath,
+        invoice_number: invoiceNumber,
+        invoice_date: today.toISOString().slice(0, 10),
+        supplier: profile?.company_name || profile?.full_name || 'Eigen factuur',
+        customer_id: customerId,
+        amount: total,
+        vat_amount: vat,
+        status: 'pending',
+      });
+      if (invErr) console.warn('Invoice record niet aangemaakt:', invErr.message);
+
       // Mark uren als gefactureerd
       const ids = eligible.map(e => e.id);
       await supabase.from('time_entries').update({ invoiced: true }).in('id', ids);
