@@ -38,10 +38,11 @@ async function exportForUser(admin: any, userId: string, period: { start: string
   zip.file(`transacties-${period.label}.csv`, toCsv(transactions.data || []));
   zip.file(`uren-${period.label}.csv`, toCsv(timeEntries.data || []));
 
-  // BTW samenvatting
-  const vatPaid = (invoices.data || []).reduce((s: number, r: any) => s + (Number(r.vat_amount) || 0), 0);
-  const summary = `Periode;${period.label}\nFacturen;${invoices.data?.length || 0}\nBonnetjes;${receipts.data?.length || 0}\nBTW betaald;${vatPaid.toFixed(2)}\n`;
-  zip.file(`samenvatting-${period.label}.csv`, summary);
+    // BTW samenvatting
+    const vatCollected = (invoices.data || []).reduce((s: number, r: any) => s + (Number(r.vat_amount) || 0), 0);
+    const vatPaidEstimate = (receipts.data || []).reduce((s: number, r: any) => s + (Number(r.amount) || 0) * 0.21 / 1.21, 0);
+    const summary = `Periode;${period.label}\nFacturen;${invoices.data?.length || 0}\nBonnetjes;${receipts.data?.length || 0}\nBTW geïnd (uitgaand);${vatCollected.toFixed(2)}\nBTW betaald (geschat, inkomend);${vatPaidEstimate.toFixed(2)}\nSaldo te betalen;${(vatCollected - vatPaidEstimate).toFixed(2)}\n`;
+    zip.file(`samenvatting-${period.label}.csv`, summary);
 
   const blob = await zip.generateAsync({ type: 'uint8array' });
   const path = `${userId}/auto-exports/${period.label}.zip`;
