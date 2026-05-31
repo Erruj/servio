@@ -172,7 +172,7 @@ const Pricing = () => {
 
                     <div className="absolute -top-3 right-4">
                       <Badge variant="outline" className="bg-background border-success/30 text-success text-xs px-2 py-0.5">
-                        <Clock className="h-3 w-3 mr-1" /> 14 dagen gratis
+                        <Clock className="h-3 w-3 mr-1" /> {yearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen'}
                       </Badge>
                     </div>
 
