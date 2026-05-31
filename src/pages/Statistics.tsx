@@ -445,6 +445,9 @@ const Statistics = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Sentiment trend */}
+              <SentimentTrendChart />
             </>
           )}
         </div>
