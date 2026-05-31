@@ -66,7 +66,7 @@ const Pricing = () => {
       return;
     }
     toast.info(`Checkout sessie wordt geopend voor ${planName}...`);
-    await createCheckoutSession(tier);
+    await createCheckoutSession(tier, yearly ? 'yearly' : 'monthly');
   };
 
   const isCurrentPlan = (productId: string) => subscriptionStatus?.product_id === productId;
