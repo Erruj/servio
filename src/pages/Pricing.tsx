@@ -132,7 +132,7 @@ const Pricing = () => {
                 <span className={`text-sm ${yearly ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
                   Jaarlijks
                 </span>
-                <Badge className="bg-success text-white">2 maanden gratis</Badge>
+                <Badge className="bg-success text-white">Bespaar 17%</Badge>
               </div>
 
               {subscriptionStatus?.subscription_status === 'active' && (
