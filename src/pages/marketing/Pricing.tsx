@@ -178,7 +178,7 @@ export default function MarketingPricing() {
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-sm mb-10">
-                  {['14 dagen gratis', 'Geen creditcard nodig', 'Op elk moment opzegbaar'].map((item, i) => (
+                  {[billing === 'monthly' ? '14 dagen gratis proberen' : 'Inclusief 14 dagen gratis proberen', 'Geen creditcard nodig', 'Op elk moment opzegbaar'].map((item, i) => (
                     <span key={i} className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-success" />
                       {item}
