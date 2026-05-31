@@ -144,8 +144,7 @@ export default function MarketingPricing() {
       return;
     }
     toast.info('Checkout...');
-    // TODO: gebruik YEARLY_PRICE_IDS[tier] wanneer billing === 'yearly' zodra jaarlijkse Stripe producten zijn aangemaakt
-    await createCheckoutSession(tier);
+    await createCheckoutSession(tier, billing);
   };
 
   const title = isEn
