@@ -33,6 +33,7 @@ import {
   Area,
   AreaChart
 } from 'recharts';
+import { SentimentTrendChart } from '@/components/statistics/SentimentTrendChart';
 
 interface EmailStats {
   totalEmails: number;
