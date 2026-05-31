@@ -213,7 +213,7 @@ export default function MarketingPricing() {
                     </button>
                   </div>
                   <Badge className="bg-success/15 text-success hover:bg-success/20 border-0">
-                    2 maanden gratis
+                    Bespaar 17%
                   </Badge>
                 </div>
               </div>
