@@ -301,7 +301,7 @@ const Pricing = () => {
                   { q: 'Wat gebeurt er met mijn data als ik opzeg?', a: 'Je kunt al je facturen, bonnetjes en transacties exporteren als PDF/Excel/CSV. Na 30 dagen wordt je data permanent verwijderd, tenzij je verzoekt om eerder te verwijderen.' },
                   { q: 'Heb ik kennis van boekhouden nodig?', a: 'Nee. Servio is ontworpen voor ZZP\'ers zonder boekhoudkundige achtergrond. AI helpt bij categorisering, BTW-berekening en factuuropmaak. Wel raden we aan een boekhouder te raadplegen voor je belastingaangifte.' },
                   { q: 'Hoeveel maandelijkse facturen kan ik versturen?', a: 'Starter: 25 facturen/maand. Pro: onbeperkt. Business: onbeperkt + team-functies. Zie de feature-vergelijking hierboven voor alle limieten.' },
-                  { q: 'Bieden jullie jaarlijkse korting?', a: 'Ja! Bij jaarlijkse betaling krijg je 2 maanden gratis — dat is ~17% korting op het totaal. Gebruik de toggle bovenaan om de jaarprijs te zien.' },
+                  { q: 'Bieden jullie jaarlijkse korting?', a: 'Ja! Bij jaarlijkse betaling bespaar je 17% op het totaalbedrag. Dat is hetzelfde als 2 maanden gratis. Gebruik de toggle bovenaan om de jaarprijs te zien.' },
                 ].map((faq, i) => (
                   <AccordionItem key={i} value={`item-${i}`}>
                     <AccordionTrigger className="text-left font-medium">{faq.q}</AccordionTrigger>
