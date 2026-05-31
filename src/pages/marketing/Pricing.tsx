@@ -271,6 +271,9 @@ export default function MarketingPricing() {
                             Gefactureerd als €{plan.yearlyTotal.toFixed(2).replace('.', ',')}/jaar · Bespaar €{plan.yearlySavings.toFixed(2).replace('.', ',')}
                           </p>
                         )}
+                        <p className={cn('text-xs mt-1.5 font-medium', plan.popular ? 'text-background/70' : 'text-success')}>
+                          {isYearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen'}
+                        </p>
                       </div>
 
                       <ul className="space-y-3 mb-8">
