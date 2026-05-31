@@ -15,12 +15,11 @@ import { cn } from '@/lib/utils';
 
 type BillingCycle = 'monthly' | 'yearly';
 
-// TODO: vervang door echte jaarlijkse Stripe Price IDs zodra deze zijn aangemaakt
-// const YEARLY_PRICE_IDS = {
-//   starter: 'price_xxx_yearly_starter',
-//   pro: 'price_xxx_yearly_pro',
-//   business: 'price_xxx_yearly_business',
-// };
+const YEARLY_PRICE_IDS: Record<string, string> = {
+  starter: 'price_1Td9yCDME8sDkzM9SMtJR6aP',
+  pro: 'price_1TdA0ZDME8sDkzM9ePwqBEIG',
+  business: 'price_1TdA1TDME8sDkzM9f24n5ANg',
+};
 
 const PLANS = [
   {
