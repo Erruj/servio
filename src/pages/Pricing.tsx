@@ -112,7 +112,7 @@ const Pricing = () => {
               {/* Trust badges */}
               <div className="flex gap-2 justify-center flex-wrap">
                 <Badge variant="secondary" className="bg-success/10 text-success border-success/20 px-3 py-1">
-                  <Clock className="h-3 w-3 mr-1" /> 14 dagen gratis trial
+                  <Clock className="h-3 w-3 mr-1" /> {yearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen'}
                 </Badge>
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 px-3 py-1">
                   <CreditCard className="h-3 w-3 mr-1" /> Geen creditcard nodig
