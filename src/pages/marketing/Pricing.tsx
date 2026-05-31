@@ -15,12 +15,11 @@ import { cn } from '@/lib/utils';
 
 type BillingCycle = 'monthly' | 'yearly';
 
-// TODO: vervang door echte jaarlijkse Stripe Price IDs zodra deze zijn aangemaakt
-// const YEARLY_PRICE_IDS = {
-//   starter: 'price_xxx_yearly_starter',
-//   pro: 'price_xxx_yearly_pro',
-//   business: 'price_xxx_yearly_business',
-// };
+const YEARLY_PRICE_IDS: Record<string, string> = {
+  starter: 'price_1Td9yCDME8sDkzM9SMtJR6aP',
+  pro: 'price_1TdA0ZDME8sDkzM9ePwqBEIG',
+  business: 'price_1TdA1TDME8sDkzM9f24n5ANg',
+};
 
 const PLANS = [
   {
@@ -145,8 +144,7 @@ export default function MarketingPricing() {
       return;
     }
     toast.info('Checkout...');
-    // TODO: gebruik YEARLY_PRICE_IDS[tier] wanneer billing === 'yearly' zodra jaarlijkse Stripe producten zijn aangemaakt
-    await createCheckoutSession(tier);
+    await createCheckoutSession(tier, billing);
   };
 
   const title = isEn
@@ -176,11 +174,11 @@ export default function MarketingPricing() {
                   <span className="text-primary">geen verrassingen</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
-                  Kies het plan dat bij je past. 14 dagen gratis proberen, geen creditcard nodig.
+                  Kies het plan dat bij je past. {billing === 'monthly' ? '14 dagen gratis proberen' : 'Inclusief 14 dagen gratis proberen'}, geen creditcard nodig.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-sm mb-10">
-                  {['14 dagen gratis', 'Geen creditcard nodig', 'Op elk moment opzegbaar'].map((item, i) => (
+                  {[billing === 'monthly' ? '14 dagen gratis proberen' : 'Inclusief 14 dagen gratis proberen', 'Geen creditcard nodig', 'Op elk moment opzegbaar'].map((item, i) => (
                     <span key={i} className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-success" />
                       {item}
@@ -215,7 +213,7 @@ export default function MarketingPricing() {
                     </button>
                   </div>
                   <Badge className="bg-success/15 text-success hover:bg-success/20 border-0">
-                    2 maanden gratis
+                    Bespaar 17%
                   </Badge>
                 </div>
               </div>
@@ -273,6 +271,9 @@ export default function MarketingPricing() {
                             Gefactureerd als €{plan.yearlyTotal.toFixed(2).replace('.', ',')}/jaar · Bespaar €{plan.yearlySavings.toFixed(2).replace('.', ',')}
                           </p>
                         )}
+                        <p className={cn('text-xs mt-1.5 font-medium', plan.popular ? 'text-background/70' : 'text-success')}>
+                          {isYearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen'}
+                        </p>
                       </div>
 
                       <ul className="space-y-3 mb-8">

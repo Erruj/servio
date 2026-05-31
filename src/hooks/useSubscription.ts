@@ -84,10 +84,10 @@ export const useSubscription = () => {
     }
   };
 
-  const createCheckoutSession = async (tier: string) => {
+  const createCheckoutSession = async (tier: string, billingCycle: 'monthly' | 'yearly' = 'monthly') => {
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { tier }
+        body: { tier, billing_cycle: billingCycle }
       });
       
       if (error) throw error;

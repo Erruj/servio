@@ -37,20 +37,27 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { tier } = await req.json();
+    const { tier, billing_cycle } = await req.json();
     if (!tier) throw new Error("Tier is required");
-    logStep("Tier received", { tier });
+    logStep("Tier received", { tier, billing_cycle });
 
-    // Map tier to price ID from environment variables
+    // Map tier to price ID — yearly IDs are hardcoded, monthly from env vars
+    const yearlyPriceIdMap: Record<string, string> = {
+      starter: "price_1Td9yCDME8sDkzM9SMtJR6aP",
+      pro: "price_1TdA0ZDME8sDkzM9ePwqBEIG",
+      business: "price_1TdA1TDME8sDkzM9f24n5ANg",
+    };
+
     const priceIdMap: Record<string, string | undefined> = {
       starter: Deno.env.get("STRIPE_STARTER_PRICE_ID"),
       pro: Deno.env.get("STRIPE_PRO_PRICE_ID"),
       business: Deno.env.get("STRIPE_BUSINESS_PRICE_ID"),
     };
 
-    const priceId = priceIdMap[tier];
-    if (!priceId) throw new Error(`No price ID configured for tier: ${tier}`);
-    logStep("Price ID resolved", { tier, priceId });
+    const isYearly = billing_cycle === 'yearly';
+    const priceId = isYearly ? yearlyPriceIdMap[tier] : priceIdMap[tier];
+    if (!priceId) throw new Error(`No price ID configured for tier: ${tier} (${isYearly ? 'yearly' : 'monthly'})`);
+    logStep("Price ID resolved", { tier, isYearly, priceId });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
