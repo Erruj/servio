@@ -174,7 +174,7 @@ export default function MarketingPricing() {
                   <span className="text-primary">geen verrassingen</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
-                  Kies het plan dat bij je past. 14 dagen gratis proberen, geen creditcard nodig.
+                  Kies het plan dat bij je past. {billing === 'monthly' ? '14 dagen gratis proberen' : 'Inclusief 14 dagen gratis proberen'}, geen creditcard nodig.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-sm mb-10">
