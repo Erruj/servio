@@ -683,7 +683,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4 pt-2">
+        <div className="grid grid-cols-2 sm:flex sm:space-x-4 gap-2 sm:gap-0 pt-2">
           <Button 
             onClick={handleSendReply}
             size="lg"
