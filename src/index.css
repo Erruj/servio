@@ -348,7 +348,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   }
 
   /* Reserve room above the bottom navigation bar */
-  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  body.has-bottom-nav { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
 
   /* Dialogs: keep them within viewport */
   [role='dialog'] {
