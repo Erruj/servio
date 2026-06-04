@@ -59,7 +59,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Reset all state when mail changes
+  // Reset all state when mail changes (do NOT auto-analyze — analysis is user-initiated to avoid rate limits)
   useEffect(() => {
     if (mail) {
       setReply('');
@@ -68,7 +68,6 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       setAttachments([]);
       setThreadSummary(null);
       setThreadMessageCount(1);
-      analyzeCurrentMail();
       loadThreadSummary();
     } else {
       setAnalysis(null);
