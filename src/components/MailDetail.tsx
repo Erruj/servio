@@ -350,8 +350,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
 
   return (
     <ErrorBoundary>
-      <div className={`bg-background overflow-y-auto ${className}`}>
-        <div className="p-6 space-y-6">
+      <div className={`bg-background overflow-y-auto overflow-x-hidden max-w-full ${className}`}>
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-full">
         {/* Header */}
         <div className="border-b border-border pb-4">
           <h1 className="text-2xl font-bold text-foreground mb-2 flex items-center">
