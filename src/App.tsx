@@ -25,6 +25,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import { DebugDrawer } from "./components/DebugDrawer";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 import FinancialOverview from "./pages/administration/FinancialOverview";
 import AIAssistant from "./pages/administration/AIAssistant";
 import Invoices from "./pages/administration/Invoices";
