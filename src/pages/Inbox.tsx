@@ -142,11 +142,16 @@ const Inbox = () => {
     localStorage.setItem('servio_inbox_filter', f);
   };
 
+  const hasAutoSelectedRef = useRef(false);
   useEffect(() => {
-    if (mails.length > 0 && !selectedMail) {
-      const lastId = localStorage.getItem('servio_inbox_last_email');
-      const restored = lastId ? mails.find(m => m.id === lastId) : null;
-      setSelectedMail(restored || mails[0]);
+    if (mails.length > 0 && !selectedMail && !hasAutoSelectedRef.current) {
+      hasAutoSelectedRef.current = true;
+      // Only auto-select on desktop; mobile shows list first
+      if (window.matchMedia('(min-width: 1024px)').matches) {
+        const lastId = localStorage.getItem('servio_inbox_last_email');
+        const restored = lastId ? mails.find(m => m.id === lastId) : null;
+        setSelectedMail(restored || mails[0]);
+      }
     }
   }, [mails, selectedMail]);
 
