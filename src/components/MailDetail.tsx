@@ -475,6 +475,21 @@ export function MailDetail({ mail, className }: MailDetailProps) {
               <Skeleton className="h-20 w-full" />
             </CardContent>
           </Card>
+        ) : !analysis ? (
+          <Card className="shadow-card border-primary/20">
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Brain className="h-5 w-5 text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">AI analyse</p>
+                  <p className="text-xs text-muted-foreground">Klik om deze email te analyseren met AI</p>
+                </div>
+              </div>
+              <Button size="sm" onClick={analyzeCurrentMail}>
+                <Sparkles className="h-4 w-4 mr-2" />Analyseer
+              </Button>
+            </CardContent>
+          </Card>
         ) : analysis && (
           <>
             {/* Summary */}
