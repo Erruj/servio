@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, PieChart, Settings, Menu, X, Brain, Receipt, FileBox, Users } from 'lucide-react';
+import { Mail, PieChart, Settings, Menu, Brain, Receipt, FileBox, Users, Wallet, ClipboardList, Upload, UserCircle, Clock, Shield, BarChart3, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
@@ -18,13 +18,22 @@ export function MobileNav() {
   const mainNav = [
     { name: t('inbox'), href: '/app', icon: Mail, show: permissions.canAccessInbox },
     { name: t('dashboard'), href: '/dashboard', icon: PieChart, show: true },
+    { name: t('statistics'), href: '/stats', icon: BarChart3, show: permissions.canAccessStatistics },
+    { name: t('templates'), href: '/templates', icon: FileText, show: permissions.canAccessTemplates },
     { name: t('settings'), href: '/settings', icon: Settings, show: permissions.canAccessSettings },
   ];
 
   const adminNav = [
+    { name: t('financialOverview'), href: '/administration/overview', icon: Wallet },
+    { name: t('aiAssistant'), href: '/administration/ai-assistant', icon: Brain },
     { name: t('invoices'), href: '/administration/invoices', icon: Receipt },
+    { name: t('quotes'), href: '/administration/quotes', icon: ClipboardList },
+    { name: t('receipts'), href: '/administration/receipts', icon: Upload },
+    { name: t('customers'), href: '/administration/customers', icon: UserCircle },
+    { name: t('timeTracking'), href: '/administration/time-tracking', icon: Clock },
     { name: t('documents'), href: '/administration/documents', icon: FileBox },
-    { name: 'AI Assistent', href: '/administration/ai-assistant', icon: Brain },
+    { name: t('exports'), href: '/administration/exports', icon: Upload },
+    { name: t('auditLog'), href: '/administration/audit-log', icon: Shield },
   ];
 
   return (
