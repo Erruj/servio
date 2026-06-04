@@ -1,5 +1,5 @@
+import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Mail, PieChart, Receipt, Settings, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
