@@ -13,8 +13,17 @@ export function MobileBottomNav() {
   const { canAccessAdministration } = useFeatureAccess();
 
   // Only show inside the app, not on marketing/auth/legal pages
-  const isAppRoute = APP_PREFIXES.some(p => location.pathname === p || location.pathname.startsWith(p + '/') || location.pathname === p);
-  if (!user || !isAppRoute) return null;
+  const isAppRoute = APP_PREFIXES.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
+  const shouldShow = !!user && isAppRoute;
+
+  useEffect(() => {
+    if (shouldShow) {
+      document.body.classList.add('has-bottom-nav');
+      return () => document.body.classList.remove('has-bottom-nav');
+    }
+  }, [shouldShow]);
+
+  if (!shouldShow) return null;
 
   const items = [
     { href: '/app', label: 'Inbox', icon: Mail },
