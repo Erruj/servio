@@ -252,11 +252,10 @@ export function Sidebar({ className }: SidebarProps) {
       <OnboardingChecklist />
       <UsageBadge />
 
-      {/* Footer */}
-      <div className="p-6 border-t border-border">
+      {/* Footer - sticky bottom */}
+      <div className="flex-shrink-0 p-4 border-t border-border bg-card">
         <div className="text-xs text-muted-foreground">
-          <p>{t('version')} 1.0.0</p>
-          <p className="mt-1">© {new Date().getFullYear()} Servio</p>
+          <p>{t('version')} 1.0.0 · © {new Date().getFullYear()} Servio</p>
         </div>
       </div>
     </div>
