@@ -249,6 +249,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <AppRoutes />
+                <MobileBottomNav />
                 <DebugDrawer />
                 <CookieConsent />
               </BrowserRouter>
