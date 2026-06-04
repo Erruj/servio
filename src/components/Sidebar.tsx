@@ -133,7 +133,7 @@ export function Sidebar({ className }: SidebarProps) {
   const favoriteItems = favorites.map(id => allItems.find(i => i.id === id)).filter(Boolean) as typeof allItems;
 
   return (
-    <div className={cn('hidden md:flex w-64 bg-card border-r border-border flex-col shadow-card', className)}>
+    <div className={cn('hidden md:flex w-64 bg-card border-r border-border flex-col shadow-card sticky top-0 h-screen overflow-hidden', className)}>
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center space-x-3">
@@ -252,11 +252,10 @@ export function Sidebar({ className }: SidebarProps) {
       <OnboardingChecklist />
       <UsageBadge />
 
-      {/* Footer */}
-      <div className="p-6 border-t border-border">
+      {/* Footer - sticky bottom */}
+      <div className="flex-shrink-0 p-4 border-t border-border bg-card">
         <div className="text-xs text-muted-foreground">
-          <p>{t('version')} 1.0.0</p>
-          <p className="mt-1">© {new Date().getFullYear()} Servio</p>
+          <p>{t('version')} 1.0.0 · © {new Date().getFullYear()} Servio</p>
         </div>
       </div>
     </div>

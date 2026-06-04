@@ -59,7 +59,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Reset all state when mail changes
+  // Reset all state when mail changes (do NOT auto-analyze — analysis is user-initiated to avoid rate limits)
   useEffect(() => {
     if (mail) {
       setReply('');
@@ -68,7 +68,6 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       setAttachments([]);
       setThreadSummary(null);
       setThreadMessageCount(1);
-      analyzeCurrentMail();
       loadThreadSummary();
     } else {
       setAnalysis(null);
@@ -108,12 +107,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     toast({ title: '📋 Template toegepast', description: recommendedTemplate.name });
   };
 
-  // Auto-generate reply when analysis is complete
-  useEffect(() => {
-    if (mail && analysis && !reply) {
-      generateAiReply();
-    }
-  }, [mail, analysis]);
+  // AI reply is user-initiated (no auto-generation on mail change)
+
 
   const loadThreadSummary = async () => {
     if (!mail) return;
@@ -355,8 +350,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
 
   return (
     <ErrorBoundary>
-      <div className={`bg-background overflow-y-auto ${className}`}>
-        <div className="p-6 space-y-6">
+      <div className={`bg-background overflow-y-auto overflow-x-hidden max-w-full ${className}`}>
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-full">
         {/* Header */}
         <div className="border-b border-border pb-4">
           <h1 className="text-2xl font-bold text-foreground mb-2 flex items-center">
@@ -478,6 +473,21 @@ export function MailDetail({ mail, className }: MailDetailProps) {
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-1/2" />
               <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
+        ) : !analysis ? (
+          <Card className="shadow-card border-primary/20">
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Brain className="h-5 w-5 text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">AI analyse</p>
+                  <p className="text-xs text-muted-foreground">Klik om deze email te analyseren met AI</p>
+                </div>
+              </div>
+              <Button size="sm" onClick={analyzeCurrentMail}>
+                <Sparkles className="h-4 w-4 mr-2" />Analyseer
+              </Button>
             </CardContent>
           </Card>
         ) : analysis && (
@@ -673,7 +683,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4 pt-2">
+        <div className="grid grid-cols-2 sm:flex sm:space-x-4 gap-2 sm:gap-0 pt-2">
           <Button 
             onClick={handleSendReply}
             size="lg"

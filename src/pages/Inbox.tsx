@@ -142,11 +142,16 @@ const Inbox = () => {
     localStorage.setItem('servio_inbox_filter', f);
   };
 
+  const hasAutoSelectedRef = useRef(false);
   useEffect(() => {
-    if (mails.length > 0 && !selectedMail) {
-      const lastId = localStorage.getItem('servio_inbox_last_email');
-      const restored = lastId ? mails.find(m => m.id === lastId) : null;
-      setSelectedMail(restored || mails[0]);
+    if (mails.length > 0 && !selectedMail && !hasAutoSelectedRef.current) {
+      hasAutoSelectedRef.current = true;
+      // Only auto-select on desktop; mobile shows list first
+      if (window.matchMedia('(min-width: 1024px)').matches) {
+        const lastId = localStorage.getItem('servio_inbox_last_email');
+        const restored = lastId ? mails.find(m => m.id === lastId) : null;
+        setSelectedMail(restored || mails[0]);
+      }
     }
   }, [mails, selectedMail]);
 
@@ -303,17 +308,33 @@ const Inbox = () => {
               {/* Mobile */}
               <div className="lg:hidden flex-1 flex flex-col overflow-hidden">
                 {selectedMail ? (
-                  <div className="flex-1 flex flex-col">
-                    <div className="p-4 border-b border-border">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedMail(null)} className="mb-2">← Terug naar inbox</Button>
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <div className="p-3 border-b border-border flex items-center justify-between gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedMail(null)}>← Terug</Button>
+                      {hasConnections && (
+                        <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing}>
+                          {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                        </Button>
+                      )}
                     </div>
                     <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                      <MailDetail mail={selectedMail} className="flex-1" />
+                      <MailDetail mail={selectedMail} className="flex-1 min-w-0" />
                     </Suspense>
                   </div>
                 ) : (
-                  <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
-                    onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
+                  <>
+                    {hasConnections && (
+                      <div className="p-3 border-b border-border flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-foreground">Inbox</span>
+                        <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing} className="gap-2">
+                          {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                          <span>Sync</span>
+                        </Button>
+                      </div>
+                    )}
+                    <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
+                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
+                  </>
                 )}
               </div>
             </div>

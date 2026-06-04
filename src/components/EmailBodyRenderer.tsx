@@ -57,7 +57,8 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; ${showExternalImages ? "img-src https: data: cid:;" : "img-src data: cid:;"} font-src data:;">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; max-width: 100% !important; }
+    html, body { overflow-x: hidden; width: 100%; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
@@ -66,11 +67,12 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
       background: transparent;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      word-break: break-word;
       padding: 0;
     }
-    a { color: #2563eb; }
-    img { max-width: 100%; height: auto; }
-    table { max-width: 100% !important; }
+    a { color: #2563eb; word-break: break-all; }
+    img { max-width: 100% !important; height: auto !important; }
+    table { max-width: 100% !important; display: block; overflow-x: auto; }
     pre, code { white-space: pre-wrap; word-wrap: break-word; }
     blockquote { border-left: 3px solid #d1d5db; padding-left: 12px; margin: 8px 0; color: #4b5563; }
   </style>
