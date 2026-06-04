@@ -318,3 +318,44 @@
 .compact-layout .space-y-6 > * + * { margin-top: 1rem; }
 .compact-layout .text-2xl { font-size: 1.25rem; }
 .compact-layout .text-3xl { font-size: 1.5rem; }
+
+/* ===========================================
+   Mobile responsiveness improvements
+   =========================================== */
+
+/* Prevent horizontal page overflow on small screens */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* iOS: prevent input zoom on focus by ensuring min 16px font */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Larger tap targets for primary interactive controls */
+  button, [role='button'], a.btn, .tap-target {
+    min-height: 40px;
+  }
+
+  /* Icon-only buttons should reach 44x44 */
+  button[data-size='icon'],
+  .h-9.w-9,
+  .h-8.w-8 {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Reserve room above the bottom navigation bar */
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+
+  /* Dialogs: keep them within viewport */
+  [role='dialog'] {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* Always allow tables and code blocks to scroll horizontally instead of breaking layout */
+.table-scroll, .responsive-table { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
