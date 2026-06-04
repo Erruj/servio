@@ -107,12 +107,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     toast({ title: '📋 Template toegepast', description: recommendedTemplate.name });
   };
 
-  // Auto-generate reply when analysis is complete
-  useEffect(() => {
-    if (mail && analysis && !reply) {
-      generateAiReply();
-    }
-  }, [mail, analysis]);
+  // AI reply is user-initiated (no auto-generation on mail change)
+
 
   const loadThreadSummary = async () => {
     if (!mail) return;
