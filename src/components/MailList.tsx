@@ -150,18 +150,17 @@ export function MailList({
   };
 
   return (
-    <div className={cn('bg-card border-r border-border overflow-hidden shadow-card flex flex-col', className)}>
+    <div className={cn('bg-card overflow-hidden flex flex-col', className)}>
       {/* Header */}
-      <div className="p-6 border-b border-border bg-secondary/30">
+      <div className="px-5 py-4 border-b border-border/60">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-foreground flex items-center">
-            📧 {filterLabels[filter] || 'Inbox'} ({filteredMails.length})
+          <h2 className="text-[15px] font-semibold text-foreground">
+            {filterLabels[filter] || 'Inbox'} <span className="text-muted-foreground font-normal">({filteredMails.length})</span>
           </h2>
           <Button variant="ghost" size="sm" onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}>
             <CheckSquare className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">Gesynchroniseerde mailboxberichten</p>
       </div>
 
       {/* Bulk action bar */}
