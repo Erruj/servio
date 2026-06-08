@@ -206,7 +206,7 @@ const Inbox = () => {
 
           {isLoading ? (
             <div className="flex-1 flex">
-              <div className="w-96 min-w-96 border-r border-border bg-card">
+              <div className="w-[340px] min-w-[340px] border-r border-border bg-card">
                 <div className="p-6 border-b border-border bg-secondary/30">
                   <div className="h-6 w-40 bg-muted rounded animate-pulse mb-2" />
                   <div className="h-4 w-56 bg-muted/60 rounded animate-pulse" />
@@ -262,7 +262,7 @@ const Inbox = () => {
             <div className="flex-1 flex overflow-hidden">
               {/* Desktop */}
               <div className="hidden lg:flex flex-1">
-                <div className="w-96 min-w-96 flex flex-col">
+                <div className="w-[340px] min-w-[340px] flex flex-col">
                   {/* Priority Inbox - top 3 urgent unread */}
                   {(() => {
                     const priority = mails
