@@ -18,9 +18,9 @@ import {
 type Row = { customer_sentiment: string | null; received_at: string };
 
 const COLORS = {
-  positive: '#22c55e',
-  neutral: '#94a3b8',
-  negative: '#ef4444',
+  positive: '#34c759',
+  neutral: '#a1a1aa',
+  negative: '#ff6961',
 };
 
 const PERIODS = {
