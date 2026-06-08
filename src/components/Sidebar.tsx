@@ -133,25 +133,24 @@ export function Sidebar({ className }: SidebarProps) {
   const favoriteItems = favorites.map(id => allItems.find(i => i.id === id)).filter(Boolean) as typeof allItems;
 
   return (
-    <div className={cn('hidden md:flex w-64 bg-card border-r border-border flex-col shadow-card sticky top-0 h-screen overflow-hidden', className)}>
+    <div className={cn('hidden md:flex w-[220px] bg-sidebar border-r border-sidebar-border flex-col sticky top-0 h-screen overflow-hidden', className)}>
       {/* Logo */}
-      <div className="p-6 border-b border-border">
+      <div className="px-6 pt-6 pb-5">
         <div className="flex items-center space-x-3">
-          <img src={servioLogo} alt="Servio logo" className="w-10 h-10" width={40} height={40} />
+          <img src={servioLogo} alt="Servio logo" className="w-9 h-9" width={36} height={36} />
           <div>
-            <h1 className="text-xl font-bold text-foreground">Servio</h1>
-            <p className="text-sm text-muted-foreground">AI-powered support</p>
+            <h1 className="text-[17px] font-bold text-foreground tracking-tight">Servio</h1>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+      <nav className="flex-1 px-3 pb-4 space-y-5 overflow-y-auto">
         {/* Favorites */}
         {favoriteItems.length > 0 && (
-          <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-              <Star className="h-3 w-3 fill-primary text-primary" /> {t('favorites')}
+          <div className="space-y-0.5">
+            <h3 className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-[0.08em] flex items-center gap-1">
+              <Star className="h-2.5 w-2.5 fill-primary text-primary" /> {t('favorites')}
             </h3>
             {favoriteItems.map((item) => (
               <NavItem
