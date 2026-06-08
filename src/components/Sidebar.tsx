@@ -252,10 +252,10 @@ export function Sidebar({ className }: SidebarProps) {
       <UsageBadge />
 
       {/* Footer - sticky bottom */}
-      <div className="flex-shrink-0 p-4 border-t border-border bg-card">
-        <div className="text-xs text-muted-foreground">
-          <p>{t('version')} 1.0.0 · © {new Date().getFullYear()} Servio</p>
-        </div>
+      <div className="flex-shrink-0 px-4 py-3 border-t border-sidebar-border">
+        <p className="text-[11px] text-muted-foreground/70">
+          {t('version')} 1.0.0 · © {new Date().getFullYear()} Servio
+        </p>
       </div>
     </div>
   );
