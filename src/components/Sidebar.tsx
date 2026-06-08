@@ -52,17 +52,17 @@ function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requi
     <NavLink
       to={item.href}
       className={cn(
-        'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
+        'group flex items-center h-10 px-3 text-[13px] font-medium rounded-lg transition-all duration-150 ease-out',
         isActive
-          ? 'bg-primary text-primary-foreground shadow-card'
+          ? 'bg-primary text-primary-foreground shadow-subtle'
           : isLocked
-            ? 'text-muted-foreground/50 hover:bg-secondary/50 cursor-default'
+            ? 'text-muted-foreground/50 cursor-default'
             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
       )}
     >
-      <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+      <item.icon className="mr-3 h-[18px] w-[18px] flex-shrink-0" />
       <span className="flex-1 truncate">{item.name}</span>
-      {isLocked && <Lock className="h-4 w-4 ml-2 text-muted-foreground/50" />}
+      {isLocked && <Lock className="h-3.5 w-3.5 ml-2 text-muted-foreground/50" />}
       {showFavControls && !isLocked && onToggleFavorite && (
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(); }}
