@@ -581,17 +581,18 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           </Card>
         )}
 
-        {/* AI Reply Suggestion - Prominent Section */}
-        <Card className="shadow-elevated border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 ring-1 ring-primary/10">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-bold flex items-center text-primary">
-                <Sparkles className="h-6 w-6 mr-3 text-primary animate-pulse" />
-                🤖 AI Suggestie Antwoord
+        {/* AI Reply Suggestion */}
+        <Card className="relative overflow-hidden bg-primary/[0.04] animate-page-in">
+          <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
+          <CardHeader className="pb-3 p-5 pl-6">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-[16px] font-semibold flex items-center text-foreground">
+                <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                AI suggestie
               </CardTitle>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-2">
                 <Select value={tone} onValueChange={(value) => setTone(value as ToneOfVoice)}>
-                  <SelectTrigger className="w-32 shadow-subtle">
+                  <SelectTrigger className="w-32 h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -606,16 +607,12 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   size="sm"
                   onClick={generateAiReply}
                   disabled={isGeneratingReply}
-                  className="shadow-subtle"
                 >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isGeneratingReply ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isGeneratingReply ? 'animate-spin' : ''}`} />
                   Vernieuw
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2 bg-secondary/50 p-3 rounded-lg">
-              De AI heeft dit antwoord gegenereerd op basis van de email-inhoud en je bedrijfsrichtlijnen.
-            </p>
           </CardHeader>
           <CardContent>
             {isGeneratingReply ? (
