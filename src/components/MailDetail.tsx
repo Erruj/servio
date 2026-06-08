@@ -614,7 +614,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-5 pl-6 pt-0">
             {isGeneratingReply ? (
               <div className="space-y-3">
                 <Skeleton className="h-4 w-full" />
