@@ -52,17 +52,17 @@ function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requi
     <NavLink
       to={item.href}
       className={cn(
-        'group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 shadow-subtle hover:shadow-card',
+        'group flex items-center h-10 px-3 text-[13px] font-medium rounded-lg transition-all duration-150 ease-out',
         isActive
-          ? 'bg-primary text-primary-foreground shadow-card'
+          ? 'bg-primary text-primary-foreground shadow-subtle'
           : isLocked
-            ? 'text-muted-foreground/50 hover:bg-secondary/50 cursor-default'
+            ? 'text-muted-foreground/50 cursor-default'
             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
       )}
     >
-      <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+      <item.icon className="mr-3 h-[18px] w-[18px] flex-shrink-0" />
       <span className="flex-1 truncate">{item.name}</span>
-      {isLocked && <Lock className="h-4 w-4 ml-2 text-muted-foreground/50" />}
+      {isLocked && <Lock className="h-3.5 w-3.5 ml-2 text-muted-foreground/50" />}
       {showFavControls && !isLocked && onToggleFavorite && (
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(); }}
@@ -133,25 +133,24 @@ export function Sidebar({ className }: SidebarProps) {
   const favoriteItems = favorites.map(id => allItems.find(i => i.id === id)).filter(Boolean) as typeof allItems;
 
   return (
-    <div className={cn('hidden md:flex w-64 bg-card border-r border-border flex-col shadow-card sticky top-0 h-screen overflow-hidden', className)}>
+    <div className={cn('hidden md:flex w-[220px] bg-sidebar border-r border-sidebar-border flex-col sticky top-0 h-screen overflow-hidden', className)}>
       {/* Logo */}
-      <div className="p-6 border-b border-border">
+      <div className="px-6 pt-6 pb-5">
         <div className="flex items-center space-x-3">
-          <img src={servioLogo} alt="Servio logo" className="w-10 h-10" width={40} height={40} />
+          <img src={servioLogo} alt="Servio logo" className="w-9 h-9" width={36} height={36} />
           <div>
-            <h1 className="text-xl font-bold text-foreground">Servio</h1>
-            <p className="text-sm text-muted-foreground">AI-powered support</p>
+            <h1 className="text-[17px] font-bold text-foreground tracking-tight">Servio</h1>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+      <nav className="flex-1 px-3 pb-4 space-y-5 overflow-y-auto">
         {/* Favorites */}
         {favoriteItems.length > 0 && (
-          <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-              <Star className="h-3 w-3 fill-primary text-primary" /> {t('favorites')}
+          <div className="space-y-0.5">
+            <h3 className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-[0.08em] flex items-center gap-1">
+              <Star className="h-2.5 w-2.5 fill-primary text-primary" /> {t('favorites')}
             </h3>
             {favoriteItems.map((item) => (
               <NavItem
@@ -189,8 +188,8 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* Administration Section */}
         {permissions.canAccessAdministration && (
-          <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="space-y-0.5">
+            <h3 className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-[0.08em]">
               {t('administration')}
             </h3>
             {adminNavigation.filter(item => {
@@ -253,10 +252,10 @@ export function Sidebar({ className }: SidebarProps) {
       <UsageBadge />
 
       {/* Footer - sticky bottom */}
-      <div className="flex-shrink-0 p-4 border-t border-border bg-card">
-        <div className="text-xs text-muted-foreground">
-          <p>{t('version')} 1.0.0 · © {new Date().getFullYear()} Servio</p>
-        </div>
+      <div className="flex-shrink-0 px-4 py-3 border-t border-sidebar-border">
+        <p className="text-[11px] text-muted-foreground/70">
+          {t('version')} 1.0.0 · © {new Date().getFullYear()} Servio
+        </p>
       </div>
     </div>
   );
