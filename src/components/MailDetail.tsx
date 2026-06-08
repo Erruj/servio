@@ -351,25 +351,55 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   return (
     <ErrorBoundary>
       <div className={`bg-background overflow-y-auto overflow-x-hidden max-w-full ${className}`}>
-        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-full">
-        {/* Header */}
-        <div className="border-b border-border pb-4">
-          <h1 className="text-2xl font-bold text-foreground mb-2 flex items-center">
-            📧 Inkomende mail
+        <div className="p-4 sm:p-8 space-y-5 max-w-full">
+        {/* Subject header */}
+        <div className="pb-5 border-b border-border/60">
+          <h1 className="text-[22px] font-bold text-foreground tracking-tight mb-3 leading-tight">
+            {mail.subject}
           </h1>
-          <p className="text-muted-foreground">
-            Bekijk en beantwoord deze support email
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <div className="text-[14px]">
+                <span className="font-semibold text-foreground">{mail.from}</span>
+              </div>
+              <div className="text-[13px] text-muted-foreground">
+                Aan: <span className="text-foreground/70">{mail.to.join(', ')}</span>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <div className="text-[13px] text-muted-foreground" title={fullDate}>{timeAgo}</div>
+              {mail.unread && (
+                <Badge variant="default" className="bg-primary mt-1.5 text-[10px]">Nieuw</Badge>
+              )}
+            </div>
+          </div>
+
+          {mail.attachments && mail.attachments.length > 0 && (
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              {mail.attachments.map((attachment, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1.5 bg-secondary rounded-full px-3 py-1 text-xs"
+                >
+                  <Paperclip className="h-3 w-3 text-muted-foreground" />
+                  <span className="font-medium">{attachment.name}</span>
+                  {attachment.sizeKB && (
+                    <span className="text-muted-foreground">({attachment.sizeKB}KB)</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Unhappy customer banner */}
         {isUnhappy && (
-          <Card className="shadow-card border-destructive/40 bg-destructive/5">
-            <CardContent className="p-4 flex items-center gap-3">
+          <Card className="bg-destructive/5">
+            <CardContent className="p-5 flex items-center gap-3">
               <span className="text-2xl">🔴</span>
               <div className="flex-1">
                 <p className="font-semibold text-destructive">Ontevreden klant gedetecteerd</p>
-                <p className="text-sm text-muted-foreground">De AI antwoordtoon is automatisch op <strong>Empathisch</strong> gezet. Wees zorgvuldig met je antwoord.</p>
+                <p className="text-sm text-muted-foreground">De AI antwoordtoon is automatisch op <strong>Empathisch</strong> gezet.</p>
               </div>
             </CardContent>
           </Card>
@@ -377,88 +407,35 @@ export function MailDetail({ mail, className }: MailDetailProps) {
 
         {/* Thread summary */}
         {(threadSummary || isSummarizing) && threadMessageCount > 1 && (
-          <Card className="shadow-card border-primary/20 bg-primary/5">
-            <CardHeader className="pb-2">
+          <Card className="bg-primary/5">
+            <CardHeader className="pb-2 p-5">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Brain className="h-4 w-4 text-primary" />
-                  Samenvatting van conversatie ({threadMessageCount} berichten)
+                  Samenvatting ({threadMessageCount} berichten)
                 </CardTitle>
                 <Button variant="ghost" size="sm" onClick={refreshThreadSummary} disabled={isSummarizing}>
                   <RefreshCw className={`h-3 w-3 ${isSummarizing ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 p-5">
               {isSummarizing && !threadSummary ? (
                 <Skeleton className="h-12 w-full" />
               ) : (
-                <p className="text-sm text-foreground leading-relaxed">{threadSummary}</p>
+                <p className="text-[14px] text-foreground leading-relaxed">{threadSummary}</p>
               )}
             </CardContent>
           </Card>
         )}
 
-        {/* Email Content Card */}
-        <Card className="shadow-card">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between mb-4">
-              <CardTitle className="text-xl">{mail.subject}</CardTitle>
-              {mail.unread && (
-                <Badge variant="default" className="bg-primary">
-                  Nieuw
-                </Badge>
-              )}
-            </div>
-
-            {/* Email metadata */}
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-muted-foreground">Van: </span>
-                  <span className="font-medium text-foreground">{mail.from}</span>
-                </div>
-                <span className="text-muted-foreground" title={fullDate}>
-                  {timeAgo}
-                </span>
-              </div>
-              
-              <div>
-                <span className="text-muted-foreground">Aan: </span>
-                <span className="font-medium text-foreground">{mail.to.join(', ')}</span>
-              </div>
-
-              {mail.attachments && mail.attachments.length > 0 && (
-                <div className="flex items-center space-x-2">
-                  <span className="text-muted-foreground">Bijlagen: </span>
-                  <div className="flex flex-wrap gap-2">
-                    {mail.attachments.map((attachment, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-center space-x-1 bg-secondary rounded-lg px-3 py-1 shadow-subtle"
-                      >
-                        <Paperclip className="h-3 w-3" />
-                        <span className="text-xs font-medium">{attachment.name}</span>
-                        {attachment.sizeKB && (
-                          <span className="text-xs text-muted-foreground">
-                            ({attachment.sizeKB}KB)
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <EmailBodyRenderer
-              bodyHtml={mail.bodyHtml}
-              bodyText={mail.bodyText || mail.body}
-            />
-          </CardContent>
-        </Card>
+        {/* Email body — 15px / 1.6 line-height */}
+        <div className="text-[15px] leading-[1.6] text-foreground">
+          <EmailBodyRenderer
+            bodyHtml={mail.bodyHtml}
+            bodyText={mail.bodyText || mail.body}
+          />
+        </div>
 
         {/* Analysis Section */}
         {isAnalyzing ? (
@@ -604,17 +581,18 @@ export function MailDetail({ mail, className }: MailDetailProps) {
           </Card>
         )}
 
-        {/* AI Reply Suggestion - Prominent Section */}
-        <Card className="shadow-elevated border-primary/20 bg-gradient-to-br from-primary/8 to-accent/8 ring-1 ring-primary/10">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-bold flex items-center text-primary">
-                <Sparkles className="h-6 w-6 mr-3 text-primary animate-pulse" />
-                🤖 AI Suggestie Antwoord
+        {/* AI Reply Suggestion */}
+        <Card className="relative overflow-hidden bg-primary/[0.04] animate-page-in">
+          <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
+          <CardHeader className="pb-3 p-5 pl-6">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <CardTitle className="text-[16px] font-semibold flex items-center text-foreground">
+                <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                AI suggestie
               </CardTitle>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-2">
                 <Select value={tone} onValueChange={(value) => setTone(value as ToneOfVoice)}>
-                  <SelectTrigger className="w-32 shadow-subtle">
+                  <SelectTrigger className="w-32 h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -629,18 +607,14 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   size="sm"
                   onClick={generateAiReply}
                   disabled={isGeneratingReply}
-                  className="shadow-subtle"
                 >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isGeneratingReply ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isGeneratingReply ? 'animate-spin' : ''}`} />
                   Vernieuw
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2 bg-secondary/50 p-3 rounded-lg">
-              De AI heeft dit antwoord gegenereerd op basis van de email-inhoud en je bedrijfsrichtlijnen.
-            </p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-5 pl-6 pt-0">
             {isGeneratingReply ? (
               <div className="space-y-3">
                 <Skeleton className="h-4 w-full" />

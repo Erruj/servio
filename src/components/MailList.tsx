@@ -150,18 +150,17 @@ export function MailList({
   };
 
   return (
-    <div className={cn('bg-card border-r border-border overflow-hidden shadow-card flex flex-col', className)}>
+    <div className={cn('bg-card overflow-hidden flex flex-col', className)}>
       {/* Header */}
-      <div className="p-6 border-b border-border bg-secondary/30">
+      <div className="px-5 py-4 border-b border-border/60">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-foreground flex items-center">
-            📧 {filterLabels[filter] || 'Inbox'} ({filteredMails.length})
+          <h2 className="text-[15px] font-semibold text-foreground">
+            {filterLabels[filter] || 'Inbox'} <span className="text-muted-foreground font-normal">({filteredMails.length})</span>
           </h2>
           <Button variant="ghost" size="sm" onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}>
             <CheckSquare className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">Gesynchroniseerde mailboxberichten</p>
       </div>
 
       {/* Bulk action bar */}
@@ -224,8 +223,8 @@ function VirtualMailList(props: VirtualMailListProps) {
   const rowVirtualizer = useVirtualizer({
     count: mails.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 148,
-    overscan: 8,
+    estimateSize: () => 84,
+    overscan: 10,
   });
 
   if (mails.length === 0) {
@@ -246,8 +245,7 @@ function VirtualMailList(props: VirtualMailListProps) {
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           const mail = mails[virtualRow.index];
           const isSelected = mail.id === selectedMailId;
-          const analysis = getMailAnalysis(mail);
-          const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: true, locale: nl });
+          const timeAgo = formatDistanceToNow(new Date(mail.receivedAt), { addSuffix: false, locale: nl });
           const emailPreview = getEmailPreview(mail);
           const senderName = mail.from.split('@')[0].replace('.', ' ');
           const isChecked = selectedIds.has(mail.id);
@@ -260,39 +258,46 @@ function VirtualMailList(props: VirtualMailListProps) {
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${virtualRow.start}px)` }}
               onClick={() => !bulkMode && onSelectMail(mail)}
               className={cn(
-                'p-5 cursor-pointer transition-all duration-200 border-b border-border hover:bg-secondary/50',
-                isSelected && 'bg-primary/10 border-l-4 border-l-primary shadow-card ring-1 ring-primary/20',
-                mail.unread && 'bg-secondary/30',
-                isChecked && 'bg-accent/20'
+                'relative px-4 py-3 cursor-pointer transition-colors duration-150 border-b border-border/40',
+                !isSelected && 'hover:bg-secondary/60',
+                isSelected && 'bg-[hsl(214,100%,96%)] dark:bg-primary/15',
+                isChecked && 'bg-accent/15'
               )}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-3">
-                  {bulkMode && (
-                    <Checkbox checked={isChecked} onCheckedChange={() => toggleSelect(mail.id)} onClick={(e) => e.stopPropagation()} />
-                  )}
-                  <div className="avatar-placeholder">{senderName.charAt(0).toUpperCase()}</div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-foreground text-sm">{senderName}</span>
-                    {mail.unread && <span className="text-xs text-primary font-medium">Nieuw</span>}
-                  </div>
-                  <div className={cn('w-3 h-3 rounded-full shadow-sm', getUrgencyClassName(analysis.urgency))} />
+              {/* Selected accent bar */}
+              {isSelected && (
+                <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary rounded-r-sm" />
+              )}
+
+              <div className="flex items-start gap-2.5 pl-1">
+                {bulkMode && (
+                  <Checkbox checked={isChecked} onCheckedChange={() => toggleSelect(mail.id)} onClick={(e) => e.stopPropagation()} className="mt-1" />
+                )}
+
+                {/* Unread dot */}
+                <div className="flex-shrink-0 pt-1.5 w-2.5">
+                  {mail.unread && <span className="block w-2 h-2 rounded-full bg-primary" />}
                 </div>
-                <span className="text-xs text-muted-foreground">{timeAgo}</span>
-              </div>
 
-              <h3 className="font-semibold text-foreground mb-2 line-clamp-1 text-base">{mail.subject}</h3>
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{emailPreview}</p>
-
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className={cn('text-xs font-medium border', getCategoryClassName(analysis.category))}>
-                  {analysis.category}
-                </Badge>
-                <div className="flex items-center space-x-2">
-                  {mail.attachments && mail.attachments.length > 0 && (
-                    <Badge variant="outline" className="text-xs">📎 {mail.attachments.length}</Badge>
-                  )}
-                  {mail.unread && <Badge variant="default" className="text-xs bg-primary">Nieuw</Badge>}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <span className={cn(
+                      'text-[13px] truncate',
+                      mail.unread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'
+                    )}>
+                      {senderName}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground flex-shrink-0">{timeAgo}</span>
+                  </div>
+                  <div className={cn(
+                    'text-[13px] truncate mb-0.5',
+                    mail.unread ? 'text-foreground' : 'text-foreground/80'
+                  )}>
+                    {mail.subject}
+                  </div>
+                  <div className="text-[12px] text-muted-foreground truncate">
+                    {emailPreview}
+                  </div>
                 </div>
               </div>
             </div>

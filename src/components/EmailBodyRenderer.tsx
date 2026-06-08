@@ -141,7 +141,7 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
     <div className={className}>
       {/* External images banner */}
       {hasExternalImages && !showExternalImages && (
-        <div className="flex items-center gap-2 bg-muted/50 border border-border rounded-lg px-3 py-2 mb-3 text-sm">
+        <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 mb-3 text-xs">
           <Shield className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           <span className="text-muted-foreground flex-1">
             Externe afbeeldingen zijn geblokkeerd voor je privacy.
