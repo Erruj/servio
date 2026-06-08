@@ -174,14 +174,19 @@
     @apply w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm;
   }
 
-  /* Custom thin scrollbars */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  /* Thin Apple-style scrollbars (4px, rounded, fade) */
+  * { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+  .dark * { scrollbar-color: #3a3a3c transparent; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
+    background: transparent;
     border-radius: 999px;
+    transition: background 200ms ease-out;
   }
-  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+  *:hover::-webkit-scrollbar-thumb { background: #d1d5db; }
+  .dark *:hover::-webkit-scrollbar-thumb { background: #3a3a3c; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af !important; }
 
   /* Selection */
   ::selection { background: hsl(var(--primary) / 0.2); }
