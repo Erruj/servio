@@ -188,8 +188,8 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* Administration Section */}
         {permissions.canAccessAdministration && (
-          <div className="space-y-1">
-            <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="space-y-0.5">
+            <h3 className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-[0.08em]">
               {t('administration')}
             </h3>
             {adminNavigation.filter(item => {
