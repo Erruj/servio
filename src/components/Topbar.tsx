@@ -69,7 +69,7 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
   };
 
   return (
-    <div className={`bg-card border-b border-border px-6 py-4 flex items-center justify-between ${className}`}>
+    <div className={`bg-background border-b border-border h-14 px-6 flex items-center justify-between ${className}`}>
       {/* Search and filters */}
       <div className="flex items-center space-x-4 flex-1 max-w-2xl">
         <div className="relative flex-1">
