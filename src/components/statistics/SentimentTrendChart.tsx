@@ -135,18 +135,18 @@ export const SentimentTrendChart = () => {
           </p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="week" tick={{ fill: 'hsl(var(--muted-foreground))' }} className="text-xs" />
-              <YAxis unit="%" tick={{ fill: 'hsl(var(--muted-foreground))' }} className="text-xs" domain={[0, 100]} />
+            <LineChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="week" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis unit="%" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} domain={[0, 100]} />
               <Tooltip
-                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
+                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}
                 formatter={(v: number) => `${v}%`}
               />
-              <Legend />
-              <Line type="monotone" dataKey="positive" stroke={COLORS.positive} strokeWidth={2} name="Positief" dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="neutral" stroke={COLORS.neutral} strokeWidth={2} name="Neutraal" dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="negative" stroke={COLORS.negative} strokeWidth={2} name="Negatief" dot={{ r: 3 }} />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="positive" stroke={COLORS.positive} strokeWidth={2.5} name="Positief" dot={false} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="neutral" stroke={COLORS.neutral} strokeWidth={2.5} name="Neutraal" dot={false} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="negative" stroke={COLORS.negative} strokeWidth={2.5} name="Negatief" dot={false} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         )}
