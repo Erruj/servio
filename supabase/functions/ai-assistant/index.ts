@@ -141,9 +141,24 @@ serve(async (req) => {
       ? ((monthlyExpenses - prevMonthExpenses) / prevMonthExpenses * 100).toFixed(1) 
       : '0';
 
+    // Last 30 days of transactions (explicit user-memory window)
+    const cutoff30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const last30 = (transactions.data || [])
+      .filter(t => new Date(t.date) >= cutoff30)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 50);
+    const last30Lines = last30.map(t =>
+      `- ${t.date} | ${t.type} | €${parseFloat(t.amount?.toString() || '0').toFixed(2)} | ${t.category || '-'} | ${(t.description || '').substring(0, 80)}`
+    ).join('\n') || '- (geen transacties in de laatste 30 dagen)';
+
     // Build comprehensive context for AI
     const context = `
-Je bent een professionele financieel adviseur voor een Nederlands bedrijf. Antwoord altijd in dezelfde taal als de vraag.
+Je bent een professionele financieel adviseur. Antwoord altijd in dezelfde taal als de vraag.
+
+👤 BEDRIJFSPROFIEL:
+- Bedrijfsnaam: ${companyName}
+- BTW-nummer: ${vatNumber || '(niet ingesteld)'}
+- Abonnement: ${subscriptionTier}
 
 ACTUELE FINANCIËLE DATA:
 
@@ -182,10 +197,14 @@ ${topSuppliers.map(([supplier, amount]) => `- ${supplier}: €${amount.toFixed(2
 📝 BONNETJES:
 - Totaal verwerkt: €${totalReceipts.toFixed(2)}
 
+🕒 LAATSTE 30 DAGEN TRANSACTIES (max 50):
+${last30Lines}
+
 INSTRUCTIES:
+- Spreek de gebruiker aan met de bedrijfsnaam waar passend
 - Geef concrete, actionable adviezen
 - Gebruik specifieke bedragen uit de data
-- Bij vragen over BTW, bereken exacte bedragen
+- Bij vragen over BTW, bereken exacte bedragen op basis van werkelijke transacties
 - Identificeer risico's en kansen
 - Stel vervolgvragen voor als relevant
 - Wees beknopt maar volledig
