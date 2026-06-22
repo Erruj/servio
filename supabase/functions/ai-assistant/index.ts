@@ -240,10 +240,10 @@ Retourneer als gestructureerde tekst.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5',
         messages: [
           { role: 'system', content: systemPrompt },
-          ...(conversationHistory || []).slice(-10), // Keep last 10 messages for context
+          ...(conversationHistory || []).slice(-10),
           { role: 'user', content: context }
         ],
       }),
