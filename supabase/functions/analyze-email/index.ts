@@ -17,6 +17,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('[analyze-email] start');
     const { emailId } = await req.json();
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error('No authorization header');
@@ -27,6 +28,7 @@ serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Unauthorized');
+    console.log('[analyze-email] user authenticated', user.id);
 
     const { data: email, error: emailError } = await supabase
       .from('emails')
@@ -35,20 +37,34 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    if (emailError || !email) throw new Error('Email not found');
+    if (emailError || !email) {
+      console.error('[analyze-email] email lookup failed', emailError);
+      throw new Error('Email not found');
+    }
+    console.log('[analyze-email] email loaded');
 
-    // Fetch up to 50 most-weighted user category corrections as few-shot training data
-    const { data: corrections } = await supabase
-      .from('email_category_corrections')
-      .select('email_subject, email_snippet, sender_email, original_category, corrected_category, correction_count')
-      .eq('user_id', user.id)
-      .order('correction_count', { ascending: false })
-      .order('updated_at', { ascending: false })
-      .limit(50);
+    // Fallback-safe: fetch corrections — failures must NOT block analysis
+    let corrections: any[] = [];
+    try {
+      const { data, error } = await supabase
+        .from('email_category_corrections')
+        .select('email_subject, email_snippet, sender_email, original_category, corrected_category, correction_count')
+        .eq('user_id', user.id)
+        .order('correction_count', { ascending: false })
+        .order('updated_at', { ascending: false })
+        .limit(50);
+      if (error) {
+        console.warn('[analyze-email] corrections fetch error, continuing without', error.message);
+      } else {
+        corrections = data || [];
+        console.log('[analyze-email] corrections loaded:', corrections.length);
+      }
+    } catch (e) {
+      console.warn('[analyze-email] corrections fetch threw, continuing without', e);
+    }
 
-    // Sender -> most-weighted corrected category map for deterministic match
     const senderMap = new Map<string, { category: string; weight: number }>();
-    for (const c of (corrections || []) as any[]) {
+    for (const c of corrections as any[]) {
       const sender = (c.sender_email || '').toLowerCase().trim();
       if (!sender) continue;
       const existing = senderMap.get(sender);
@@ -58,7 +74,7 @@ serve(async (req) => {
       }
     }
 
-    const correctionsText = (corrections && corrections.length > 0)
+    const correctionsText = (corrections.length > 0)
       ? '\n\nLEER VAN DEZE EERDERE CORRECTIES VAN DEZE GEBRUIKER (hoger gewicht = vaker bevestigd, geef hier extra waarde aan):\n' +
         corrections.map((c: any, i: number) =>
           `${i + 1}. [gewicht ${c.correction_count || 1}x] afzender "${c.sender_email || '?'}" | onderwerp "${c.email_subject || '-'}" | snippet "${(c.email_snippet || '').substring(0, 100)}" → categorie "${c.corrected_category}" (was "${c.original_category}")`
@@ -83,7 +99,7 @@ REGELS:
   * "Positief" = tevreden, dankbaar, blij
   * "Neutraal" = zakelijk, informatief, normaal
   * "Negatief" = ontevreden maar beheerst
-  * "Ontevreden" = duidelijk gefrustreerd, boos, klagend, dreigend, eist actie, gebruikt woorden zoals: belachelijk, schandalig, onacceptabel, klacht, teleurgesteld, juridisch, slechte service, nooit meer, geld terug
+  * "Ontevreden" = duidelijk gefrustreerd, boos, klagend, dreigend, eist actie
 - Detecteer of dit een ontevreden klant is die empathisch antwoord verdient
 ${correctionsText}
 
@@ -95,6 +111,7 @@ Onderwerp: ${email.subject || '(geen onderwerp)'}
 Inhoud:
 ${emailContent.substring(0, 3000)}`;
 
+    console.log('[analyze-email] calling AI Gateway (gpt-4o)');
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -102,7 +119,7 @@ ${emailContent.substring(0, 3000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5',
+        model: 'openai/gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -113,19 +130,32 @@ ${emailContent.substring(0, 3000)}`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
+      console.error('[analyze-email] AI Gateway error', response.status, errorText);
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Te veel verzoeken aan de AI. Wacht even en probeer opnieuw.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'AI-credits zijn op. Vul je tegoed aan om verder te analyseren.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       throw new Error(`AI error: ${response.status}`);
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
+    console.log('[analyze-email] AI response received');
 
     let analysis;
     try {
       const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       analysis = JSON.parse(cleaned);
     } catch {
-      console.warn('Failed to parse AI analysis, using fallback');
+      console.warn('[analyze-email] failed to parse AI JSON, using fallback');
       analysis = {
         summary: 'Kon de e-mail niet volledig analyseren.',
         bullets: ['E-mail ontvangen van ' + senderName],
@@ -136,7 +166,6 @@ ${emailContent.substring(0, 3000)}`;
       };
     }
 
-    // Deterministic override: if we have a strong sender-based correction, trust it
     const senderKey = (email.from_email || '').toLowerCase().trim();
     const senderHit = senderMap.get(senderKey);
     let fromCorrection = !!analysis.fromCorrection;
@@ -146,42 +175,47 @@ ${emailContent.substring(0, 3000)}`;
     }
     analysis.fromCorrection = fromCorrection;
 
-    // Map "Ontevreden" to a database-friendly sentiment label
     let dbSentiment = (analysis.sentiment || 'Neutraal').toLowerCase();
     if (dbSentiment === 'ontevreden') dbSentiment = 'unhappy';
     else if (dbSentiment === 'positief') dbSentiment = 'positive';
     else if (dbSentiment === 'negatief') dbSentiment = 'negative';
     else dbSentiment = 'neutral';
 
-    // Cache analysis on the email row for priority sorting
-    await supabase
-      .from('emails')
-      .update({
-        ai_category: analysis.category,
-        ai_urgency: analysis.urgency,
-        customer_sentiment: dbSentiment,
-        category_from_correction: fromCorrection,
-      })
-      .eq('id', emailId)
-      .eq('user_id', user.id);
+    try {
+      await supabase
+        .from('emails')
+        .update({
+          ai_category: analysis.category,
+          ai_urgency: analysis.urgency,
+          customer_sentiment: dbSentiment,
+          category_from_correction: fromCorrection,
+        })
+        .eq('id', emailId)
+        .eq('user_id', user.id);
+    } catch (e) {
+      console.warn('[analyze-email] cache update failed, returning analysis anyway', e);
+    }
 
+    console.log('[analyze-email] success');
     return new Response(
       JSON.stringify({ success: true, analysis }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error('analyze-email error:', msg);
-    
-    let userMessage = 'Er is een fout opgetreden bij het analyseren van de e-mail. Probeer het later opnieuw.';
+    console.error('[analyze-email] fatal error:', msg);
+
+    let userMessage = 'E-mail analyse mislukt. Probeer het later opnieuw.';
     if (msg.includes('Unauthorized') || msg.includes('authorization')) {
-      userMessage = 'Je sessie is verlopen. Log opnieuw in.';
+      userMessage = 'Je sessie is verlopen. Log opnieuw in om de e-mail te analyseren.';
+    } else if (msg.includes('Email not found')) {
+      userMessage = 'De e-mail kon niet worden gevonden in je inbox.';
     } else if (msg.includes('rate') || msg.includes('429')) {
-      userMessage = 'Je hebt te veel verzoeken gedaan. Wacht even en probeer het opnieuw.';
-    } else if (msg.includes('API') || msg.includes('fetch')) {
-      userMessage = 'De AI-service is tijdelijk niet beschikbaar. Probeer het later opnieuw.';
+      userMessage = 'Te veel verzoeken aan de AI. Wacht even en probeer opnieuw.';
+    } else if (msg.includes('AI error')) {
+      userMessage = 'De AI-service is tijdelijk niet beschikbaar voor analyse. Probeer het over een minuut opnieuw.';
     }
-    
+
     return new Response(
       JSON.stringify({ error: userMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
