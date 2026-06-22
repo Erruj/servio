@@ -82,6 +82,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          dedup_key: string | null
+          id: string
+          message: string
+          read: boolean
+          severity: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          dedup_key?: string | null
+          id?: string
+          message: string
+          read?: boolean
+          severity?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          dedup_key?: string | null
+          id?: string
+          message?: string
+          read?: boolean
+          severity?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string

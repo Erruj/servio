@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { NotificationBell } from '@/components/NotificationBell';
 
 import {
   DropdownMenu,
@@ -117,6 +118,10 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
         >
           <HelpCircle className="h-4 w-4" />
         </Button>
+
+        <NotificationBell />
+
+
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
