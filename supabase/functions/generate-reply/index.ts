@@ -55,8 +55,9 @@ serve(async (req) => {
     const userName = profile?.full_name || user.email?.split('@')[0] || 'Team';
     const companyName = profile?.company_name || '';
     const emailSignature = settings?.email_signature || '';
+    const sentEmails = sentEmailsRes.data || [];
 
-    const preferredTone = tone || settings?.ai_tone || 'neutral';
+    const preferredTone = tone || settings?.preferred_tone || settings?.ai_tone || 'neutral';
     const replyLanguage = language || settings?.language || 'nl';
 
     // Determine AI personality
@@ -81,6 +82,23 @@ serve(async (req) => {
       });
     }
 
+    // Build sent-email style context (user memory)
+    let writingStyleContext = '';
+    if (sentEmails.length > 0) {
+      const samples = sentEmails
+        .map((e, i) => {
+          const body = (e.body_text || e.snippet || '').replace(/\s+/g, ' ').trim().substring(0, 400);
+          return `Email ${i + 1} (onderwerp: "${e.subject || '-'}"): ${body}`;
+        })
+        .join('\n\n');
+      writingStyleContext = `\n\nJe schrijft namens ${userName}${companyName ? ` van ${companyName}` : ''}. Analyseer de schrijfstijl van onderstaande eerder verstuurde emails en match die toon, woordkeus, lengte en formaliteit exact:\n\n${samples}`;
+    }
+
+    // Preferred tone memory
+    const preferredToneContext = settings?.preferred_tone
+      ? `\n\nVOORKEURSTOON VAN DEZE GEBRUIKER (uit eerdere sessies): ${settings.preferred_tone}. Volg deze tenzij de huidige e-mail een andere toon vereist.`
+      : '';
+
     // Build signature instruction
     const signatureInstruction = emailSignature
       ? `\n\nVOEG DEZE HANDTEKENING TOE aan het einde van elk antwoord:\n${emailSignature}`
@@ -99,7 +117,7 @@ REGELS:
 - Pas de toon aan: "${preferredTone}"
 - Geen generieke antwoorden - elk antwoord moet uniek zijn voor deze specifieke e-mail
 - Geef 3 varianten: Zakelijk, Empathisch, Uitgebreid
-${signatureInstruction}${correctionsContext}
+${signatureInstruction}${writingStyleContext}${preferredToneContext}${correctionsContext}
 
 ANTWOORD: Geef exact dit JSON formaat terug (geen markdown, geen code blocks, alleen raw JSON):
 {"variants":[{"type":"Zakelijk","label":"Zakelijk","content":"<zakelijk antwoord>","icon":"💼"},{"type":"Empathisch","label":"Empathisch","content":"<empathisch antwoord>","icon":"💝"},{"type":"Uitgebreid","label":"Uitgebreid","content":"<uitgebreid antwoord>","icon":"📋"}]}`;
@@ -118,13 +136,12 @@ ${emailContent.substring(0, 3000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'openai/gpt-5',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
+        max_completion_tokens: 2000,
       }),
     });
 
