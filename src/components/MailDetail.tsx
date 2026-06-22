@@ -535,8 +535,14 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                     <SelectTrigger className="w-full">
                       <div className="flex items-center gap-2">
                         <Pencil className="h-3 w-3 text-muted-foreground" />
-                        <Badge variant="outline" className={`text-sm font-medium border-2 ${getCategoryClassName(analysis.category)}`}>
+                        <Badge variant="outline" className={`text-sm font-medium border-2 ${getCategoryClassName(analysis.category)} flex items-center gap-1`}>
                           {analysis.category}
+                          {analysis.fromCorrection && (
+                            <Sparkles
+                              className="h-3 w-3 text-amber-500"
+                              aria-label="Categorie geleerd uit eerdere correcties"
+                            />
+                          )}
                         </Badge>
                       </div>
                     </SelectTrigger>
