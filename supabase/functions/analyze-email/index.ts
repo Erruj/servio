@@ -136,6 +136,16 @@ ${emailContent.substring(0, 3000)}`;
       };
     }
 
+    // Deterministic override: if we have a strong sender-based correction, trust it
+    const senderKey = (email.from_email || '').toLowerCase().trim();
+    const senderHit = senderMap.get(senderKey);
+    let fromCorrection = !!analysis.fromCorrection;
+    if (senderHit) {
+      analysis.category = senderHit.category;
+      fromCorrection = true;
+    }
+    analysis.fromCorrection = fromCorrection;
+
     // Map "Ontevreden" to a database-friendly sentiment label
     let dbSentiment = (analysis.sentiment || 'Neutraal').toLowerCase();
     if (dbSentiment === 'ontevreden') dbSentiment = 'unhappy';
@@ -150,6 +160,7 @@ ${emailContent.substring(0, 3000)}`;
         ai_category: analysis.category,
         ai_urgency: analysis.urgency,
         customer_sentiment: dbSentiment,
+        category_from_correction: fromCorrection,
       })
       .eq('id', emailId)
       .eq('user_id', user.id);
