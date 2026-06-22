@@ -346,6 +346,7 @@ export async function analyzeEmail(mail: MailItem): Promise<AnalysisResult> {
             urgency: ai.urgency || 'Normaal',
             sentiment,
             policyFlags: ai.policyFlags || [],
+            fromCorrection: !!ai.fromCorrection,
           };
         }
         console.warn('AI analysis failed, falling back to heuristics:', error || data?.error);
