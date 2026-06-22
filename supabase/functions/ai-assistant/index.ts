@@ -32,13 +32,32 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Unauthorized');
 
-    // Fetch comprehensive financial data
-    const [transactions, invoices, receipts, categories] = await Promise.all([
+    // Fetch comprehensive financial data + user memory (profile + subscription tier)
+    const [transactions, invoices, receipts, categories, profileRes, settingsRes] = await Promise.all([
       supabase.from('transactions').select('*').eq('user_id', user.id),
       supabase.from('invoices').select('*').eq('user_id', user.id),
       supabase.from('receipts').select('*').eq('user_id', user.id),
       supabase.from('categories').select('*').eq('user_id', user.id),
+      supabase.from('profiles').select('full_name, company_name, vat_number').eq('id', user.id).single(),
+      supabase.from('user_settings').select('subscription_status, subscription_product_id, trial_end_date').eq('user_id', user.id).single(),
     ]);
+
+    const profile = profileRes.data;
+    const settings = settingsRes.data;
+    const companyName = profile?.company_name || profile?.full_name || 'jouw bedrijf';
+    const vatNumber = profile?.vat_number || '';
+
+    // Map Stripe product id to a readable tier
+    const productId = settings?.subscription_product_id || '';
+    const starterId = Deno.env.get('STRIPE_STARTER_PRICE_ID') || '';
+    const proId = Deno.env.get('STRIPE_PRO_PRICE_ID') || '';
+    const businessId = Deno.env.get('STRIPE_BUSINESS_PRICE_ID') || '';
+    let subscriptionTier = 'Free / Trial';
+    if (productId && productId === businessId) subscriptionTier = 'Business';
+    else if (productId && productId === proId) subscriptionTier = 'Pro';
+    else if (productId && productId === starterId) subscriptionTier = 'Starter';
+    else if (settings?.subscription_status === 'active') subscriptionTier = 'Active';
+    else if (settings?.trial_end_date && new Date(settings.trial_end_date) > new Date()) subscriptionTier = 'Trial';
 
     // Calculate comprehensive financial metrics
     const now = new Date();
