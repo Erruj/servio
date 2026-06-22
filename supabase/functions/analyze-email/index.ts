@@ -37,19 +37,33 @@ serve(async (req) => {
 
     if (emailError || !email) throw new Error('Email not found');
 
-    // Fetch the last 10 user category corrections as few-shot training data
+    // Fetch up to 50 most-weighted user category corrections as few-shot training data
     const { data: corrections } = await supabase
       .from('email_category_corrections')
-      .select('email_subject, email_snippet, original_category, corrected_category')
+      .select('email_subject, email_snippet, sender_email, original_category, corrected_category, correction_count')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
+      .order('correction_count', { ascending: false })
+      .order('updated_at', { ascending: false })
+      .limit(50);
+
+    // Sender -> most-weighted corrected category map for deterministic match
+    const senderMap = new Map<string, { category: string; weight: number }>();
+    for (const c of (corrections || []) as any[]) {
+      const sender = (c.sender_email || '').toLowerCase().trim();
+      if (!sender) continue;
+      const existing = senderMap.get(sender);
+      const weight = c.correction_count || 1;
+      if (!existing || weight > existing.weight) {
+        senderMap.set(sender, { category: c.corrected_category, weight });
+      }
+    }
 
     const correctionsText = (corrections && corrections.length > 0)
-      ? '\n\nEERDERE CORRECTIES VAN DEZE GEBRUIKER (gebruik om vergelijkbare emails correct te categoriseren):\n' +
+      ? '\n\nLEER VAN DEZE EERDERE CORRECTIES VAN DEZE GEBRUIKER (hoger gewicht = vaker bevestigd, geef hier extra waarde aan):\n' +
         corrections.map((c: any, i: number) =>
-          `${i + 1}. Onderwerp: "${c.email_subject || '-'}" | Snippet: "${(c.email_snippet || '').substring(0, 120)}" → Gebruiker veranderde "${c.original_category}" naar "${c.corrected_category}"`
-        ).join('\n')
+          `${i + 1}. [gewicht ${c.correction_count || 1}x] afzender "${c.sender_email || '?'}" | onderwerp "${c.email_subject || '-'}" | snippet "${(c.email_snippet || '').substring(0, 100)}" → categorie "${c.corrected_category}" (was "${c.original_category}")`
+        ).join('\n') +
+        '\n\nAls de nieuwe e-mail van dezelfde afzender komt of duidelijk lijkt op een correctie hierboven, volg dan die gecorrigeerde categorie en zet "fromCorrection": true in je antwoord.'
       : '';
 
     const emailContent = email.body_text || email.body_html?.replace(/<[^>]*>/g, '') || email.snippet || '';
@@ -74,7 +88,7 @@ REGELS:
 ${correctionsText}
 
 ANTWOORD in exact dit JSON formaat (geen markdown):
-{"summary":"...","bullets":["...","..."],"category":"<Vraag|Klacht|Retour|Factuur|Technisch|Overig>","urgency":"<Hoog|Normaal|Laag>","sentiment":"<Positief|Neutraal|Negatief|Ontevreden>","policyFlags":[]}`;
+{"summary":"...","bullets":["...","..."],"category":"<Vraag|Klacht|Retour|Factuur|Technisch|Overig>","urgency":"<Hoog|Normaal|Laag>","sentiment":"<Positief|Neutraal|Negatief|Ontevreden>","policyFlags":[],"fromCorrection":false}`;
 
     const userPrompt = `E-mail van: ${senderName} <${email.from_email}>
 Onderwerp: ${email.subject || '(geen onderwerp)'}
@@ -122,6 +136,16 @@ ${emailContent.substring(0, 3000)}`;
       };
     }
 
+    // Deterministic override: if we have a strong sender-based correction, trust it
+    const senderKey = (email.from_email || '').toLowerCase().trim();
+    const senderHit = senderMap.get(senderKey);
+    let fromCorrection = !!analysis.fromCorrection;
+    if (senderHit) {
+      analysis.category = senderHit.category;
+      fromCorrection = true;
+    }
+    analysis.fromCorrection = fromCorrection;
+
     // Map "Ontevreden" to a database-friendly sentiment label
     let dbSentiment = (analysis.sentiment || 'Neutraal').toLowerCase();
     if (dbSentiment === 'ontevreden') dbSentiment = 'unhappy';
@@ -136,6 +160,7 @@ ${emailContent.substring(0, 3000)}`;
         ai_category: analysis.category,
         ai_urgency: analysis.urgency,
         customer_sentiment: dbSentiment,
+        category_from_correction: fromCorrection,
       })
       .eq('id', emailId)
       .eq('user_id', user.id);

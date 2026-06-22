@@ -241,32 +241,41 @@ export type Database = {
       email_category_corrections: {
         Row: {
           corrected_category: string
+          correction_count: number
           created_at: string
           email_id: string
           email_snippet: string | null
           email_subject: string | null
           id: string
           original_category: string
+          sender_email: string | null
+          updated_at: string
           user_id: string
         }
         Insert: {
           corrected_category: string
+          correction_count?: number
           created_at?: string
           email_id: string
           email_snippet?: string | null
           email_subject?: string | null
           id?: string
           original_category: string
+          sender_email?: string | null
+          updated_at?: string
           user_id: string
         }
         Update: {
           corrected_category?: string
+          correction_count?: number
           created_at?: string
           email_id?: string
           email_snippet?: string | null
           email_subject?: string | null
           id?: string
           original_category?: string
+          sender_email?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -343,6 +352,7 @@ export type Database = {
           ai_urgency: string | null
           body_html: string | null
           body_text: string | null
+          category_from_correction: boolean
           cc_emails: string[] | null
           connection_id: string
           created_at: string
@@ -372,6 +382,7 @@ export type Database = {
           ai_urgency?: string | null
           body_html?: string | null
           body_text?: string | null
+          category_from_correction?: boolean
           cc_emails?: string[] | null
           connection_id: string
           created_at?: string
@@ -401,6 +412,7 @@ export type Database = {
           ai_urgency?: string | null
           body_html?: string | null
           body_text?: string | null
+          category_from_correction?: boolean
           cc_emails?: string[] | null
           connection_id?: string
           created_at?: string

@@ -32,6 +32,7 @@ export interface AnalysisResult {
   sentiment: Sentiment;
   suggestedTemplateId?: string;
   policyFlags?: { code: string; message: string }[];
+  fromCorrection?: boolean;
 }
 
 export interface TemplateItem {
