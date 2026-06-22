@@ -182,11 +182,28 @@ ${emailContent.substring(0, 3000)}`;
 
     console.log('generate-reply: Success, returning', variants?.length, 'variants');
 
+    // Persist preferred_tone (normalized) for future calls
+    try {
+      const raw = (preferredTone || '').toString().toLowerCase();
+      let normalized: string | null = null;
+      if (/formal|formeel|business|zakelijk|professional/.test(raw)) normalized = 'formeel';
+      else if (/informal|informeel|casual|friendly|warm|empath/.test(raw)) normalized = 'informeel';
+      else if (raw) normalized = 'neutraal';
+      if (normalized) {
+        await supabase
+          .from('user_settings')
+          .update({ preferred_tone: normalized })
+          .eq('user_id', user.id);
+      }
+    } catch (e) {
+      console.warn('generate-reply: failed to persist preferred_tone', e);
+    }
+
     return new Response(
       JSON.stringify({
         variants,
         provider: 'Lovable AI',
-        model: 'google/gemini-3-flash-preview',
+        model: 'openai/gpt-5',
         success: true
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
