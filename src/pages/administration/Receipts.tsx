@@ -94,14 +94,16 @@ export default function Receipts() {
 
       if (uploadError) throw uploadError;
 
-      // Create receipt record (AI OCR would happen here in production)
-      const { error: insertError } = await supabase
+      // Create receipt record
+      const { data: newReceipt, error: insertError } = await supabase
         .from('receipts')
         .insert({
           user_id: user.id,
           file_path: fileName,
           status: 'uploaded'
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
@@ -111,6 +113,35 @@ export default function Receipts() {
       });
 
       loadReceipts();
+
+      // Fire-and-forget AI extraction
+      (async () => {
+        try {
+          const { data: ext, error: extErr } = await supabase.functions.invoke('extract-document-data', {
+            body: { file_path: fileName, type: 'receipt' },
+          });
+          if (extErr || ext?.error) {
+            console.warn('AI extractie mislukt:', extErr || ext?.error);
+            return;
+          }
+          const d = ext?.data || {};
+          const updates: Record<string, unknown> = { status: 'completed' };
+          if (d.vendor_name) updates.merchant = String(d.vendor_name).substring(0, 200);
+          if (d.total_amount != null && !isNaN(Number(d.total_amount))) updates.amount = Number(d.total_amount);
+          if (d.date && /^\d{4}-\d{2}-\d{2}$/.test(d.date)) updates.receipt_date = d.date;
+          if (d.description) updates.ai_summary = String(d.description).substring(0, 500);
+          if (newReceipt?.id) {
+            await supabase.from('receipts').update(updates).eq('id', newReceipt.id);
+            toast({
+              title: 'AI heeft de gegevens automatisch ingevuld',
+              description: 'Controleer de velden en sla op indien correct.',
+            });
+            loadReceipts();
+          }
+        } catch (e) {
+          console.warn('AI extractie error:', e);
+        }
+      })();
     } catch (error) {
       console.error('Error uploading receipt:', error);
       toast({

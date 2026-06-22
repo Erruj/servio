@@ -181,12 +181,25 @@ export default function Invoices() {
   const analyzeInvoice = async (invoiceId: string, filePath: string) => {
     setAnalyzingId(invoiceId);
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-invoice', {
-        body: { invoiceId, filePath },
+      const { data, error } = await supabase.functions.invoke('extract-document-data', {
+        body: { file_path: filePath, type: 'invoice' },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success('Factuur geanalyseerd');
+
+      const d = data?.data || {};
+      const updates: Record<string, unknown> = { status: 'review' };
+      if (d.vendor_name) updates.supplier = String(d.vendor_name).substring(0, 200);
+      if (d.total_amount != null && !isNaN(Number(d.total_amount))) updates.amount = Number(d.total_amount);
+      if (d.vat_amount != null && !isNaN(Number(d.vat_amount))) updates.vat_amount = Number(d.vat_amount);
+      if (d.date && /^\d{4}-\d{2}-\d{2}$/.test(d.date)) updates.invoice_date = d.date;
+      if (d.due_date && /^\d{4}-\d{2}-\d{2}$/.test(d.due_date)) updates.due_date = d.due_date;
+      if (d.invoice_number) updates.invoice_number = String(d.invoice_number).substring(0, 100);
+      if (d.description) updates.ai_summary = String(d.description).substring(0, 500);
+
+      await supabase.from('invoices').update(updates).eq('id', invoiceId);
+
+      toast.success('AI heeft de gegevens automatisch ingevuld — controleer en sla op');
     } catch (error) {
       console.error('AI analyse error:', error);
       const msg = error instanceof Error ? error.message : 'AI analyse mislukt';
