@@ -159,24 +159,67 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     if (!mail || !analysis) return;
     const original = analysis.category;
     if (original === newCategory) return;
-    setAnalysis(prev => prev ? { ...prev, category: newCategory as any } : prev);
+    setAnalysis(prev => prev ? { ...prev, category: newCategory as any, fromCorrection: true } : prev);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      await supabase.from('email_category_corrections').insert({
-        user_id: user.id,
-        email_id: mail.id,
-        original_category: original,
-        corrected_category: newCategory,
-        email_subject: mail.subject,
-        email_snippet: (mail.snippet || mail.bodyText || '').substring(0, 200),
-      });
+      const senderEmail = (mail.from?.email || '').toLowerCase().trim() || null;
+
+      // Try to find an existing weighted row for sender+corrected_category
+      let existingId: string | null = null;
+      let existingCount = 0;
+      if (senderEmail) {
+        const { data: existing } = await supabase
+          .from('email_category_corrections')
+          .select('id, correction_count')
+          .eq('user_id', user.id)
+          .eq('sender_email', senderEmail)
+          .eq('corrected_category', newCategory)
+          .maybeSingle();
+        if (existing) {
+          existingId = (existing as any).id;
+          existingCount = (existing as any).correction_count || 1;
+        }
+      }
+
+      if (existingId) {
+        await supabase
+          .from('email_category_corrections')
+          .update({
+            correction_count: existingCount + 1,
+            updated_at: new Date().toISOString(),
+            original_category: original,
+            email_subject: mail.subject,
+            email_snippet: (mail.snippet || mail.bodyText || '').substring(0, 200),
+            email_id: mail.id,
+          })
+          .eq('id', existingId);
+      } else {
+        await supabase.from('email_category_corrections').insert({
+          user_id: user.id,
+          email_id: mail.id,
+          sender_email: senderEmail,
+          original_category: original,
+          corrected_category: newCategory,
+          email_subject: mail.subject,
+          email_snippet: (mail.snippet || mail.bodyText || '').substring(0, 200),
+        });
+      }
+
+      // Reflect on the email row so the badge can show the learned indicator
+      await supabase
+        .from('emails')
+        .update({ ai_category: newCategory, category_from_correction: true })
+        .eq('id', mail.id)
+        .eq('user_id', user.id);
+
       toast({ title: '✓ Correctie opgeslagen', description: 'De AI leert van je aanpassing.' });
     } catch (e) {
       console.warn('Failed to log category correction:', e);
     }
   };
+
 
   const analyzeCurrentMail = async () => {
     if (!mail) return;
