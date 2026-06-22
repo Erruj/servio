@@ -88,7 +88,7 @@ REGELS:
 ${correctionsText}
 
 ANTWOORD in exact dit JSON formaat (geen markdown):
-{"summary":"...","bullets":["...","..."],"category":"<Vraag|Klacht|Retour|Factuur|Technisch|Overig>","urgency":"<Hoog|Normaal|Laag>","sentiment":"<Positief|Neutraal|Negatief|Ontevreden>","policyFlags":[]}`;
+{"summary":"...","bullets":["...","..."],"category":"<Vraag|Klacht|Retour|Factuur|Technisch|Overig>","urgency":"<Hoog|Normaal|Laag>","sentiment":"<Positief|Neutraal|Negatief|Ontevreden>","policyFlags":[],"fromCorrection":false}`;
 
     const userPrompt = `E-mail van: ${senderName} <${email.from_email}>
 Onderwerp: ${email.subject || '(geen onderwerp)'}
