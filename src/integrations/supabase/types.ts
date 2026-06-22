@@ -921,6 +921,7 @@ export type Database = {
           id: string
           language: string | null
           monthly_summary: boolean | null
+          preferred_tone: string | null
           quick_actions: Json | null
           sidebar_favorites: string[] | null
           sidebar_order: Json | null
@@ -952,6 +953,7 @@ export type Database = {
           id?: string
           language?: string | null
           monthly_summary?: boolean | null
+          preferred_tone?: string | null
           quick_actions?: Json | null
           sidebar_favorites?: string[] | null
           sidebar_order?: Json | null
@@ -983,6 +985,7 @@ export type Database = {
           id?: string
           language?: string | null
           monthly_summary?: boolean | null
+          preferred_tone?: string | null
           quick_actions?: Json | null
           sidebar_favorites?: string[] | null
           sidebar_order?: Json | null

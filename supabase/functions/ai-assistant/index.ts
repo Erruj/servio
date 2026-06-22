@@ -32,13 +32,32 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Unauthorized');
 
-    // Fetch comprehensive financial data
-    const [transactions, invoices, receipts, categories] = await Promise.all([
+    // Fetch comprehensive financial data + user memory (profile + subscription tier)
+    const [transactions, invoices, receipts, categories, profileRes, settingsRes] = await Promise.all([
       supabase.from('transactions').select('*').eq('user_id', user.id),
       supabase.from('invoices').select('*').eq('user_id', user.id),
       supabase.from('receipts').select('*').eq('user_id', user.id),
       supabase.from('categories').select('*').eq('user_id', user.id),
+      supabase.from('profiles').select('full_name, company_name, vat_number').eq('id', user.id).single(),
+      supabase.from('user_settings').select('subscription_status, subscription_product_id, trial_end_date').eq('user_id', user.id).single(),
     ]);
+
+    const profile = profileRes.data;
+    const settings = settingsRes.data;
+    const companyName = profile?.company_name || profile?.full_name || 'jouw bedrijf';
+    const vatNumber = profile?.vat_number || '';
+
+    // Map Stripe product id to a readable tier
+    const productId = settings?.subscription_product_id || '';
+    const starterId = Deno.env.get('STRIPE_STARTER_PRICE_ID') || '';
+    const proId = Deno.env.get('STRIPE_PRO_PRICE_ID') || '';
+    const businessId = Deno.env.get('STRIPE_BUSINESS_PRICE_ID') || '';
+    let subscriptionTier = 'Free / Trial';
+    if (productId && productId === businessId) subscriptionTier = 'Business';
+    else if (productId && productId === proId) subscriptionTier = 'Pro';
+    else if (productId && productId === starterId) subscriptionTier = 'Starter';
+    else if (settings?.subscription_status === 'active') subscriptionTier = 'Active';
+    else if (settings?.trial_end_date && new Date(settings.trial_end_date) > new Date()) subscriptionTier = 'Trial';
 
     // Calculate comprehensive financial metrics
     const now = new Date();
@@ -122,9 +141,24 @@ serve(async (req) => {
       ? ((monthlyExpenses - prevMonthExpenses) / prevMonthExpenses * 100).toFixed(1) 
       : '0';
 
+    // Last 30 days of transactions (explicit user-memory window)
+    const cutoff30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const last30 = (transactions.data || [])
+      .filter(t => new Date(t.date) >= cutoff30)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 50);
+    const last30Lines = last30.map(t =>
+      `- ${t.date} | ${t.type} | €${parseFloat(t.amount?.toString() || '0').toFixed(2)} | ${t.category || '-'} | ${(t.description || '').substring(0, 80)}`
+    ).join('\n') || '- (geen transacties in de laatste 30 dagen)';
+
     // Build comprehensive context for AI
     const context = `
-Je bent een professionele financieel adviseur voor een Nederlands bedrijf. Antwoord altijd in dezelfde taal als de vraag.
+Je bent een professionele financieel adviseur. Antwoord altijd in dezelfde taal als de vraag.
+
+👤 BEDRIJFSPROFIEL:
+- Bedrijfsnaam: ${companyName}
+- BTW-nummer: ${vatNumber || '(niet ingesteld)'}
+- Abonnement: ${subscriptionTier}
 
 ACTUELE FINANCIËLE DATA:
 
@@ -163,10 +197,14 @@ ${topSuppliers.map(([supplier, amount]) => `- ${supplier}: €${amount.toFixed(2
 📝 BONNETJES:
 - Totaal verwerkt: €${totalReceipts.toFixed(2)}
 
+🕒 LAATSTE 30 DAGEN TRANSACTIES (max 50):
+${last30Lines}
+
 INSTRUCTIES:
+- Spreek de gebruiker aan met de bedrijfsnaam waar passend
 - Geef concrete, actionable adviezen
 - Gebruik specifieke bedragen uit de data
-- Bij vragen over BTW, bereken exacte bedragen
+- Bij vragen over BTW, bereken exacte bedragen op basis van werkelijke transacties
 - Identificeer risico's en kansen
 - Stel vervolgvragen voor als relevant
 - Wees beknopt maar volledig
@@ -202,10 +240,10 @@ Retourneer als gestructureerde tekst.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5',
         messages: [
           { role: 'system', content: systemPrompt },
-          ...(conversationHistory || []).slice(-10), // Keep last 10 messages for context
+          ...(conversationHistory || []).slice(-10),
           { role: 'user', content: context }
         ],
       }),
