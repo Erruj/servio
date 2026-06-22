@@ -30,12 +30,13 @@ serve(async (req) => {
     if (userError || !user) throw new Error('Unauthorized');
     console.log('generate-reply: User authenticated:', user.id);
 
-    // Fetch email, profile, settings, and recent corrections in parallel
-    const [emailRes, profileRes, settingsRes, correctionsRes] = await Promise.all([
+    // Fetch email, profile, settings, recent corrections, and recent sent emails in parallel
+    const [emailRes, profileRes, settingsRes, correctionsRes, sentEmailsRes] = await Promise.all([
       supabase.from('emails').select('*').eq('id', emailId).eq('user_id', user.id).single(),
-      supabase.from('profiles').select('full_name, company_name').eq('id', user.id).single(),
-      supabase.from('user_settings').select('ai_tone, language, ai_personality, ai_custom_personality, email_signature').eq('user_id', user.id).single(),
+      supabase.from('profiles').select('full_name, company_name, email').eq('id', user.id).single(),
+      supabase.from('user_settings').select('ai_tone, language, ai_personality, ai_custom_personality, email_signature, preferred_tone').eq('user_id', user.id).single(),
       supabase.from('ai_corrections').select('original_reply, corrected_reply').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3),
+      supabase.from('emails').select('subject, body_text, snippet').eq('user_id', user.id).contains('labels', ['SENT']).order('received_at', { ascending: false }).limit(10),
     ]);
 
     const email = emailRes.data;
