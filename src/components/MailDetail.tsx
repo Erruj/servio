@@ -164,7 +164,9 @@ export function MailDetail({ mail, className }: MailDetailProps) {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const senderEmail = (mail.from?.email || '').toLowerCase().trim() || null;
+      const fromRaw = (mail.from || '').toString();
+      const emailMatch = fromRaw.match(/<([^>]+)>/);
+      const senderEmail = (emailMatch ? emailMatch[1] : fromRaw).toLowerCase().trim() || null;
 
       // Try to find an existing weighted row for sender+corrected_category
       let existingId: string | null = null;
