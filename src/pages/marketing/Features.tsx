@@ -17,8 +17,8 @@ export default function Features() {
   const security = t('marketing.featuresPage.security', { returnObjects: true }) as { title: string; description: string; points: string[] };
 
   const title = isEn
-    ? 'Features – AI Inbox, Invoice Processing & Financial Dashboard | Servio'
-    : 'Features – AI Inbox, Factuurverwerking & Financieel Dashboard | Servio';
+    ? 'Features | Servio AI Business Assistant'
+    : 'Features | Servio AI Bedrijfsassistent';
   const description = isEn
     ? 'Discover all Servio features: AI inbox that handles 80% of your emails, automatic invoice processing, and a real-time financial dashboard for freelancers & SMBs.'
     : 'Ontdek alle features van Servio: AI-gestuurde inbox die 80% van je mails beantwoordt, automatische factuurverwerking, en realtime financieel dashboard voor ZZP & MKB.';

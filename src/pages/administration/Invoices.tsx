@@ -585,7 +585,7 @@ export default function Invoices() {
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader><DialogTitle>Factuur bekijken</DialogTitle></DialogHeader>
           {previewUrl && (
-            <img src={previewUrl} alt="Factuur" className="w-full max-h-[70vh] object-contain" />
+            <img src={previewUrl} alt="Preview of uploaded invoice" className="w-full max-h-[70vh] object-contain" />
           )}
         </DialogContent>
       </Dialog>

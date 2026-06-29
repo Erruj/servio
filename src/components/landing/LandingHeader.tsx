@@ -36,7 +36,7 @@ export function LandingHeader() {
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           <Link to={prefix || '/'} className="flex items-center group" aria-label="Servio">
-            <img src={servioLogo} alt="Servio logo" className="h-9 md:h-10 w-auto transition-transform duration-300 group-hover:scale-105" />
+            <img src={servioLogo} alt="Servio AI Business Assistant logo" className="h-9 md:h-10 w-auto transition-transform duration-300 group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">

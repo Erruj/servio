@@ -279,7 +279,7 @@ export default function Receipts() {
           <DialogHeader><DialogTitle>Bonnetje bekijken</DialogTitle></DialogHeader>
           {previewUrl && (
             /\.(jpg|jpeg|png|gif|webp)$/i.test(previewUrl)
-              ? <img src={previewUrl} alt="Bonnetje" className="w-full max-h-[70vh] object-contain" />
+              ? <img src={previewUrl} alt="Detailed view of uploaded receipt" className="w-full max-h-[70vh] object-contain" />
               : <iframe src={previewUrl} className="w-full h-[70vh]" title="Bonnetje preview" />
           )}
         </DialogContent>
