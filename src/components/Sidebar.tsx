@@ -137,7 +137,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Logo */}
       <div className="px-6 pt-6 pb-5">
         <div className="flex items-center space-x-3">
-          <img src={servioLogo} alt="Servio logo" className="w-9 h-9" width={36} height={36} />
+          <img src={servioLogo} alt="Servio AI Business Assistant logo" className="w-9 h-9" width={36} height={36} />
           <div>
             <h1 className="text-[17px] font-bold text-foreground tracking-tight">Servio</h1>
           </div>

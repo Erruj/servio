@@ -12,7 +12,7 @@ export function LandingFooter() {
         <div className="grid md:grid-cols-5 gap-12 mb-12">
           <div className="md:col-span-2">
             <div className="flex items-center mb-4" aria-label="Servio logo">
-              <img src={servioLogo} alt="Servio logo" className="h-10 w-auto" loading="lazy" />
+              <img src={servioLogo} alt="Servio AI Business Assistant logo" className="h-10 w-auto" loading="lazy" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               {t('marketing.footer.tagline')}

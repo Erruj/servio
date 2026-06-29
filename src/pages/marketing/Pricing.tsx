@@ -148,8 +148,8 @@ export default function MarketingPricing() {
   };
 
   const title = isEn
-    ? 'Pricing – From €9.99 per month | Servio AI Business Assistant'
-    : 'Prijzen – Vanaf €9,99 per maand | Servio AI Bedrijfsassistent';
+    ? 'Pricing | Servio AI Business Assistant'
+    : 'Prijzen | Servio AI Bedrijfsassistent';
   const description = isEn
     ? 'Transparent pricing for every entrepreneur. From €9.99/month. 14-day free trial, no credit card required.'
     : 'Transparante prijzen voor elke ondernemer. Vanaf €9,99/maand. 14 dagen gratis proberen, geen creditcard nodig.';

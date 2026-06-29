@@ -301,7 +301,7 @@ export default function Documents() {
           <DialogHeader><DialogTitle>{selectedDoc?.title || 'Document'}</DialogTitle></DialogHeader>
           {previewUrl && (
             /\.(jpg|jpeg|png|gif|webp)$/i.test(selectedDoc?.file_path || '')
-              ? <img src={previewUrl} alt="Document" className="w-full max-h-[70vh] object-contain" />
+              ? <img src={previewUrl} alt="Preview of uploaded document" className="w-full max-h-[70vh] object-contain" />
               : <iframe src={previewUrl} className="w-full h-[70vh]" title="Document preview" />
           )}
         </DialogContent>
