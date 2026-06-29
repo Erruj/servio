@@ -124,7 +124,7 @@ ${emailContent.substring(0, 3000)}`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: 1000,
+        max_tokens: 1000,
       }),
     });
 
