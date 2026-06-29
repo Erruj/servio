@@ -217,7 +217,7 @@ ${emailContent.substring(0, 3000)}`;
 
     console.log('[generate-reply] success, variants:', variants?.length);
     return new Response(
-      JSON.stringify({ variants, provider: 'Lovable AI', model: 'openai/gpt-4o', success: true }),
+      JSON.stringify({ variants, provider: 'Lovable AI', model: 'google/gemini-2.5-flash', success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
