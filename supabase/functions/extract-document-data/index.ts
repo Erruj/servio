@@ -52,20 +52,39 @@ serve(async (req) => {
     if (userError || !user) throw new Error('Unauthorized');
 
     const body = await req.json();
-    let { file_url, file_path, type, bucket } = body || {};
+    const { file_path, type } = body || {};
     const docType: 'receipt' | 'invoice' = type === 'invoice' ? 'invoice' : 'receipt';
-    const bucketName = bucket || 'financial-documents';
+    // Bucket is fixed server-side; never trust client input
+    const bucketName = 'financial-documents';
 
-    // If file_path given, mint a signed URL server-side
-    if (!file_url && file_path) {
-      const { data: signed, error: signErr } = await supabase
-        .storage.from(bucketName).createSignedUrl(file_path, 600);
-      if (signErr || !signed?.signedUrl) {
-        throw new Error('Kon signed URL niet aanmaken');
-      }
-      file_url = signed.signedUrl;
+    if (!file_path || typeof file_path !== 'string') {
+      throw new Error('file_path is verplicht');
     }
-    if (!file_url) throw new Error('file_url of file_path is verplicht');
+
+    // Verify the caller owns this file by looking it up in the matching table.
+    // The trusted path comes from the DB row, not from the client.
+    const ownerTable = docType === 'invoice' ? 'invoices' : 'receipts';
+    const { data: ownerRow, error: ownerErr } = await supabase
+      .from(ownerTable)
+      .select('id, user_id, file_path')
+      .eq('user_id', user.id)
+      .eq('file_path', file_path)
+      .maybeSingle();
+    if (ownerErr || !ownerRow) {
+      console.warn('extract-document-data: ownership check failed', { ownerErr, userId: user.id, file_path });
+      return new Response(JSON.stringify({ error: 'Geen toegang tot dit bestand' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const trustedPath: string = ownerRow.file_path;
+
+    // Mint a short-lived signed URL for the trusted, owned path
+    const { data: signed, error: signErr } = await supabase
+      .storage.from(bucketName).createSignedUrl(trustedPath, 600);
+    if (signErr || !signed?.signedUrl) {
+      throw new Error('Kon signed URL niet aanmaken');
+    }
+    const file_url = signed.signedUrl;
+
 
     const { base64, mime: fetchedMime } = await fetchAsBase64(file_url);
     const mime = detectMime(file_path || file_url, fetchedMime);
