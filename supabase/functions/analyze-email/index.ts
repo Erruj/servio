@@ -111,7 +111,7 @@ Onderwerp: ${email.subject || '(geen onderwerp)'}
 Inhoud:
 ${emailContent.substring(0, 3000)}`;
 
-    console.log('[analyze-email] calling AI Gateway (gpt-4o)');
+    console.log('[analyze-email] calling AI Gateway (gemini-2.5-flash)');
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -119,7 +119,7 @@ ${emailContent.substring(0, 3000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-4o',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
