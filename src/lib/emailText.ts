@@ -87,17 +87,33 @@ export function stripToPlainText(input: string): string {
   return s;
 }
 
-/** Build a clean preview, max N chars, preferring plain-text over HTML. */
+/** Build a clean preview, max N chars. Always strips HTML/CSS aggressively. */
 export function buildPreview(opts: { bodyText?: string | null; bodyHtml?: string | null; snippet?: string | null }, maxLen = 120): string {
-  const sources = [opts.bodyText, opts.bodyHtml, opts.snippet].filter(Boolean) as string[];
+  const looksLikeJunk = (s: string): boolean => {
+    if (!s || s.length < 4) return true;
+    if (/^[\s{}@.#:>;,*+\-_/\\()=\[\]"'`%]+$/.test(s)) return true;
+    if (/\{[^}]*:[^}]*\}/.test(s)) return true;
+    if (/@(font-face|media|import|charset|keyframes|supports)\b/i.test(s)) return true;
+    // Mostly CSS-like tokens vs words
+    const words = s.split(/\s+/).filter(w => /^[a-zA-ZÀ-ÿ]{2,}$/.test(w)).length;
+    if (words < 2 && s.length > 20) return true;
+    return false;
+  };
+
+  const sources = [opts.bodyText, opts.bodyHtml, opts.snippet];
   for (const src of sources) {
+    if (!src) continue;
     const cleaned = stripToPlainText(src);
-    // Heuristic: if cleaned still looks like CSS/HTML, try next source
-    if (cleaned && !/^[\s{}@.#:>;,*-]+$/.test(cleaned) && cleaned.length > 4) {
+    if (cleaned && !looksLikeJunk(cleaned)) {
       return cleaned.length > maxLen ? cleaned.slice(0, maxLen).trimEnd() + '…' : cleaned;
     }
   }
-  // Final fallback: aggressively clean snippet/raw
-  const fallback = stripToPlainText(opts.snippet || opts.bodyText || opts.bodyHtml || '');
-  return fallback.length > maxLen ? fallback.slice(0, maxLen).trimEnd() + '…' : fallback;
+  // Last-resort: combine + scrub residual CSS-ish tokens
+  const fallback = stripToPlainText([opts.bodyText, opts.bodyHtml, opts.snippet].filter(Boolean).join(' '));
+  const scrubbed = fallback
+    .replace(/\{[^}]*\}/g, ' ')
+    .replace(/[a-z-]{2,30}\s*:\s*[^;]{1,80};/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return scrubbed.length > maxLen ? scrubbed.slice(0, maxLen).trimEnd() + '…' : scrubbed;
 }
