@@ -72,6 +72,13 @@ export function stripToPlainText(input: string): string {
   // Remove stray CSS declarations on their own line: "background-color: #F0F0F0;"
   s = s.replace(/(^|\n|\s)[a-z-]{2,40}\s*:\s*[^;\n{}]{1,200};/gi, ' ');
 
+  // Remove any remaining brace blocks (orphan CSS that survived above)
+  s = s.replace(/\{[^{}]*\}/g, ' ');
+
+  // Remove standalone CSS selectors left behind (e.g. ".foo, #bar a:hover")
+  s = s.replace(/(^|\s)[.#][a-zA-Z][\w-]*(\s*[,>+~]\s*[.#]?[a-zA-Z][\w-]*)*\s*(?=\s|$)/g, ' ');
+
+
   // Remove MIME headers that sometimes leak
   s = s.replace(/^(content-type|content-transfer-encoding|mime-version|boundary):[^\n]*$/gim, ' ');
 
