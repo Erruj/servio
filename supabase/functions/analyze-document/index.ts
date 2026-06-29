@@ -52,30 +52,28 @@ Deno.serve(async (req: Request) => {
 
     // Extract text based on file type
     let extractedText = '';
-    const ext = (fileName || filePath).toLowerCase();
+    const ext = (trustedName || trustedPath).toLowerCase();
     
     if (ext.endsWith('.pdf')) {
-      // For PDF: convert to base64 and use Gemini vision
       const bytes = new Uint8Array(await fileData.arrayBuffer());
       const base64 = btoa(String.fromCharCode(...bytes));
-      extractedText = await extractWithGeminiVision(base64, 'application/pdf', fileName);
+      extractedText = await extractWithGeminiVision(base64, 'application/pdf', trustedName);
     } else if (ext.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
-      // For images: use Gemini vision for OCR
       const bytes = new Uint8Array(await fileData.arrayBuffer());
       const base64 = btoa(String.fromCharCode(...bytes));
       const mimeType = ext.endsWith('.png') ? 'image/png' : ext.endsWith('.gif') ? 'image/gif' : 'image/jpeg';
-      extractedText = await extractWithGeminiVision(base64, mimeType, fileName);
+      extractedText = await extractWithGeminiVision(base64, mimeType, trustedName);
     } else {
-      // For text-based files, read as text
       extractedText = await fileData.text();
     }
 
     if (!extractedText || extractedText.trim().length === 0) {
-      extractedText = `Document: ${fileName || 'Onbekend'}. Geen tekst geëxtraheerd.`;
+      extractedText = `Document: ${trustedName || 'Onbekend'}. Geen tekst geëxtraheerd.`;
     }
 
     // Analyze with Gemini
-    const analysis = await analyzeWithGemini(extractedText, fileName);
+    const analysis = await analyzeWithGemini(extractedText, trustedName);
+
 
     // Update document in database
     await supabase.from('documents').update({
