@@ -17,10 +17,22 @@ interface Notif {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  // AuthZ: require cron secret. This is an admin/batch endpoint that reads
+  // and writes data across all users using the service role.
+  const CRON_SECRET = Deno.env.get("CRON_SECRET");
+  const cronHeader = req.headers.get("x-cron-secret");
+  if (!CRON_SECRET || cronHeader !== CRON_SECRET) {
+    return new Response(JSON.stringify({ error: "Niet geautoriseerd" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
+
 
   try {
     const { data: profiles, error: pErr } = await supabase.from("profiles").select("id");

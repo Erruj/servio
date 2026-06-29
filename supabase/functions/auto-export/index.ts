@@ -58,7 +58,31 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const CRON_SECRET = Deno.env.get('CRON_SECRET');
+    const cronHeader = req.headers.get('x-cron-secret');
+    const authHeader = req.headers.get('Authorization');
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+
+    // AuthZ: either a valid cron secret (server-to-server) OR an authenticated user
+    // (who can only export their own data)
+    let callerUserId: string | null = null;
+    const isCron = !!CRON_SECRET && cronHeader === CRON_SECRET;
+
+    if (!isCron) {
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Niet geautoriseerd' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const anon = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!);
+      const { data: { user }, error: uErr } = await anon.auth.getUser(authHeader.replace('Bearer ', ''));
+      if (uErr || !user) {
+        return new Response(JSON.stringify({ error: 'Ongeldig token' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      callerUserId = user.id;
+    }
 
     // Bepaal vorige maand
     const now = new Date();
@@ -72,17 +96,23 @@ Deno.serve(async (req: Request) => {
       label,
     };
 
-    // Allow optional userId for manual trigger
+    // Determine target users
     let targetUsers: string[] = [];
-    if (req.method === 'POST') {
-      const body = await req.json().catch(() => ({}));
-      if (body.userId) targetUsers = [body.userId];
+    if (callerUserId) {
+      // Authenticated user can only export their own data — ignore any body.userId
+      targetUsers = [callerUserId];
+    } else {
+      // Cron path: optional body.userId to target one user, else all opted-in users
+      if (req.method === 'POST') {
+        const body = await req.json().catch(() => ({}));
+        if (body?.userId && typeof body.userId === 'string') targetUsers = [body.userId];
+      }
+      if (targetUsers.length === 0) {
+        const { data } = await admin.from('user_settings').select('user_id').eq('auto_export_enabled', true);
+        targetUsers = (data || []).map((r: any) => r.user_id);
+      }
     }
 
-    if (targetUsers.length === 0) {
-      const { data } = await admin.from('user_settings').select('user_id').eq('auto_export_enabled', true);
-      targetUsers = (data || []).map((r: any) => r.user_id);
-    }
 
     const results: Array<{ userId: string; ok: boolean; path?: string; error?: string }> = [];
     for (const uid of targetUsers) {
