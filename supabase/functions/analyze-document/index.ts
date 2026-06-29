@@ -21,17 +21,34 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace('Bearer ', ''));
     if (authError || !user) return new Response(JSON.stringify({ error: 'Ongeldig token' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-    const { documentId, filePath, fileName } = await req.json();
-    if (!documentId || !filePath) {
-      return new Response(JSON.stringify({ error: 'documentId en filePath zijn verplicht' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const { documentId, fileName } = await req.json();
+    if (!documentId) {
+      return new Response(JSON.stringify({ error: 'documentId is verplicht' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Download the file from storage
-    const { data: fileData, error: downloadError } = await supabase.storage.from('financial-documents').download(filePath);
+    // Look up the document and verify ownership; use the trusted file_path from DB,
+    // never a client-supplied path.
+    const { data: doc, error: docErr } = await supabase
+      .from('documents')
+      .select('id, user_id, file_path, file_name')
+      .eq('id', documentId)
+      .maybeSingle();
+    if (docErr || !doc) {
+      return new Response(JSON.stringify({ error: 'Document niet gevonden' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (doc.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Geen toegang tot dit document' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const trustedPath: string = doc.file_path;
+    const trustedName: string = fileName || doc.file_name || 'document';
+
+    // Download the file from storage using the trusted path
+    const { data: fileData, error: downloadError } = await supabase.storage.from('financial-documents').download(trustedPath);
     if (downloadError || !fileData) {
       await supabase.from('documents').update({ status: 'analysis_failed' }).eq('id', documentId);
       return new Response(JSON.stringify({ error: 'Bestand kon niet worden gedownload' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
+
 
     // Extract text based on file type
     let extractedText = '';
