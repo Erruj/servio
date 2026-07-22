@@ -9,21 +9,20 @@ const SUPABASE_URL = "https://avtzjxknxnajzutcoayl.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dHpqeGtueG5hanp1dGNvYXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3NDcwOTEsImV4cCI6MjA3MjMyMzA5MX0.-B2tDxwc494ObOOUCMG0cIzLtQOLMT48u04IJKeOwsw";
 
-async function callOAuth(
-  path: "authorizations" | "consent",
+async function callAuthorize(
   method: "GET" | "POST",
   accessToken: string,
+  query: Record<string, string>,
   body?: Record<string, unknown>,
 ) {
-  const url = `${SUPABASE_URL}/auth/v1/oauth/${path}${
-    method === "GET" && body ? `?${new URLSearchParams(body as Record<string, string>).toString()}` : ""
-  }`;
+  const url = `${SUPABASE_URL}/auth/v1/oauth/authorize?${new URLSearchParams(query).toString()}`;
   const res = await fetch(url, {
     method,
     headers: {
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: method === "POST" && body ? JSON.stringify(body) : undefined,
   });
@@ -35,8 +34,8 @@ async function callOAuth(
     data = { raw: text };
   }
   if (!res.ok) {
-    console.error(`[OAuthConsent] ${method} /oauth/${path} failed`, res.status, data);
-    const msg = data?.error_description || data?.message || data?.error || `HTTP ${res.status}`;
+    console.error(`[OAuthConsent] ${method} /auth/v1/oauth/authorize failed`, res.status, data);
+    const msg = data?.error_description || data?.msg || data?.message || data?.error || `HTTP ${res.status}`;
     throw new Error(msg);
   }
   return data;
