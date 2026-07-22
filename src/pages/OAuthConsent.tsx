@@ -97,7 +97,8 @@ export default function OAuthConsent() {
       const data = await callAuthorize(
         "POST",
         sess.session.access_token,
-        { authorization_id: authorizationId },
+        authorizationId,
+
         { action: approve ? "approve" : "deny" },
       );
       const target = data?.redirect_url ?? data?.redirect_to;
