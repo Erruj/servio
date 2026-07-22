@@ -41,6 +41,7 @@ import TimeTracking from "./pages/administration/TimeTracking";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 import { PageTransition } from "./components/PageTransition";
+import { AppShell } from "./components/AppShell";
 
 // Marketing website pages
 import MarketingHome from "./pages/marketing/Home";
@@ -169,72 +170,93 @@ function AppRoutes() {
       {/* Administration Routes */}
       <Route path="/administration/overview" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Financieel Overzicht">
-            <FinancialOverview />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Financieel Overzicht">
+              <FinancialOverview />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/ai-assistant" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="AI Boekhoudassistent">
-            <AIAssistant />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="AI Boekhoudassistent">
+              <AIAssistant />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/invoices" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Facturen">
-            <Invoices />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Facturen">
+              <Invoices />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/receipts" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Bonnetjes">
-            <Receipts />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Bonnetjes">
+              <Receipts />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/documents" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Documenten">
-            <Documents />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Documenten">
+              <Documents />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/exports" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Exports">
-            <Exports />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Exports">
+              <Exports />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/audit-log" element={
         <ProtectedRoute requiredRoles={['owner', 'admin']}>
-          <AuditLog />
+          <AppShell>
+            <AuditLog />
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/customers" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Klanten">
-            <Customers />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Klanten">
+              <Customers />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/quotes" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Offertes">
-            <Quotes />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Offertes">
+              <Quotes />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
       <Route path="/administration/time-tracking" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance']}>
-          <SubscriptionGate feature="Urenregistratie">
-            <TimeTracking />
-          </SubscriptionGate>
+          <AppShell>
+            <SubscriptionGate feature="Urenregistratie">
+              <TimeTracking />
+            </SubscriptionGate>
+          </AppShell>
         </ProtectedRoute>
       } />
+      
       
       {/* Catch-all for 404 */}
       <Route path="*" element={<NotFound />} />
