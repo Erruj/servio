@@ -65,7 +65,7 @@ export default function OAuthConsent() {
           window.location.href = "/login?next=" + encodeURIComponent(next);
           return;
         }
-        const data = await callAuthorize("GET", sess.session.access_token, authorizationId);
+        const data = await callAuthorization("GET", sess.session.access_token, authorizationId);
 
         if (!active) return;
         const immediate = data?.redirect_url ?? data?.redirect_to;
@@ -90,7 +90,7 @@ export default function OAuthConsent() {
     try {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) throw new Error("Not signed in");
-      const data = await callAuthorize(
+      const data = await callAuthorization(
         "POST",
         sess.session.access_token,
         authorizationId,
