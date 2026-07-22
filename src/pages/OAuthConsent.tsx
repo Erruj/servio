@@ -9,16 +9,14 @@ const SUPABASE_URL = "https://avtzjxknxnajzutcoayl.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dHpqeGtueG5hanp1dGNvYXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3NDcwOTEsImV4cCI6MjA3MjMyMzA5MX0.-B2tDxwc494ObOOUCMG0cIzLtQOLMT48u04IJKeOwsw";
 
-async function callAuthorize(
+async function callAuthorization(
   method: "GET" | "POST",
   accessToken: string,
   authorizationId: string,
   body?: Record<string, unknown>,
 ) {
-  const url =
-    method === "GET"
-      ? `${SUPABASE_URL}/auth/v1/oauth/authorize?authorization_id=${encodeURIComponent(authorizationId)}`
-      : `${SUPABASE_URL}/auth/v1/oauth/authorize`;
+  const base = `${SUPABASE_URL}/auth/v1/oauth/authorizations/${encodeURIComponent(authorizationId)}`;
+  const url = method === "POST" ? `${base}/consent` : base;
   const res = await fetch(url, {
     method,
     headers: {
@@ -27,10 +25,7 @@ async function callAuthorize(
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body:
-      method === "POST"
-        ? JSON.stringify({ authorization_id: authorizationId, ...(body ?? {}) })
-        : undefined,
+    body: method === "POST" && body ? JSON.stringify(body) : undefined,
   });
   const text = await res.text();
   let data: any = null;
@@ -40,12 +35,13 @@ async function callAuthorize(
     data = { raw: text };
   }
   if (!res.ok) {
-    console.error(`[OAuthConsent] ${method} /auth/v1/oauth/authorize failed`, res.status, data);
+    console.error(`[OAuthConsent] ${method} ${url} failed`, res.status, data);
     const msg = data?.error_description || data?.msg || data?.message || data?.error || `HTTP ${res.status}`;
     throw new Error(msg);
   }
   return data;
 }
+
 
 
 export default function OAuthConsent() {
@@ -69,7 +65,7 @@ export default function OAuthConsent() {
           window.location.href = "/login?next=" + encodeURIComponent(next);
           return;
         }
-        const data = await callAuthorize("GET", sess.session.access_token, authorizationId);
+        const data = await callAuthorization("GET", sess.session.access_token, authorizationId);
 
         if (!active) return;
         const immediate = data?.redirect_url ?? data?.redirect_to;
@@ -94,7 +90,7 @@ export default function OAuthConsent() {
     try {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) throw new Error("Not signed in");
-      const data = await callAuthorize(
+      const data = await callAuthorization(
         "POST",
         sess.session.access_token,
         authorizationId,
