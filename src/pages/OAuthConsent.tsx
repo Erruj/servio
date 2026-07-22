@@ -5,15 +5,41 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldCheck } from "lucide-react";
 
-// Minimal typed wrapper around the beta supabase.auth.oauth namespace.
-type OauthNS = {
-  getAuthorizationDetails: (id: string) => Promise<{ data: any; error: { message: string } | null }>;
-  approveAuthorization: (id: string) => Promise<{ data: any; error: { message: string } | null }>;
-  denyAuthorization: (id: string) => Promise<{ data: any; error: { message: string } | null }>;
-};
-function oauthApi(): OauthNS | null {
-  const anyAuth = (supabase.auth as unknown) as { oauth?: OauthNS };
-  return anyAuth.oauth ?? null;
+const SUPABASE_URL = "https://avtzjxknxnajzutcoayl.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dHpqeGtueG5hanp1dGNvYXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3NDcwOTEsImV4cCI6MjA3MjMyMzA5MX0.-B2tDxwc494ObOOUCMG0cIzLtQOLMT48u04IJKeOwsw";
+
+async function callOAuth(
+  path: "authorizations" | "consent",
+  method: "GET" | "POST",
+  accessToken: string,
+  body?: Record<string, unknown>,
+) {
+  const url = `${SUPABASE_URL}/auth/v1/oauth/${path}${
+    method === "GET" && body ? `?${new URLSearchParams(body as Record<string, string>).toString()}` : ""
+  }`;
+  const res = await fetch(url, {
+    method,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: method === "POST" && body ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = { raw: text };
+  }
+  if (!res.ok) {
+    console.error(`[OAuthConsent] ${method} /oauth/${path} failed`, res.status, data);
+    const msg = data?.error_description || data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
 }
 
 export default function OAuthConsent() {
@@ -26,28 +52,31 @@ export default function OAuthConsent() {
   useEffect(() => {
     let active = true;
     (async () => {
-      if (!authorizationId) return setError("Missing authorization_id");
-      const oauth = oauthApi();
-      if (!oauth) {
-        return setError(
-          "OAuth authorization server is not enabled on this Supabase project. Ask an admin to enable Authentication → OAuth Server."
-        );
+      try {
+        if (!authorizationId) {
+          setError("Missing authorization_id");
+          return;
+        }
+        const { data: sess } = await supabase.auth.getSession();
+        if (!sess.session) {
+          const next = window.location.pathname + window.location.search;
+          window.location.href = "/login?next=" + encodeURIComponent(next);
+          return;
+        }
+        const data = await callOAuth("authorizations", "GET", sess.session.access_token, {
+          authorization_id: authorizationId,
+        });
+        if (!active) return;
+        const immediate = data?.redirect_url ?? data?.redirect_to;
+        if (immediate && !data?.client) {
+          window.location.href = immediate;
+          return;
+        }
+        setDetails(data);
+      } catch (e: any) {
+        console.error("[OAuthConsent] load error", e);
+        if (active) setError(e?.message || "Failed to load authorization request");
       }
-      const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) {
-        const next = window.location.pathname + window.location.search;
-        window.location.href = "/login?next=" + encodeURIComponent(next);
-        return;
-      }
-      const { data, error } = await oauth.getAuthorizationDetails(authorizationId);
-      if (!active) return;
-      if (error) return setError(error.message);
-      const immediate = data?.redirect_url ?? data?.redirect_to;
-      if (immediate && !data?.client) {
-        window.location.href = immediate;
-        return;
-      }
-      setDetails(data);
     })();
     return () => {
       active = false;
@@ -55,22 +84,23 @@ export default function OAuthConsent() {
   }, [authorizationId]);
 
   async function decide(approve: boolean) {
-    const oauth = oauthApi();
-    if (!oauth) return;
     setBusy(true);
-    const { data, error } = approve
-      ? await oauth.approveAuthorization(authorizationId)
-      : await oauth.denyAuthorization(authorizationId);
-    if (error) {
+    setError(null);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) throw new Error("Not signed in");
+      const data = await callOAuth("consent", "POST", sess.session.access_token, {
+        authorization_id: authorizationId,
+        action: approve ? "approve" : "deny",
+      });
+      const target = data?.redirect_url ?? data?.redirect_to;
+      if (!target) throw new Error("No redirect returned by the authorization server.");
+      window.location.href = target;
+    } catch (e: any) {
+      console.error("[OAuthConsent] decide error", e);
+      setError(e?.message || "Failed to submit decision");
       setBusy(false);
-      return setError(error.message);
     }
-    const target = data?.redirect_url ?? data?.redirect_to;
-    if (!target) {
-      setBusy(false);
-      return setError("No redirect returned by the authorization server.");
-    }
-    window.location.href = target;
   }
 
   if (error)
@@ -80,7 +110,10 @@ export default function OAuthConsent() {
           <CardHeader>
             <CardTitle>Could not load this authorization request</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{error}</CardContent>
+          <CardContent className="text-sm text-muted-foreground space-y-3">
+            <p>{error}</p>
+            <p className="text-xs">Check the browser console for details.</p>
+          </CardContent>
         </Card>
       </main>
     );
@@ -92,7 +125,9 @@ export default function OAuthConsent() {
       </main>
     );
 
-  const clientName = details.client?.name ?? "an app";
+  const clientName = details.client?.name ?? details.client?.client_name ?? "an app";
+  const scopes: string[] = details.scopes ?? details.scope?.split?.(" ") ?? [];
+
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-background">
       <Card className="max-w-md w-full">
@@ -106,6 +141,13 @@ export default function OAuthConsent() {
           <p className="text-sm text-muted-foreground">
             {clientName} will be able to use Servio tools as you. It will only see and act on your own data.
           </p>
+          {scopes.length > 0 && (
+            <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-1">
+              {scopes.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+          )}
           <div className="flex gap-2 justify-end">
             <Button variant="outline" disabled={busy} onClick={() => decide(false)}>
               Deny
