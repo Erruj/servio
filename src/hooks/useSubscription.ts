@@ -59,7 +59,10 @@ export const useSubscription = () => {
 
   const checkSubscription = async () => {
     try {
-      setIsLoading(true);
+      // Only flip to loading on the initial fetch. Background refreshes (every 60s)
+      // must not toggle isLoading, otherwise gated pages briefly unmount their
+      // paywall and flash the underlying paid content.
+      setIsLoading((prev) => (subscriptionStatus === null ? true : prev));
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (error) {
