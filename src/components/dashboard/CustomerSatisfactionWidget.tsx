@@ -55,6 +55,8 @@ export const CustomerSatisfactionWidget = () => {
 
   const score = total > 0 ? Math.round(((counts.positive - counts.negative) / total) * 100) : 0;
 
+  const hasData = total > 0;
+
   return (
     <Card className="shadow-card">
       <CardHeader className="pb-3">
@@ -62,18 +64,28 @@ export const CustomerSatisfactionWidget = () => {
           <span className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-primary" /> Klanttevredenheid
           </span>
-          <Badge variant={score >= 30 ? 'default' : score >= 0 ? 'secondary' : 'destructive'}>
-            Score: {score > 0 ? '+' : ''}{score}
-          </Badge>
+          {hasData && (
+            <Badge variant={score >= 30 ? 'default' : score >= 0 ? 'secondary' : 'destructive'}>
+              Score: {score > 0 ? '+' : ''}{score}
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
           <div className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-        ) : total === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">
-            Nog geen sentiment data. Laat de AI je inkomende emails analyseren om inzicht te krijgen.
-          </p>
+        ) : !hasData ? (
+          <div className="text-center py-8 space-y-3">
+            <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Heart className="h-6 w-6 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">Nog geen sentiment data</p>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                Zodra de AI je inkomende emails analyseert zie je hier het sentiment van de laatste 30 dagen.
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
             <ResponsiveContainer width="100%" height={180}>

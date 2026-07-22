@@ -78,7 +78,10 @@ export function useFeatureAccess(): FeatureAccess {
   } = useSubscription();
 
   const tier = useMemo<SubscriptionTier>(() => {
-    if (isLoading) return 'none';
+    // While subscription is loading, optimistically assume trial-level access so
+    // the sidebar doesn't flicker locked items into an unlocked state once data
+    // arrives. Actual gating still happens once loading completes.
+    if (isLoading) return 'trial';
 
     // Active trial → Pro features
     if (isOnTrial) return 'trial';

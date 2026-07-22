@@ -9,17 +9,18 @@ interface ProtectedRouteProps {
   requireAuth?: boolean;
 }
 
-export function ProtectedRoute({ 
-  children, 
+export function ProtectedRoute({
+  children,
   requiredRoles,
-  requireAuth = true 
+  requireAuth = true,
 }: ProtectedRouteProps) {
-  const { user, userRole, isLoading } = useAuth();
-  const { hasAnyRole } = useRoleAccess();
+  const { user, isLoading } = useAuth();
+  const { hasAnyRole, roleLoading } = useRoleAccess();
 
+  // Only show a full-screen spinner for the initial auth check.
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -29,16 +30,9 @@ export function ProtectedRoute({
     return <Navigate to="/login" replace />;
   }
 
-  // Wait for role to load before checking role-based access
-  if (requiredRoles && user && !userRole) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (requiredRoles && !hasAnyRole(requiredRoles)) {
+  // While role is loading, useRoleAccess.hasAnyRole returns true, so we render
+  // the shell immediately instead of blanking the screen with a spinner.
+  if (requiredRoles && !roleLoading && !hasAnyRole(requiredRoles)) {
     return <Navigate to="/dashboard" replace />;
   }
 

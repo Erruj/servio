@@ -86,23 +86,31 @@ const rolePermissionsMap: Record<UserRole, RolePermissions> = {
 };
 
 export function useRoleAccess() {
-  const { userRole } = useAuth();
+  const { user, userRole } = useAuth();
+
+  // While the role is being fetched for an authenticated user, assume owner-level
+  // permissions so the sidebar renders its full navigation immediately instead of
+  // flickering from a limited set to the full set. Server-side RLS still gates data.
+  const roleLoading = !!user && !userRole;
 
   const permissions = useMemo(() => {
-    if (!userRole) {
-      return rolePermissionsMap.viewer;
-    }
+    if (roleLoading) return rolePermissionsMap.owner;
+    if (!userRole) return rolePermissionsMap.viewer;
     return rolePermissionsMap[userRole as UserRole] || rolePermissionsMap.viewer;
-  }, [userRole]);
+  }, [userRole, roleLoading]);
 
   const hasRole = (role: UserRole) => userRole === role;
 
-  const hasAnyRole = (roles: UserRole[]) => roles.includes(userRole as UserRole);
+  const hasAnyRole = (roles: UserRole[]) => {
+    if (roleLoading) return true; // don't hard-block routes while role is still loading
+    return roles.includes(userRole as UserRole);
+  };
 
   return {
     permissions,
     hasRole,
     hasAnyRole,
     currentRole: userRole as UserRole,
+    roleLoading,
   };
 }
