@@ -88,10 +88,12 @@ export default function OAuthConsent() {
     try {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) throw new Error("Not signed in");
-      const data = await callOAuth("consent", "POST", sess.session.access_token, {
-        authorization_id: authorizationId,
-        action: approve ? "approve" : "deny",
-      });
+      const data = await callAuthorize(
+        "POST",
+        sess.session.access_token,
+        { authorization_id: authorizationId },
+        { action: approve ? "approve" : "deny" },
+      );
       const target = data?.redirect_url ?? data?.redirect_to;
       if (!target) throw new Error("No redirect returned by the authorization server.");
       window.location.href = target;
