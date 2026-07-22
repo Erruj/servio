@@ -71,7 +71,15 @@ export default function Auth() {
     [signUpData.password]
   );
 
+  // Honor ?next= for OAuth consent (MCP) or other same-origin returns.
+  const nextParam = new URLSearchParams(window.location.search).get("next");
+  const safeNext = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null;
+
   if (user) {
+    if (safeNext) {
+      window.location.href = safeNext;
+      return null;
+    }
     navigate('/dashboard');
     return null;
   }

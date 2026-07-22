@@ -35,3 +35,6 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = true
   [functions.auto-export]
     verify_jwt = false
+  [functions.mcp]
+    verify_jwt = false
+
