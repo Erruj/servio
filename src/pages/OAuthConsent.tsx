@@ -94,11 +94,33 @@ export default function OAuthConsent() {
         "POST",
         sess.session.access_token,
         authorizationId,
-
         { action: approve ? "approve" : "deny" },
       );
-      const target = data?.redirect_url ?? data?.redirect_to;
-      if (!target) throw new Error("No redirect returned by the authorization server.");
+
+      // Prefer the server-provided redirect (already includes code + state).
+      let target: string | undefined =
+        data?.redirect_url ?? data?.redirect_to ?? data?.redirect_uri ?? data?.location;
+
+      // Fallback: reconstruct from the original request's redirect_uri + returned code/state.
+      if (!target) {
+        const redirectUri =
+          details?.redirect_uri ??
+          details?.request?.redirect_uri ??
+          details?.authorization_request?.redirect_uri;
+        const code = data?.code ?? data?.authorization_code;
+        const state = data?.state ?? details?.state ?? details?.request?.state;
+        if (redirectUri && code) {
+          const sep = redirectUri.includes("?") ? "&" : "?";
+          target = `${redirectUri}${sep}code=${encodeURIComponent(code)}${
+            state ? `&state=${encodeURIComponent(state)}` : ""
+          }`;
+        }
+      }
+
+      if (!target) {
+        console.error("[OAuthConsent] no redirect target in response", data);
+        throw new Error("No redirect returned by the authorization server.");
+      }
       window.location.href = target;
     } catch (e: any) {
       console.error("[OAuthConsent] decide error", e);
