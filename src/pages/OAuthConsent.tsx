@@ -62,7 +62,7 @@ export default function OAuthConsent() {
           window.location.href = "/login?next=" + encodeURIComponent(next);
           return;
         }
-        const data = await callOAuth("authorizations", "GET", sess.session.access_token, {
+        const data = await callAuthorize("GET", sess.session.access_token, {
           authorization_id: authorizationId,
         });
         if (!active) return;
