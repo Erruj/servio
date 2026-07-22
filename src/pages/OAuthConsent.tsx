@@ -9,21 +9,20 @@ const SUPABASE_URL = "https://avtzjxknxnajzutcoayl.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dHpqeGtueG5hanp1dGNvYXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3NDcwOTEsImV4cCI6MjA3MjMyMzA5MX0.-B2tDxwc494ObOOUCMG0cIzLtQOLMT48u04IJKeOwsw";
 
-async function callOAuth(
-  path: "authorizations" | "consent",
+async function callAuthorize(
   method: "GET" | "POST",
   accessToken: string,
+  query: Record<string, string>,
   body?: Record<string, unknown>,
 ) {
-  const url = `${SUPABASE_URL}/auth/v1/oauth/${path}${
-    method === "GET" && body ? `?${new URLSearchParams(body as Record<string, string>).toString()}` : ""
-  }`;
+  const url = `${SUPABASE_URL}/auth/v1/oauth/authorize?${new URLSearchParams(query).toString()}`;
   const res = await fetch(url, {
     method,
     headers: {
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: method === "POST" && body ? JSON.stringify(body) : undefined,
   });
@@ -35,8 +34,8 @@ async function callOAuth(
     data = { raw: text };
   }
   if (!res.ok) {
-    console.error(`[OAuthConsent] ${method} /oauth/${path} failed`, res.status, data);
-    const msg = data?.error_description || data?.message || data?.error || `HTTP ${res.status}`;
+    console.error(`[OAuthConsent] ${method} /auth/v1/oauth/authorize failed`, res.status, data);
+    const msg = data?.error_description || data?.msg || data?.message || data?.error || `HTTP ${res.status}`;
     throw new Error(msg);
   }
   return data;
@@ -63,7 +62,7 @@ export default function OAuthConsent() {
           window.location.href = "/login?next=" + encodeURIComponent(next);
           return;
         }
-        const data = await callOAuth("authorizations", "GET", sess.session.access_token, {
+        const data = await callAuthorize("GET", sess.session.access_token, {
           authorization_id: authorizationId,
         });
         if (!active) return;
@@ -89,10 +88,12 @@ export default function OAuthConsent() {
     try {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) throw new Error("Not signed in");
-      const data = await callOAuth("consent", "POST", sess.session.access_token, {
-        authorization_id: authorizationId,
-        action: approve ? "approve" : "deny",
-      });
+      const data = await callAuthorize(
+        "POST",
+        sess.session.access_token,
+        { authorization_id: authorizationId },
+        { action: approve ? "approve" : "deny" },
+      );
       const target = data?.redirect_url ?? data?.redirect_to;
       if (!target) throw new Error("No redirect returned by the authorization server.");
       window.location.href = target;
