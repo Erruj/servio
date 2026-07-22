@@ -16,7 +16,15 @@ export function SubscriptionGate({ children, feature, requiredTier = 'pro' }: Su
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  if (isLoading) return <>{children}</>;
+  // While loading, render a neutral placeholder — never the gated children —
+  // otherwise the paid page flashes before the paywall appears.
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="h-8 w-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+      </div>
+    );
+  }
 
   const effectiveTier = tier === 'trial' ? 'pro' : (tier === 'none' ? 'starter' : tier);
   const tierOrder = ['starter', 'pro', 'business'];
