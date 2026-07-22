@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import OAuthConsent from "./pages/OAuthConsent";
 import { DebugDrawer } from "./components/DebugDrawer";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import FinancialOverview from "./pages/administration/FinancialOverview";
@@ -113,6 +114,9 @@ function AppRoutes() {
       <Route path="/login" element={<Auth />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* OAuth consent for MCP clients */}
+      <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
       
       {/* Protected app routes */}
       <Route path="/app" element={
