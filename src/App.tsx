@@ -117,6 +117,7 @@ function AppRoutes() {
 
       {/* OAuth consent for MCP clients */}
       <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+      <Route path="/oauth/consent" element={<OAuthConsent />} />
       
       {/* Protected app routes */}
       <Route path="/app" element={
