@@ -12,10 +12,13 @@ const SUPABASE_ANON_KEY =
 async function callAuthorize(
   method: "GET" | "POST",
   accessToken: string,
-  query: Record<string, string>,
+  authorizationId: string,
   body?: Record<string, unknown>,
 ) {
-  const url = `${SUPABASE_URL}/auth/v1/oauth/authorize?${new URLSearchParams(query).toString()}`;
+  const url =
+    method === "GET"
+      ? `${SUPABASE_URL}/auth/v1/oauth/authorize?authorization_id=${encodeURIComponent(authorizationId)}`
+      : `${SUPABASE_URL}/auth/v1/oauth/authorize`;
   const res = await fetch(url, {
     method,
     headers: {
@@ -24,7 +27,10 @@ async function callAuthorize(
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: method === "POST" && body ? JSON.stringify(body) : undefined,
+    body:
+      method === "POST"
+        ? JSON.stringify({ authorization_id: authorizationId, ...(body ?? {}) })
+        : undefined,
   });
   const text = await res.text();
   let data: any = null;
@@ -40,6 +46,7 @@ async function callAuthorize(
   }
   return data;
 }
+
 
 export default function OAuthConsent() {
   const [params] = useSearchParams();
@@ -62,9 +69,8 @@ export default function OAuthConsent() {
           window.location.href = "/login?next=" + encodeURIComponent(next);
           return;
         }
-        const data = await callAuthorize("GET", sess.session.access_token, {
-          authorization_id: authorizationId,
-        });
+        const data = await callAuthorize("GET", sess.session.access_token, authorizationId);
+
         if (!active) return;
         const immediate = data?.redirect_url ?? data?.redirect_to;
         if (immediate && !data?.client) {
@@ -91,7 +97,8 @@ export default function OAuthConsent() {
       const data = await callAuthorize(
         "POST",
         sess.session.access_token,
-        { authorization_id: authorizationId },
+        authorizationId,
+
         { action: approve ? "approve" : "deny" },
       );
       const target = data?.redirect_url ?? data?.redirect_to;
