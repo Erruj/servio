@@ -68,77 +68,75 @@ export default function AuditLog() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header user={user} onLogout={() => {}} />
-      <div className="flex-1 flex">
-        <Sidebar />
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <AdminBreadcrumb currentPage="Audit Log" />
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <Shield className="h-7 w-7 text-primary" /> Audit Log
-            </h1>
-            <p className="text-muted-foreground">Overzicht van alle systeem- en gebruikersacties</p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div><CardTitle>Activiteiten</CardTitle><CardDescription>{filtered.length} log entries</CardDescription></div>
-                <div className="flex items-center gap-2">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-32"><Filter className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Alle</SelectItem>
-                      <SelectItem value="success">Success</SelectItem>
-                      <SelectItem value="error">Error</SelectItem>
-                      <SelectItem value="warning">Warning</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Zoek in logs..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 w-64" />
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
-              ) : filtered.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">Geen log entries gevonden</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tijd</TableHead>
-                        <TableHead>Actie</TableHead>
-                        <TableHead>Endpoint</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>IP</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filtered.map(log => (
-                        <TableRow key={log.id}>
-                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap" title={log.created_at ? format(new Date(log.created_at), "PPP HH:mm:ss", { locale: nl }) : ''}>
-                            {log.created_at ? formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: nl }) : '-'}
-                          </TableCell>
-                          <TableCell className="font-medium">{log.action}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground font-mono">{log.endpoint || '-'}</TableCell>
-                          <TableCell>{getStatusBadge(log.status)}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{log.ip_address || '-'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+    <div className="p-6 space-y-6">
+      <AdminBreadcrumb currentPage="Audit Log" />
+      <div>
+        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+          <Shield className="h-7 w-7 text-primary" /> Audit Log
+        </h1>
+        <p className="text-muted-foreground">Overzicht van alle systeem- en gebruikersacties</p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div><CardTitle>Activiteiten</CardTitle><CardDescription>{filtered.length} log entries</CardDescription></div>
+            <div className="flex items-center gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-32"><Filter className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                  <SelectItem value="error">Error</SelectItem>
+                  <SelectItem value="warning">Warning</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Zoek in logs..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 w-64" />
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-12 space-y-2">
+              <Shield className="h-10 w-10 mx-auto text-muted-foreground/40" />
+              <p className="text-sm font-medium">Geen log entries gevonden</p>
+              <p className="text-xs text-muted-foreground">Systeem- en gebruikersacties verschijnen hier zodra ze plaatsvinden.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tijd</TableHead>
+                    <TableHead>Actie</TableHead>
+                    <TableHead>Endpoint</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>IP</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map(log => (
+                    <TableRow key={log.id}>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap" title={log.created_at ? format(new Date(log.created_at), "PPP HH:mm:ss", { locale: nl }) : ''}>
+                        {log.created_at ? formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: nl }) : '-'}
+                      </TableCell>
+                      <TableCell className="font-medium">{log.action}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground font-mono">{log.endpoint || '-'}</TableCell>
+                      <TableCell>{getStatusBadge(log.status)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{log.ip_address || '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
