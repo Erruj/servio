@@ -728,7 +728,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                 onChange={(e) => setReply(e.target.value)}
                 readOnly={!isEditingReply}
                 className={`min-h-48 resize-none text-base shadow-subtle ${!isEditingReply ? 'bg-muted/50' : 'bg-background'}`}
-                placeholder="AI genereert hier een antwoord..."
+                placeholder={analysis ? 'Klik op "Genereer antwoord" voor een AI-suggestie, of typ zelf een antwoord.' : 'Klik op "Analyseer" hierboven — de AI schrijft dan automatisch een eerste antwoord voor je.'}
               />
             )}
             {/* Attachment section */}
