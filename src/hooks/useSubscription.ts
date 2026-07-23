@@ -90,6 +90,7 @@ export const useSubscription = () => {
       // Don't show toast for auth errors - user will be redirected to login
       return null;
     } finally {
+      hasFetchedRef.current = true;
       setIsLoading(false);
     }
   };
