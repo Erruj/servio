@@ -579,19 +579,17 @@ export default function Invoices() {
         </CardContent>
       </Card>
 
-      {/* Delete confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Weet je zeker dat je deze factuur wilt verwijderen?</AlertDialogTitle>
-            <AlertDialogDescription>Deze actie kan niet ongedaan worden gemaakt. De factuur en het bijbehorende bestand worden permanent verwijderd.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuleren</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteInvoice} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Verwijderen</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Weet je zeker dat je deze factuur wilt verwijderen?"
+        description="Deze actie kan niet ongedaan worden gemaakt. De factuur en het bijbehorende bestand worden permanent verwijderd."
+        confirmLabel="Verwijderen"
+        variant="destructive"
+        loading={actionLoading === deleteId}
+        onConfirm={handleDeleteInvoice}
+      />
+
 
       {/* Preview modal */}
       <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
