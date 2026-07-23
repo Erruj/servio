@@ -34,6 +34,7 @@ export default function TimeTracking() {
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [timerStartTime, setTimerStartTime] = useState<Date | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Edit state
