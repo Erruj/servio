@@ -857,6 +857,8 @@ serve(async (req) => {
     for (const connection of connections) {
       try {
         let messages: any[] = [];
+        let gmailRawByExternalId: Map<string, any> | null = null;
+        let gmailAccessToken: string | null = null;
 
         if (connection.provider === "gmail" || connection.provider === "outlook") {
           // OAuth-based providers: refresh token if needed
