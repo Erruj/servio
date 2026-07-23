@@ -35,7 +35,9 @@ import { useToast } from '@/hooks/use-toast';
 import { SecurityError, handleSecurityError } from '@/lib/security';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { EmailBodyRenderer } from '@/components/EmailBodyRenderer';
-import { dummyTemplates } from '@/lib/dummy';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
+import type { TemplateItem } from '@/types';
 import { FileText } from 'lucide-react';
 
 interface MailDetailProps {
