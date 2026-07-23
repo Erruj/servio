@@ -12,6 +12,9 @@ import { Play, Square, Plus, Clock, Timer, Download, Trash2, Pencil, FileText } 
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 import { CreateInvoiceFromHoursDialog } from '@/components/CreateInvoiceFromHoursDialog';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
