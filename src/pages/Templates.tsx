@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { 
+import { Skeleton } from '@/components/ui/skeleton';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -19,7 +20,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Table,
@@ -30,42 +30,87 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TemplateItem, Category, Language } from '@/types';
-import { dummyTemplates } from '@/lib/dummy';
-import { templateSchema, searchQuerySchema, sanitizeText, SecurityError, handleSecurityError } from '@/lib/security';
-import { 
-  Plus, 
-  Edit, 
-  Copy, 
-  Trash2, 
+import { templateSchema, searchQuerySchema, sanitizeText, SecurityError } from '@/lib/security';
+import {
+  Plus,
+  Edit,
+  Copy,
+  Trash2,
   FileText,
-  Search
+  Search,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
+interface DbTemplateRow {
+  id: string;
+  name: string;
+  category: string;
+  language: string;
+  body: string;
+  updated_at: string;
+}
+
+const rowToTemplate = (r: DbTemplateRow): TemplateItem => ({
+  id: r.id,
+  name: r.name,
+  category: (r.category as Category | 'Algemeen') ?? 'Algemeen',
+  language: (r.language as Language) ?? 'NL',
+  body: r.body || '',
+  updatedAt: r.updated_at,
+});
+
 const Templates = () => {
   const { user, signOut } = useAuth();
-  const [templates, setTemplates] = useState<TemplateItem[]>(dummyTemplates);
+  const [templates, setTemplates] = useState<TemplateItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<TemplateItem | null>(null);
   const { toast } = useToast();
 
-  // Validate search query
+  const [formData, setFormData] = useState({
+    name: '',
+    category: 'Algemeen' as Category | 'Algemeen',
+    language: 'NL' as Language,
+    body: '',
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('templates')
+        .select('id, name, category, language, body, updated_at')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        toast({ title: 'Templates laden mislukt', description: error.message, variant: 'destructive' });
+      } else {
+        setTemplates((data || []).map(rowToTemplate));
+      }
+      setIsLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
   const handleSearchChange = (value: string) => {
     try {
-      if (value.length > 0) {
-        searchQuerySchema.parse(value);
-      }
+      if (value.length > 0) searchQuerySchema.parse(value);
       setSearchQuery(sanitizeText(value));
     } catch (error) {
       if (error instanceof SecurityError) {
         toast({
-          title: "Ongeldige zoekopdracht",
-          description: "Gebruik alleen letters, cijfers en basis leestekens.",
-          variant: "destructive"
+          title: 'Ongeldige zoekopdracht',
+          description: 'Gebruik alleen letters, cijfers en basis leestekens.',
+          variant: 'destructive',
         });
         return;
       }
@@ -73,28 +118,16 @@ const Templates = () => {
     }
   };
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'Algemeen' as Category | 'Algemeen',
-    language: 'NL' as Language,
-    body: ''
-  });
-
-  const filteredTemplates = templates.filter(template =>
-    template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    template.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    template.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTemplates = templates.filter(
+    (t) =>
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleCreateNew = () => {
     setEditingTemplate(null);
-    setFormData({
-      name: '',
-      category: 'Algemeen',
-      language: 'NL',
-      body: ''
-    });
+    setFormData({ name: '', category: 'Algemeen', language: 'NL', body: '' });
     setIsDialogOpen(true);
   };
 
@@ -104,76 +137,101 @@ const Templates = () => {
       name: template.name,
       category: template.category,
       language: template.language,
-      body: template.body
+      body: template.body,
     });
     setIsDialogOpen(true);
   };
 
-  const handleDuplicate = (template: TemplateItem) => {
-    const newTemplate: TemplateItem = {
-      ...template,
-      id: `tpl_${Date.now()}`,
-      name: `${template.name} (kopie)`,
-      updatedAt: new Date().toISOString()
-    };
-    
-    setTemplates(prev => [newTemplate, ...prev]);
-    toast({
-      title: "Template gedupliceerd",
-      description: `"${template.name}" is gekopieerd.`
-    });
+  const handleDuplicate = async (template: TemplateItem) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('templates')
+      .insert({
+        user_id: user.id,
+        name: `${template.name} (kopie)`,
+        category: template.category,
+        language: template.language,
+        body: template.body,
+      })
+      .select('id, name, category, language, body, updated_at')
+      .single();
+    if (error || !data) {
+      toast({ title: 'Dupliceren mislukt', description: error?.message, variant: 'destructive' });
+      return;
+    }
+    setTemplates((prev) => [rowToTemplate(data as DbTemplateRow), ...prev]);
+    toast({ title: 'Template gedupliceerd', description: `"${template.name}" is gekopieerd.` });
   };
 
-  const handleDelete = (template: TemplateItem) => {
-    setTemplates(prev => prev.filter(t => t.id !== template.id));
-    toast({
-      title: "Template verwijderd",
-      description: `"${template.name}" is verwijderd.`,
-      variant: "destructive"
-    });
+  const handleDelete = async (template: TemplateItem) => {
+    const { error } = await supabase.from('templates').delete().eq('id', template.id);
+    if (error) {
+      toast({ title: 'Verwijderen mislukt', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setTemplates((prev) => prev.filter((t) => t.id !== template.id));
+    toast({ title: 'Template verwijderd', description: `"${template.name}" is verwijderd.` });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!user) return;
     try {
-      // Validate form data with Zod
       templateSchema.parse({
         name: formData.name,
         category: formData.category as Category,
         language: formData.language,
-        body: formData.body
+        body: formData.body,
       });
-    } catch (error) {
+    } catch {
       toast({
-        title: "Validatie fout",
-        description: "Controleer de invoer. Naam en inhoud zijn verplicht en mogen alleen geldige tekens bevatten.",
-        variant: "destructive"
+        title: 'Validatie fout',
+        description: 'Controleer de invoer. Naam en inhoud zijn verplicht en mogen alleen geldige tekens bevatten.',
+        variant: 'destructive',
       });
       return;
     }
 
+    setIsSaving(true);
     if (editingTemplate) {
-      // Update existing template
-      setTemplates(prev => prev.map(t => 
-        t.id === editingTemplate.id 
-          ? { ...t, ...formData, updatedAt: new Date().toISOString() }
-          : t
-      ));
-      toast({
-        title: "Template bijgewerkt",
-        description: `"${formData.name}" is opgeslagen.`
-      });
+      const { data, error } = await supabase
+        .from('templates')
+        .update({
+          name: formData.name,
+          category: formData.category,
+          language: formData.language,
+          body: formData.body,
+        })
+        .eq('id', editingTemplate.id)
+        .select('id, name, category, language, body, updated_at')
+        .single();
+      setIsSaving(false);
+      if (error || !data) {
+        toast({ title: 'Opslaan mislukt', description: error?.message, variant: 'destructive' });
+        return;
+      }
+      const updated = rowToTemplate(data as DbTemplateRow);
+      setTemplates((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+      toast({ title: 'Template bijgewerkt', description: `"${updated.name}" is opgeslagen.` });
     } else {
-      // Create new template
-      const newTemplate: TemplateItem = {
-        id: `tpl_${Date.now()}`,
-        ...formData,
-        updatedAt: new Date().toISOString()
-      };
-      setTemplates(prev => [newTemplate, ...prev]);
-      toast({
-        title: "Template aangemaakt",
-        description: `"${formData.name}" is toegevoegd.`
-      });
+      const { data, error } = await supabase
+        .from('templates')
+        .insert({
+          user_id: user.id,
+          name: formData.name,
+          category: formData.category,
+          language: formData.language,
+          body: formData.body,
+        })
+        .select('id, name, category, language, body, updated_at')
+        .single();
+      setIsSaving(false);
+      if (error || !data) {
+        toast({ title: 'Aanmaken mislukt', description: error?.message, variant: 'destructive' });
+        return;
+      }
+      const created = rowToTemplate(data as DbTemplateRow);
+      setTemplates((prev) => [created, ...prev]);
+      toast({ title: 'Template aangemaakt', description: `"${created.name}" is toegevoegd.` });
     }
 
     setIsDialogOpen(false);
@@ -181,164 +239,155 @@ const Templates = () => {
   };
 
   const getCategoryColor = (category: Category | 'Algemeen') => {
-    const colors = {
-      'Retour': 'bg-blue-100 text-blue-800',
-      'Klacht': 'bg-red-100 text-red-800',
-      'Factuur': 'bg-green-100 text-green-800',
-      'Vraag': 'bg-purple-100 text-purple-800',
-      'Technisch': 'bg-orange-100 text-orange-800',
-      'Overig': 'bg-gray-100 text-gray-800',
-      'Algemeen': 'bg-slate-100 text-slate-800'
+    const colors: Record<string, string> = {
+      Retour: 'bg-blue-100 text-blue-800',
+      Klacht: 'bg-red-100 text-red-800',
+      Factuur: 'bg-green-100 text-green-800',
+      Vraag: 'bg-purple-100 text-purple-800',
+      Technisch: 'bg-orange-100 text-orange-800',
+      Overig: 'bg-gray-100 text-gray-800',
+      Algemeen: 'bg-slate-100 text-slate-800',
     };
     return colors[category] || colors['Algemeen'];
   };
 
   const getLanguageFlag = (language: Language) => {
-    const flags = {
-      'NL': '🇳🇱',
-      'EN': '🇬🇧', 
-      'DE': '🇩🇪',
-      'FR': '🇫🇷'
-    };
-    return flags[language];
+    const flags: Record<string, string> = { NL: '🇳🇱', EN: '🇬🇧', DE: '🇩🇪', FR: '🇫🇷' };
+    return flags[language] || '🏳️';
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header user={user} onLogout={signOut} />
-      
+
       <div className="flex-1 flex">
         <Sidebar />
-        
+
         <div className="flex-1 overflow-y-auto">
           <div className="p-8 space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Templates</h1>
-              <p className="text-muted-foreground">
-                Beheer je email templates voor snellere antwoorden
-              </p>
-            </div>
-            <Button onClick={handleCreateNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nieuwe Template
-            </Button>
-          </div>
-
-          {/* Search and filters */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Zoek in templates..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10"
-                    maxLength={100}
-                  />
-                </div>
-                <Badge variant="secondary">
-                  {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''}
-                </Badge>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Templates</h1>
+                <p className="text-muted-foreground">
+                  Beheer je email templates voor snellere antwoorden
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <Button onClick={handleCreateNew}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nieuwe Template
+              </Button>
+            </div>
 
-          {/* Templates table */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="h-5 w-5 mr-2" />
-                Templates ({filteredTemplates.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Naam</TableHead>
-                    <TableHead>Categorie</TableHead>
-                    <TableHead>Taal</TableHead>
-                    <TableHead>Laatst bijgewerkt</TableHead>
-                    <TableHead className="text-right">Acties</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTemplates.map((template) => (
-                    <TableRow key={template.id}>
-                      <TableCell className="font-medium">
-                        {template.name}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant="secondary" 
-                          className={getCategoryColor(template.category)}
-                        >
-                          {template.category}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className="flex items-center">
-                          {getLanguageFlag(template.language)} {template.language}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDistanceToNow(new Date(template.updatedAt), { 
-                          addSuffix: true, 
-                          locale: nl 
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(template)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDuplicate(template)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(template)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {filteredTemplates.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  {searchQuery ? 'Geen templates gevonden' : 'Nog geen templates'}
-                  <p className="text-sm mt-2">
-                    {searchQuery ? 'Probeer een andere zoekterm' : 'Maak je eerste template aan'}
-                  </p>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Zoek in templates..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      className="pl-10"
+                      maxLength={100}
+                    />
+                  </div>
+                  <Badge variant="secondary">
+                    {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''}
+                  </Badge>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Templates ({filteredTemplates.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Naam</TableHead>
+                        <TableHead>Categorie</TableHead>
+                        <TableHead>Taal</TableHead>
+                        <TableHead>Laatst bijgewerkt</TableHead>
+                        <TableHead className="text-right">Acties</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTemplates.map((template) => (
+                        <TableRow key={template.id}>
+                          <TableCell className="font-medium">{template.name}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className={getCategoryColor(template.category)}>
+                              {template.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <span className="flex items-center">
+                              {getLanguageFlag(template.language)} {template.language}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatDistanceToNow(new Date(template.updatedAt), {
+                              addSuffix: true,
+                              locale: nl,
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button variant="ghost" size="sm" onClick={() => handleEdit(template)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDuplicate(template)}>
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(template)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+
+                {!isLoading && filteredTemplates.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FileText className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                    <p className="font-medium text-foreground">
+                      {searchQuery ? 'Geen templates gevonden' : 'Nog geen templates'}
+                    </p>
+                    <p className="text-sm mt-1">
+                      {searchQuery
+                        ? 'Probeer een andere zoekterm'
+                        : 'Maak je eerste template aan met de knop hierboven.'}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
-      
+
       <Footer />
 
-      {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -346,24 +395,26 @@ const Templates = () => {
               {editingTemplate ? 'Template Bewerken' : 'Nieuwe Template'}
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Naam</label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: sanitizeText(e.target.value) }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: sanitizeText(e.target.value) }))}
                   placeholder="Template naam..."
                   maxLength={100}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Categorie</label>
-                <Select 
-                  value={formData.category} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as Category | 'Algemeen' }))}
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, category: value as Category | 'Algemeen' }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -383,9 +434,9 @@ const Templates = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Taal</label>
-              <Select 
-                value={formData.language} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, language: value as Language }))}
+              <Select
+                value={formData.language}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, language: value as Language }))}
               >
                 <SelectTrigger className="w-48">
                   <SelectValue />
@@ -403,7 +454,7 @@ const Templates = () => {
               <label className="text-sm font-medium">Template Inhoud</label>
               <Textarea
                 value={formData.body}
-                onChange={(e) => setFormData(prev => ({ ...prev, body: sanitizeText(e.target.value) }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, body: sanitizeText(e.target.value) }))}
                 placeholder="Template inhoud met placeholders zoals {{naam}}, {{order_id}}, etc..."
                 className="min-h-48"
                 maxLength={5000}
@@ -414,14 +465,11 @@ const Templates = () => {
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsDialogOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
                 Annuleren
               </Button>
-              <Button onClick={handleSave}>
-                {editingTemplate ? 'Bijwerken' : 'Aanmaken'}
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? 'Opslaan...' : editingTemplate ? 'Bijwerken' : 'Aanmaken'}
               </Button>
             </div>
           </div>

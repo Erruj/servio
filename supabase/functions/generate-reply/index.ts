@@ -65,9 +65,9 @@ serve(async (req) => {
 
     const corrections = await safeQuery('ai_corrections fetch', async () => {
       const { data } = await supabase.from('ai_corrections')
-        .select('original_reply, corrected_reply')
+        .select('original_reply, corrected_reply, correction_type')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false }).limit(3);
+        .order('created_at', { ascending: false }).limit(5);
       return data || [];
     }, [] as any[]);
 
@@ -103,10 +103,20 @@ serve(async (req) => {
 
     let correctionsContext = '';
     if (corrections.length > 0) {
-      correctionsContext = `\n\nLEER VAN EERDERE CORRECTIES - de gebruiker heeft eerder AI-antwoorden aangepast. Gebruik dit als richtlijn voor stijl en toon:\n`;
-      corrections.forEach((c: any, i: number) => {
-        correctionsContext += `Correctie ${i + 1}:\n- Origineel: "${(c.original_reply || '').substring(0, 200)}..."\n- Aangepast naar: "${(c.corrected_reply || '').substring(0, 200)}..."\n`;
-      });
+      const edits = corrections.filter((c: any) => c.correction_type !== 'rejected');
+      const rejected = corrections.filter((c: any) => c.correction_type === 'rejected');
+      if (edits.length > 0) {
+        correctionsContext += `\n\nLEER VAN EERDERE CORRECTIES - de gebruiker heeft AI-antwoorden bijgesteld. Match deze stijl en toon:\n`;
+        edits.forEach((c: any, i: number) => {
+          correctionsContext += `Correctie ${i + 1}:\n- AI schreef: "${(c.original_reply || '').substring(0, 200)}"\n- Gebruiker maakte: "${(c.corrected_reply || '').substring(0, 200)}"\n`;
+        });
+      }
+      if (rejected.length > 0) {
+        correctionsContext += `\n\nNEGATIEF SIGNAAL - deze eerdere AI-suggesties werden verworpen zonder aanpassing. Vermijd deze toon/structuur:\n`;
+        rejected.forEach((c: any, i: number) => {
+          correctionsContext += `Verworpen ${i + 1}: "${(c.original_reply || '').substring(0, 200)}"\n`;
+        });
+      }
     }
 
     let writingStyleContext = '';
@@ -143,6 +153,13 @@ REGELS:
 - Pas de toon aan: "${preferredTone}"
 - Geen generieke antwoorden - elk antwoord moet uniek zijn voor deze specifieke e-mail
 - Geef 3 varianten: Zakelijk, Empathisch, Uitgebreid
+
+BELANGRIJK - ONVOLDOENDE CONTEXT:
+Als de e-mail te vaag, dubbelzinnig, of onvoldoende informatie bevat om een zinvol antwoord te geven (bijv. alleen "hoi" zonder verdere context, of een verzoek zonder essentiële details zoals ordernummer/bedrag/datum), forceer dan GEEN antwoord. Geef in plaats daarvan een antwoord dat:
+1. De ontvangen boodschap kort bevestigt
+2. Beleefd de specifieke ontbrekende informatie opvraagt die nodig is om te kunnen helpen
+3. NIET verzint of aannames doet over wat de afzender bedoelt
+Doe dit alleen wanneer nodig — de meeste e-mails bevatten genoeg context.
 ${signatureInstruction}${writingStyleContext}${preferredToneContext}${correctionsContext}
 
 ANTWOORD: Geef exact dit JSON formaat terug (geen markdown, geen code blocks, alleen raw JSON):

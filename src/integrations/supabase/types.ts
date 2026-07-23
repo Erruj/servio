@@ -812,6 +812,42 @@ export type Database = {
         }
         Relationships: []
       }
+      templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          language: string
+          name: string
+          subject: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          language?: string
+          name: string
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          language?: string
+          name?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       time_entries: {
         Row: {
           billable: boolean | null
