@@ -82,11 +82,14 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
     table { max-width: 100% !important; display: block; overflow-x: auto; }
     pre, code { white-space: pre-wrap; word-wrap: break-word; }
     blockquote { border-left: 3px solid #d1d5db; padding-left: 12px; margin: 8px 0; color: #4b5563; }
+    body[data-hide-quoted="1"] .gmail_quote,
+    body[data-hide-quoted="1"] blockquote,
+    body[data-hide-quoted="1"] [type="cite"] { display: none !important; }
   </style>
 </head>
-<body>${processed}</body>
+<body${!showQuoted ? ' data-hide-quoted="1"' : ''}>${processed}</body>
 </html>`;
-  }, [showExternalImages, blockExternalImages]);
+  }, [showExternalImages, blockExternalImages, showQuoted]);
 
   // Write content to iframe and auto-resize
   useEffect(() => {
