@@ -119,8 +119,13 @@ const Statistics = () => {
         }));
 
       setStats({ totalEmails, unreadEmails, readEmails, labelCounts, dailyVolume });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading statistics:', error);
+      toast({
+        title: 'Statistieken laden mislukt',
+        description: error.message || 'Probeer het opnieuw of ververs de pagina.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
