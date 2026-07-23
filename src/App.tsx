@@ -98,6 +98,7 @@ function AppRoutes() {
 
   return (
     <PageTransition>
+    <Suspense fallback={<PageLoader />}>
     <Routes>
       {/* Marketing website - public, no auth (NL default) */}
       <Route path="/" element={<MarketingHome />} />
