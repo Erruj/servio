@@ -394,41 +394,42 @@ export default function Invoices() {
     <div className="space-y-6 p-6">
       <AdminBreadcrumb currentPage="Facturen" />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t('invoices')}</h1>
-          <p className="text-muted-foreground">{t('invoicesDescription')}</p>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={showNewSupplierDialog} onOpenChange={setShowNewSupplierDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" />Nieuwe leverancier</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Nieuwe leverancier toevoegen</DialogTitle>
-                <DialogDescription>Voeg een nieuwe leverancier toe aan je administratie</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2"><Label>Leveranciersnaam *</Label><Input value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} placeholder="Bijv. Software BV" /></div>
-                <div className="space-y-2"><Label>BTW-nummer</Label><Input value={newSupplierVat} onChange={(e) => setNewSupplierVat(e.target.value)} placeholder="NL123456789B01" /></div>
-                <div className="space-y-2"><Label>E-mailadres</Label><Input type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} placeholder="info@leverancier.nl" /></div>
-                <div className="space-y-2"><Label>IBAN</Label><Input value={newSupplierIban} onChange={(e) => setNewSupplierIban(e.target.value)} placeholder="NL00BANK0123456789" /></div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowNewSupplierDialog(false)}>Annuleren</Button>
-                <Button onClick={handleAddSupplier} disabled={!newSupplierName.trim()}>Toevoegen</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+      <PageHeader
+        title={t('invoices')}
+        description={t('invoicesDescription')}
+        actions={
+          <>
+            <Dialog open={showNewSupplierDialog} onOpenChange={setShowNewSupplierDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" />Nieuwe leverancier</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Nieuwe leverancier toevoegen</DialogTitle>
+                  <DialogDescription>Voeg een nieuwe leverancier toe aan je administratie</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2"><Label>Leveranciersnaam *</Label><Input value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} placeholder="Bijv. Software BV" /></div>
+                  <div className="space-y-2"><Label>BTW-nummer</Label><Input value={newSupplierVat} onChange={(e) => setNewSupplierVat(e.target.value)} placeholder="NL123456789B01" /></div>
+                  <div className="space-y-2"><Label>E-mailadres</Label><Input type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} placeholder="info@leverancier.nl" /></div>
+                  <div className="space-y-2"><Label>IBAN</Label><Input value={newSupplierIban} onChange={(e) => setNewSupplierIban(e.target.value)} placeholder="NL00BANK0123456789" /></div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowNewSupplierDialog(false)}>Annuleren</Button>
+                  <Button onClick={handleAddSupplier} disabled={!newSupplierName.trim()}>Toevoegen</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-          <Button disabled={uploading} className="relative">
-            <Upload className="mr-2 h-4 w-4" />
-            {uploading ? 'Uploaden...' : t('uploadInvoice')}
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
-          </Button>
-        </div>
-      </div>
+            <Button disabled={uploading} className="relative">
+              <Upload className="mr-2 h-4 w-4" />
+              {uploading ? 'Uploaden...' : t('uploadInvoice')}
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
+            </Button>
+          </>
+        }
+      />
+
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-5">
