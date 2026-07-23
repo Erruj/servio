@@ -201,43 +201,56 @@ export default function Customers() {
         {/* Table */}
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Naam</TableHead>
-                  <TableHead className="hidden md:table-cell">Bedrijf</TableHead>
-                  <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead className="hidden md:table-cell">Facturen</TableHead>
-                  <TableHead className="hidden md:table-cell">Offertes</TableHead>
-                  <TableHead>Acties</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Laden...</TableCell></TableRow>
-                ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Geen klanten gevonden</TableCell></TableRow>
-                ) : filtered.map(c => (
-                  <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailCustomer(c)}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell className="hidden md:table-cell">{c.company_name || '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">{c.email || '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="secondary">{stats[c.id]?.invoiceCount || 0}</Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="secondary">{stats[c.id]?.quoteCount || 0}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(c)}><Edit className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    </TableCell>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Laden...</div>
+            ) : customers.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title="Nog geen klanten"
+                description="Voeg je eerste klant toe om facturen en offertes te koppelen."
+                action={{
+                  label: 'Nieuwe klant',
+                  icon: Plus,
+                  onClick: () => { setEditingId(null); setForm(emptyForm); setShowDialog(true); },
+                }}
+              />
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">Geen klanten gevonden voor deze zoekopdracht</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Naam</TableHead>
+                    <TableHead className="hidden md:table-cell">Bedrijf</TableHead>
+                    <TableHead className="hidden md:table-cell">Email</TableHead>
+                    <TableHead className="hidden md:table-cell">Facturen</TableHead>
+                    <TableHead className="hidden md:table-cell">Offertes</TableHead>
+                    <TableHead>Acties</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map(c => (
+                    <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailCustomer(c)}>
+                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="hidden md:table-cell">{c.company_name || '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{c.email || '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="secondary">{stats[c.id]?.invoiceCount || 0}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="secondary">{stats[c.id]?.quoteCount || 0}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(c)}><Edit className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
