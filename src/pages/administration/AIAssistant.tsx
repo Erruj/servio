@@ -370,18 +370,25 @@ export default function AIAssistant() {
                         }`}
                       >
                         <div
-                          className={`max-w-[85%] rounded-lg p-4 ${
+                          className={
                             message.role === 'user'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-foreground'
-                          }`}
+                              ? 'max-w-[85%] rounded-2xl px-4 py-3 bg-primary text-primary-foreground shadow-subtle'
+                              : 'ai-surface max-w-[85%] rounded-2xl px-4 py-3 pl-5 text-foreground'
+                          }
                         >
-                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                          <span className="text-xs opacity-70 mt-2 block">
+                          {message.role === 'assistant' && (
+                            <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-medium text-primary">
+                              <Sparkles className="h-3 w-3" />
+                              <span>Servio AI</span>
+                            </div>
+                          )}
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+                          <span className="text-[11px] opacity-60 mt-2 block">
                             {message.timestamp.toLocaleTimeString()}
                           </span>
                         </div>
                       </div>
+                      
                       
                       {/* AI Actions */}
                       {message.actions && message.actions.length > 0 && (
