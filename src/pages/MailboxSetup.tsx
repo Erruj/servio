@@ -24,6 +24,7 @@ const MailboxSetup = () => {
     connections,
     isLoading,
     startGmailOAuth,
+    startOutlookOAuth,
     disconnectProvider,
     syncEmails,
     refetch,
@@ -55,6 +56,15 @@ const MailboxSetup = () => {
     setConnectingProvider('gmail');
     try {
       await startGmailOAuth();
+    } finally {
+      setConnectingProvider(null);
+    }
+  };
+
+  const handleConnectOutlook = async () => {
+    setConnectingProvider('outlook');
+    try {
+      await startOutlookOAuth();
     } finally {
       setConnectingProvider(null);
     }
@@ -242,25 +252,36 @@ const MailboxSetup = () => {
                   </CardContent>
                 </Card>
 
-                {/* Outlook - Coming Soon */}
-                <Card className="shadow-card opacity-60">
+                {/* Outlook */}
+                <Card className="shadow-card hover:shadow-elevated transition-all duration-200">
                   <CardHeader>
                     <div className="flex items-center space-x-3">
-                      <div className="text-3xl p-2 rounded-lg bg-muted text-muted-foreground">📨</div>
+                      <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">📨</div>
                       <div>
-                        <CardTitle className="flex items-center">
-                          Microsoft Outlook
-                          <Badge variant="secondary" className="ml-2">Binnenkort</Badge>
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">OAuth integratie komt binnenkort</p>
+                        <CardTitle>Microsoft Outlook</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">Outlook / Microsoft 365 koppelen</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Button className="w-full" disabled>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Binnenkort beschikbaar
-                    </Button>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {['OAuth 2.0', 'Auto-sync', 'Volledige integratie'].map((feature, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
+                        ))}
+                      </div>
+                      <Button
+                        className="w-full"
+                        onClick={handleConnectOutlook}
+                        disabled={connectingProvider === 'outlook' || isLoading}
+                      >
+                        {connectingProvider === 'outlook' ? (
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verbinden...</>
+                        ) : (
+                          <><Mail className="h-4 w-4 mr-2" />Koppel Outlook</>
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -86,50 +87,50 @@ const Dashboard = () => {
   const { settings: personalization, updateSettings } = usePersonalization();
   const [timeFilter, setTimeFilter] = useState('today');
   const [isEditing, setIsEditing] = useState(false);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalEmails: 0, unreadEmails: 0, todayEmails: 0, weekEmails: 0, monthEmails: 0,
-    totalInvoices: 0, totalReceipts: 0, totalDocuments: 0, connectionsCount: 0,
-  });
-  const [recentEmails, setRecentEmails] = useState<RecentEmail[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const widgets = personalization.dashboardWidgets || DEFAULT_WIDGETS;
-  const quickActions = personalization.quickActions || DEFAULT_QUICK_ACTIONS;
-
-  useEffect(() => { if (user) loadDashboardData(); }, [user]);
-
-  const loadDashboardData = async () => {
-    if (!user) return;
-    setIsLoading(true);
-    try {
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard-data', user?.id],
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
       const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
       const [totalRes, unreadRes, todayRes, weekRes, monthRes, recentRes, invoiceRes, receiptRes, docRes, connRes] = await Promise.all([
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('received_at', todayStart),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('received_at', weekStart),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('received_at', monthStart),
-        supabase.from('emails').select('id, subject, from_name, from_email, received_at, is_read').eq('user_id', user.id).order('received_at', { ascending: false }).limit(5),
-        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('receipts').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('documents').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('email_connections').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
+        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).eq('is_read', false),
+        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).gte('received_at', todayStart),
+        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).gte('received_at', weekStart),
+        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).gte('received_at', monthStart),
+        supabase.from('emails').select('id, subject, from_name, from_email, received_at, is_read').eq('user_id', user!.id).order('received_at', { ascending: false }).limit(5),
+        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
+        supabase.from('receipts').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
+        supabase.from('documents').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
+        supabase.from('email_connections').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
       ]);
 
-      setStats({
-        totalEmails: totalRes.count || 0, unreadEmails: unreadRes.count || 0,
-        todayEmails: todayRes.count || 0, weekEmails: weekRes.count || 0, monthEmails: monthRes.count || 0,
-        totalInvoices: invoiceRes.count || 0, totalReceipts: receiptRes.count || 0,
-        totalDocuments: docRes.count || 0, connectionsCount: connRes.count || 0,
-      });
-      setRecentEmails((recentRes.data as RecentEmail[]) || []);
-    } catch (error) { console.error('Error loading dashboard data:', error); }
-    finally { setIsLoading(false); }
+      return {
+        stats: {
+          totalEmails: totalRes.count || 0, unreadEmails: unreadRes.count || 0,
+          todayEmails: todayRes.count || 0, weekEmails: weekRes.count || 0, monthEmails: monthRes.count || 0,
+          totalInvoices: invoiceRes.count || 0, totalReceipts: receiptRes.count || 0,
+          totalDocuments: docRes.count || 0, connectionsCount: connRes.count || 0,
+        } as DashboardStats,
+        recentEmails: (recentRes.data as RecentEmail[]) || [],
+      };
+    },
+  });
+
+  const stats: DashboardStats = data?.stats ?? {
+    totalEmails: 0, unreadEmails: 0, todayEmails: 0, weekEmails: 0, monthEmails: 0,
+    totalInvoices: 0, totalReceipts: 0, totalDocuments: 0, connectionsCount: 0,
   };
+  const recentEmails: RecentEmail[] = data?.recentEmails ?? [];
+
+  const widgets = personalization.dashboardWidgets || DEFAULT_WIDGETS;
+  const quickActions = personalization.quickActions || DEFAULT_QUICK_ACTIONS;
 
   const getMailCount = () => {
     switch (timeFilter) {
