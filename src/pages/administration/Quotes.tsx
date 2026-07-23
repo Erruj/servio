@@ -151,35 +151,53 @@ export default function Quotes() {
   };
 
   const handleStatusChange = async (id: string, status: string) => {
-    await supabase.from('quotes').update({ status }).eq('id', id);
-    toast.success(`Status gewijzigd naar ${statusLabels[status]}`);
-    loadData();
+    try {
+      const { error } = await supabase.from('quotes').update({ status }).eq('id', id);
+      if (error) throw error;
+      toast.success(`Status gewijzigd naar ${statusLabels[status]}`);
+      loadData();
+    } catch (error) {
+      console.error('Error updating quote status:', error);
+      toast.error('Status kon niet worden bijgewerkt');
+    }
   };
 
   const handleConvertToInvoice = async (q: Quote) => {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return;
-    const customer = q.customer_id ? customerMap[q.customer_id] : null;
-    const { error } = await supabase.from('invoices').insert({
-      user_id: user.user.id, customer_id: q.customer_id, supplier: customer?.name || 'Klant',
-      amount: q.total, vat_amount: q.vat_amount, status: 'pending', file_path: `quote-${q.id}`,
-      invoice_number: `INV-${Date.now().toString(36).toUpperCase()}`,
-      invoice_date: new Date().toISOString().split('T')[0],
-      due_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-    });
-    if (error) { toast.error('Fout bij omzetten'); return; }
-    await supabase.from('quotes').update({ status: 'accepted' }).eq('id', q.id);
-    toast.success('Offerte omgezet naar factuur');
-    loadData();
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+      const customer = q.customer_id ? customerMap[q.customer_id] : null;
+      const { error } = await supabase.from('invoices').insert({
+        user_id: user.user.id, customer_id: q.customer_id, supplier: customer?.name || 'Klant',
+        amount: q.total, vat_amount: q.vat_amount, status: 'pending', file_path: `quote-${q.id}`,
+        invoice_number: `INV-${Date.now().toString(36).toUpperCase()}`,
+        invoice_date: new Date().toISOString().split('T')[0],
+        due_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+      });
+      if (error) throw error;
+      await supabase.from('quotes').update({ status: 'accepted' }).eq('id', q.id);
+      toast.success('Offerte omgezet naar factuur');
+      loadData();
+    } catch (error) {
+      console.error('Error converting quote:', error);
+      toast.error('Offerte kon niet worden omgezet');
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    await supabase.from('quotes').delete().eq('id', deleteId);
-    toast.success('Offerte verwijderd');
-    setDeleteId(null);
-    loadData();
+    try {
+      const { error } = await supabase.from('quotes').delete().eq('id', deleteId);
+      if (error) throw error;
+      toast.success('Offerte verwijderd');
+      setDeleteId(null);
+      loadData();
+    } catch (error) {
+      console.error('Error deleting quote:', error);
+      toast.error('Offerte kon niet worden verwijderd');
+    }
   };
+
 
   const handleDownloadPDF = (q: Quote) => {
     const customer = q.customer_id ? customerMap[q.customer_id] : null;
