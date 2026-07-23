@@ -10,9 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useAuth } from '@/components/AuthProvider';
-import { Loader2, Mail, Trash2, UserPlus } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Loader2, Mail, Trash2, UserPlus, Users } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 interface TeamMember {
@@ -160,10 +162,10 @@ export default function TeamManagement() {
   return (
     <div className="space-y-6 p-6">
       <AdminBreadcrumb currentPage="Teambeheer" />
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">{t('teamManagement') || 'Teambeheer'}</h1>
-        <p className="text-muted-foreground">{t('teamManagementDescription') || 'Beheer teamleden en hun rollen'}</p>
-      </div>
+      <PageHeader
+        title={t('teamManagement') || 'Teambeheer'}
+        description={t('teamManagementDescription') || 'Beheer teamleden en hun rollen'}
+      />
 
       {/* Invite new member */}
       <Card>
@@ -221,6 +223,12 @@ export default function TeamManagement() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : teamMembers.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={t('noTeamMembers') || 'Nog geen teamleden'}
+              description="Nodig collega's uit om samen te werken in Servio."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -232,79 +240,64 @@ export default function TeamManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {teamMembers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                      {t('noTeamMembers') || 'Nog geen teamleden'}
+                {teamMembers.map((member) => (
+                  <TableRow key={member.id}>
+                    <TableCell>{member.full_name || t('unknown')}</TableCell>
+                    <TableCell>{member.email}</TableCell>
+                    <TableCell>
+                      <Badge variant={getRoleBadgeVariant(member.role)}>
+                        {t(member.role) || member.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Select
+                          value={member.role}
+                          onValueChange={(value) => handleUpdateRole(member.id, value)}
+                          disabled={member.user_id === user?.id}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="owner">{t('owner')}</SelectItem>
+                            <SelectItem value="admin">{t('admin')}</SelectItem>
+                            <SelectItem value="agent">{t('agent')}</SelectItem>
+                            <SelectItem value="finance">{t('finance')}</SelectItem>
+                            <SelectItem value="viewer">{t('viewer')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        {member.user_id !== user?.id && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteTarget(member.id)}
+                            disabled={loading}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  teamMembers.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell>{member.full_name || t('unknown')}</TableCell>
-                      <TableCell>{member.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={getRoleBadgeVariant(member.role)}>
-                          {t(member.role) || member.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Select
-                            value={member.role}
-                            onValueChange={(value) => handleUpdateRole(member.id, value)}
-                            disabled={member.user_id === user?.id}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="owner">{t('owner')}</SelectItem>
-                              <SelectItem value="admin">{t('admin')}</SelectItem>
-                              <SelectItem value="agent">{t('agent')}</SelectItem>
-                              <SelectItem value="finance">{t('finance')}</SelectItem>
-                              <SelectItem value="viewer">{t('viewer')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          
-                          {member.user_id !== user?.id && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDeleteTarget(member.id)}
-                              disabled={loading}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                ))}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
 
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('removeTeamMember') || 'Teamlid verwijderen'}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('removeTeamMemberConfirm') || 'Weet je zeker dat je dit teamlid wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel') || 'Annuleren'}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteMember}>
-              {t('remove') || 'Verwijderen'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title={t('removeTeamMember') || 'Teamlid verwijderen'}
+        description={t('removeTeamMemberConfirm') || 'Weet je zeker dat je dit teamlid wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.'}
+        confirmLabel={t('remove') || 'Verwijderen'}
+        cancelLabel={t('cancel') || 'Annuleren'}
+        onConfirm={handleDeleteMember}
+        loading={loading}
+      />
     </div>
   );
 }

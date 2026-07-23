@@ -7,6 +7,7 @@ import { Download, FileText, Archive, Loader2, FileSpreadsheet, Calculator, Cloc
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { PageHeader } from '@/components/PageHeader';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -354,10 +355,10 @@ export default function Exports() {
   return (
     <div className="space-y-6 p-6">
       <AdminBreadcrumb currentPage="Exports" />
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Exports & Rapporten</h1>
-        <p className="text-muted-foreground">Download je data of genereer een professioneel rapport.</p>
-      </div>
+      <PageHeader
+        title="Exports & Rapporten"
+        description="Download je data of genereer een professioneel rapport."
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
