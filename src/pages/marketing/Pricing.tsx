@@ -156,9 +156,26 @@ export default function MarketingPricing() {
 
   const visibleFeatures = showAllFeatures ? COMPARISON : COMPARISON.filter(c => c.key);
 
+  const faqItems = (t('marketing.faq.items', { returnObjects: true }) as Array<{ q: string; a: string }>) || [];
+  const faqJsonLd = faqItems.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqItems.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }
+    : null;
+
   return (
     <>
-      <SeoHead path="/pricing" title={title} description={description} />
+      <SeoHead path="/pricing" title={title} description={description}>
+        {faqJsonLd && (
+          <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
+        )}
+      </SeoHead>
 
       <div className="min-h-screen bg-background">
         <LandingHeader />
