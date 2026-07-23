@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, FileText, Download, Search, MoreHorizontal, CheckCircle, Clock, AlertTriangle, Plus, Tag, Loader2, Eye, Trash2 } from 'lucide-react';
@@ -17,6 +17,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Invoice {
   id: string;
@@ -391,41 +394,42 @@ export default function Invoices() {
     <div className="space-y-6 p-6">
       <AdminBreadcrumb currentPage="Facturen" />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t('invoices')}</h1>
-          <p className="text-muted-foreground">{t('invoicesDescription')}</p>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={showNewSupplierDialog} onOpenChange={setShowNewSupplierDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" />Nieuwe leverancier</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Nieuwe leverancier toevoegen</DialogTitle>
-                <DialogDescription>Voeg een nieuwe leverancier toe aan je administratie</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2"><Label>Leveranciersnaam *</Label><Input value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} placeholder="Bijv. Software BV" /></div>
-                <div className="space-y-2"><Label>BTW-nummer</Label><Input value={newSupplierVat} onChange={(e) => setNewSupplierVat(e.target.value)} placeholder="NL123456789B01" /></div>
-                <div className="space-y-2"><Label>E-mailadres</Label><Input type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} placeholder="info@leverancier.nl" /></div>
-                <div className="space-y-2"><Label>IBAN</Label><Input value={newSupplierIban} onChange={(e) => setNewSupplierIban(e.target.value)} placeholder="NL00BANK0123456789" /></div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowNewSupplierDialog(false)}>Annuleren</Button>
-                <Button onClick={handleAddSupplier} disabled={!newSupplierName.trim()}>Toevoegen</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+      <PageHeader
+        title={t('invoices')}
+        description={t('invoicesDescription')}
+        actions={
+          <>
+            <Dialog open={showNewSupplierDialog} onOpenChange={setShowNewSupplierDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm"><Plus className="mr-2 h-4 w-4" />Nieuwe leverancier</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Nieuwe leverancier toevoegen</DialogTitle>
+                  <DialogDescription>Voeg een nieuwe leverancier toe aan je administratie</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2"><Label>Leveranciersnaam *</Label><Input value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} placeholder="Bijv. Software BV" /></div>
+                  <div className="space-y-2"><Label>BTW-nummer</Label><Input value={newSupplierVat} onChange={(e) => setNewSupplierVat(e.target.value)} placeholder="NL123456789B01" /></div>
+                  <div className="space-y-2"><Label>E-mailadres</Label><Input type="email" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} placeholder="info@leverancier.nl" /></div>
+                  <div className="space-y-2"><Label>IBAN</Label><Input value={newSupplierIban} onChange={(e) => setNewSupplierIban(e.target.value)} placeholder="NL00BANK0123456789" /></div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowNewSupplierDialog(false)}>Annuleren</Button>
+                  <Button onClick={handleAddSupplier} disabled={!newSupplierName.trim()}>Toevoegen</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
-          <Button disabled={uploading} className="relative">
-            <Upload className="mr-2 h-4 w-4" />
-            {uploading ? 'Uploaden...' : t('uploadInvoice')}
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
-          </Button>
-        </div>
-      </div>
+            <Button disabled={uploading} className="relative">
+              <Upload className="mr-2 h-4 w-4" />
+              {uploading ? 'Uploaden...' : t('uploadInvoice')}
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
+            </Button>
+          </>
+        }
+      />
+
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-5">
@@ -504,11 +508,20 @@ export default function Invoices() {
           {loading ? (
             <div className="text-center py-8 text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Laden...</div>
           ) : filteredInvoices.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Nog geen facturen</h3>
-              <p className="max-w-sm mx-auto">Upload je eerste factuur om te beginnen.</p>
-            </div>
+            invoices.length === 0 ? (
+              <EmptyState
+                icon={FileText}
+                title="Nog geen facturen"
+                description="Upload je eerste factuur — Servio leest bedrag, BTW en leverancier automatisch uit."
+              />
+            ) : (
+              <EmptyState
+                icon={Search}
+                title="Geen facturen gevonden"
+                description="Pas je zoekterm of filters aan om resultaten te zien."
+              />
+            )
+
           ) : (
             <Table>
               <TableHeader>
@@ -566,19 +579,17 @@ export default function Invoices() {
         </CardContent>
       </Card>
 
-      {/* Delete confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Weet je zeker dat je deze factuur wilt verwijderen?</AlertDialogTitle>
-            <AlertDialogDescription>Deze actie kan niet ongedaan worden gemaakt. De factuur en het bijbehorende bestand worden permanent verwijderd.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuleren</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteInvoice} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Verwijderen</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Weet je zeker dat je deze factuur wilt verwijderen?"
+        description="Deze actie kan niet ongedaan worden gemaakt. De factuur en het bijbehorende bestand worden permanent verwijderd."
+        confirmLabel="Verwijderen"
+        variant="destructive"
+        loading={actionLoading === deleteId}
+        onConfirm={handleDeleteInvoice}
+      />
+
 
       {/* Preview modal */}
       <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>

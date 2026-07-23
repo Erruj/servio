@@ -4,15 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Search, Trash2, FileText, ArrowRight, Download, Edit, Copy } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, ArrowRight, Download, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -55,20 +56,28 @@ export default function Quotes() {
 
   const loadData = async () => {
     setLoading(true);
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return;
-    const [quotesRes, customersRes] = await Promise.all([
-      supabase.from('quotes').select('*').eq('user_id', user.user.id).order('created_at', { ascending: false }),
-      supabase.from('customers').select('id, name, company_name, email').eq('user_id', user.user.id).order('name'),
-    ]);
-    setQuotes((quotesRes.data as any[]) || []);
-    const custs = (customersRes.data as any[]) || [];
-    setCustomers(custs);
-    const map: Record<string, Customer> = {};
-    custs.forEach(c => map[c.id] = c);
-    setCustomerMap(map);
-    setLoading(false);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+      const [quotesRes, customersRes] = await Promise.all([
+        supabase.from('quotes').select('*').eq('user_id', user.user.id).order('created_at', { ascending: false }),
+        supabase.from('customers').select('id, name, company_name, email').eq('user_id', user.user.id).order('name'),
+      ]);
+      if (quotesRes.error) throw quotesRes.error;
+      setQuotes((quotesRes.data as any[]) || []);
+      const custs = (customersRes.data as any[]) || [];
+      setCustomers(custs);
+      const map: Record<string, Customer> = {};
+      custs.forEach(c => map[c.id] = c);
+      setCustomerMap(map);
+    } catch (error) {
+      console.error('Error loading quotes:', error);
+      toast.error('Offertes konden niet worden geladen');
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const calcLine = (l: QuoteLine): QuoteLine => {
     const subtotal = l.quantity * l.unit_price;
@@ -142,35 +151,53 @@ export default function Quotes() {
   };
 
   const handleStatusChange = async (id: string, status: string) => {
-    await supabase.from('quotes').update({ status }).eq('id', id);
-    toast.success(`Status gewijzigd naar ${statusLabels[status]}`);
-    loadData();
+    try {
+      const { error } = await supabase.from('quotes').update({ status }).eq('id', id);
+      if (error) throw error;
+      toast.success(`Status gewijzigd naar ${statusLabels[status]}`);
+      loadData();
+    } catch (error) {
+      console.error('Error updating quote status:', error);
+      toast.error('Status kon niet worden bijgewerkt');
+    }
   };
 
   const handleConvertToInvoice = async (q: Quote) => {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return;
-    const customer = q.customer_id ? customerMap[q.customer_id] : null;
-    const { error } = await supabase.from('invoices').insert({
-      user_id: user.user.id, customer_id: q.customer_id, supplier: customer?.name || 'Klant',
-      amount: q.total, vat_amount: q.vat_amount, status: 'pending', file_path: `quote-${q.id}`,
-      invoice_number: `INV-${Date.now().toString(36).toUpperCase()}`,
-      invoice_date: new Date().toISOString().split('T')[0],
-      due_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-    });
-    if (error) { toast.error('Fout bij omzetten'); return; }
-    await supabase.from('quotes').update({ status: 'accepted' }).eq('id', q.id);
-    toast.success('Offerte omgezet naar factuur');
-    loadData();
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+      const customer = q.customer_id ? customerMap[q.customer_id] : null;
+      const { error } = await supabase.from('invoices').insert({
+        user_id: user.user.id, customer_id: q.customer_id, supplier: customer?.name || 'Klant',
+        amount: q.total, vat_amount: q.vat_amount, status: 'pending', file_path: `quote-${q.id}`,
+        invoice_number: `INV-${Date.now().toString(36).toUpperCase()}`,
+        invoice_date: new Date().toISOString().split('T')[0],
+        due_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+      });
+      if (error) throw error;
+      await supabase.from('quotes').update({ status: 'accepted' }).eq('id', q.id);
+      toast.success('Offerte omgezet naar factuur');
+      loadData();
+    } catch (error) {
+      console.error('Error converting quote:', error);
+      toast.error('Offerte kon niet worden omgezet');
+    }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    await supabase.from('quotes').delete().eq('id', deleteId);
-    toast.success('Offerte verwijderd');
-    setDeleteId(null);
-    loadData();
+    try {
+      const { error } = await supabase.from('quotes').delete().eq('id', deleteId);
+      if (error) throw error;
+      toast.success('Offerte verwijderd');
+      setDeleteId(null);
+      loadData();
+    } catch (error) {
+      console.error('Error deleting quote:', error);
+      toast.error('Offerte kon niet worden verwijderd');
+    }
   };
+
 
   const handleDownloadPDF = (q: Quote) => {
     const customer = q.customer_id ? customerMap[q.customer_id] : null;
@@ -301,16 +328,17 @@ export default function Quotes() {
     <div className="flex min-h-screen bg-background">
       <div className="flex-1 p-4 md:p-8 overflow-auto">
         <AdminBreadcrumb currentPage="Offertes" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Offertes</h1>
-            <p className="text-muted-foreground">Maak en beheer je offertes</p>
-          </div>
-          <Button onClick={() => { resetForm(); setShowEditor(true); }}>
-            <Plus className="h-4 w-4 mr-2" /> Nieuwe Offerte
-          </Button>
-        </div>
+
+        <PageHeader
+          title="Offertes"
+          description="Maak en beheer je offertes"
+          actions={
+            <Button onClick={() => { resetForm(); setShowEditor(true); }}>
+              <Plus className="h-4 w-4 mr-2" /> Nieuwe Offerte
+            </Button>
+          }
+        />
+
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -342,70 +370,88 @@ export default function Quotes() {
         {/* Table */}
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nummer</TableHead>
-                  <TableHead>Klant</TableHead>
-                  <TableHead className="hidden md:table-cell">Status</TableHead>
-                  <TableHead className="hidden md:table-cell">Geldig tot</TableHead>
-                  <TableHead className="text-right">Totaal</TableHead>
-                  <TableHead>Acties</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8">Laden...</TableCell></TableRow>
-                ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Geen offertes gevonden</TableCell></TableRow>
-                ) : filtered.map(q => {
-                  const customer = q.customer_id ? customerMap[q.customer_id] : null;
-                  return (
-                    <TableRow key={q.id}>
-                      <TableCell className="font-medium">{q.quote_number || '-'}</TableCell>
-                      <TableCell>{customer?.name || '-'}</TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Badge className={statusColors[q.status]}>{statusLabels[q.status] || q.status}</Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {q.valid_until ? format(new Date(q.valid_until), 'd MMM yyyy', { locale: nl }) : '-'}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">€{Number(q.total).toFixed(2)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm">Acties</Button></DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleEdit(q)}><Edit className="h-4 w-4 mr-2" /> Bewerken</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownloadPDF(q)}><Download className="h-4 w-4 mr-2" /> Download PDF</DropdownMenuItem>
-                            {q.status === 'draft' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'sent')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer verzonden</DropdownMenuItem>}
-                            {q.status === 'sent' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'accepted')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer geaccepteerd</DropdownMenuItem>}
-                            {(q.status === 'sent' || q.status === 'accepted') && (
-                              <DropdownMenuItem onClick={() => handleConvertToInvoice(q)}><FileText className="h-4 w-4 mr-2" /> Omzetten naar factuur</DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => setDeleteId(q.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Verwijderen</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">Laden...</div>
+            ) : filtered.length === 0 ? (
+              quotes.length === 0 ? (
+                <EmptyState
+                  icon={FileText}
+                  title="Nog geen offertes"
+                  description="Maak je eerste offerte en stuur hem direct als PDF naar je klant."
+                  action={{
+                    label: 'Nieuwe offerte',
+                    icon: Plus,
+                    onClick: () => { resetForm(); setShowEditor(true); },
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  icon={Search}
+                  title="Geen offertes gevonden"
+                  description="Pas je zoekterm of filter aan om resultaten te zien."
+                />
+              )
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nummer</TableHead>
+                    <TableHead>Klant</TableHead>
+                    <TableHead className="hidden md:table-cell">Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Geldig tot</TableHead>
+                    <TableHead className="text-right">Totaal</TableHead>
+                    <TableHead>Acties</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map(q => {
+                    const customer = q.customer_id ? customerMap[q.customer_id] : null;
+                    return (
+                      <TableRow key={q.id}>
+                        <TableCell className="font-medium">{q.quote_number || '-'}</TableCell>
+                        <TableCell>{customer?.name || '-'}</TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge className={statusColors[q.status]}>{statusLabels[q.status] || q.status}</Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {q.valid_until ? format(new Date(q.valid_until), 'd MMM yyyy', { locale: nl }) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">€{Number(q.total).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm">Acties</Button></DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => handleEdit(q)}><Edit className="h-4 w-4 mr-2" /> Bewerken</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDownloadPDF(q)}><Download className="h-4 w-4 mr-2" /> Download PDF</DropdownMenuItem>
+                              {q.status === 'draft' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'sent')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer verzonden</DropdownMenuItem>}
+                              {q.status === 'sent' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'accepted')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer geaccepteerd</DropdownMenuItem>}
+                              {(q.status === 'sent' || q.status === 'accepted') && (
+                                <DropdownMenuItem onClick={() => handleConvertToInvoice(q)}><FileText className="h-4 w-4 mr-2" /> Omzetten naar factuur</DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem onClick={() => setDeleteId(q.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Verwijderen</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Offerte verwijderen</AlertDialogTitle>
-              <AlertDialogDescription>Weet je zeker dat je deze offerte wilt verwijderen?</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuleren</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Verwijderen</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+
+        <ConfirmDialog
+          open={!!deleteId}
+          onOpenChange={(open) => !open && setDeleteId(null)}
+          title="Offerte verwijderen"
+          description="Weet je zeker dat je deze offerte wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+          confirmLabel="Verwijderen"
+          variant="destructive"
+          onConfirm={handleDelete}
+        />
+
       </div>
     </div>
   );

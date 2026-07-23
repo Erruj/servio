@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, Receipt as ReceiptIcon, Camera, Eye, Download, Trash2 } from 'lucide-react';
+import { Receipt as ReceiptIcon, Camera, Eye, Download, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast as sonnerToast } from 'sonner';
@@ -197,12 +199,10 @@ export default function Receipts() {
   return (
     <div className="space-y-6 p-6">
       <AdminBreadcrumb currentPage="Bonnetjes" />
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t('receipts')}</h1>
-          <p className="text-muted-foreground">{t('receiptsDescription')}</p>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader
+        title={t('receipts')}
+        description={t('receiptsDescription')}
+        actions={
           <Button disabled={uploading} className="relative">
             <Camera className="mr-2 h-4 w-4" />
             {uploading ? t('uploading') : t('uploadReceipt')}
@@ -215,8 +215,8 @@ export default function Receipts() {
               disabled={uploading}
             />
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -227,11 +227,11 @@ export default function Receipts() {
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">{t('loading')}...</div>
           ) : receipts.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <ReceiptIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Nog geen bonnetjes</h3>
-              <p className="max-w-sm mx-auto">Upload of fotografeer je eerste bonnetje. Servio leest het bedrag, de winkel en de categorie automatisch uit.</p>
-            </div>
+            <EmptyState
+              icon={ReceiptIcon}
+              title="Nog geen bonnetjes"
+              description="Upload of fotografeer je eerste bonnetje. Servio leest het bedrag, de winkel en de categorie automatisch uit."
+            />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {receipts.map((receipt) => (
@@ -267,12 +267,15 @@ export default function Receipts() {
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Bonnetje verwijderen?</AlertDialogTitle><AlertDialogDescription>Dit kan niet ongedaan worden gemaakt.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel>Annuleren</AlertDialogCancel><AlertDialogAction onClick={handleDeleteReceipt} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Verwijderen</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Bonnetje verwijderen?"
+        description="Dit kan niet ongedaan worden gemaakt."
+        confirmLabel="Verwijderen"
+        variant="destructive"
+        onConfirm={handleDeleteReceipt}
+      />
 
       <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
