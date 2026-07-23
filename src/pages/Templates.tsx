@@ -363,7 +363,7 @@ const Templates = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDelete(template)}
+                                onClick={() => setDeleteTarget(template)}
                                 className="text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />
