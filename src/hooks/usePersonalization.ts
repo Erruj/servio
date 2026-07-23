@@ -114,6 +114,7 @@ export function usePersonalization() {
     if (!user) return;
     const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
+    if ('accentColor' in updates && updates.accentColor) writeStoredAccent(updates.accentColor);
 
     const dbUpdates: Record<string, any> = {};
     if ('aiPersonality' in updates) dbUpdates.ai_personality = updates.aiPersonality;
