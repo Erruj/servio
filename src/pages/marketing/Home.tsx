@@ -10,7 +10,7 @@ import { SeoHead } from '@/components/SeoHead';
 import { useTranslation } from 'react-i18next';
 
 export default function MarketingHome() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
 
   const title = isEn
@@ -23,9 +23,26 @@ export default function MarketingHome() {
     ? 'AI customer service, automate admin, bookkeeping freelancers, business assistant software, invoice processing, financial dashboard, SMB software'
     : 'AI klantenservice, administratie automatiseren, boekhouding voor ZZP, bedrijfsassistent software, facturen verwerken, financieel dashboard, MKB software';
 
+  const faqItems = (t('marketing.faq.items', { returnObjects: true }) as Array<{ q: string; a: string }>) || [];
+  const faqJsonLd = faqItems.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqItems.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }
+    : null;
+
   return (
     <>
-      <SeoHead path="/" title={title} description={description} keywords={keywords} />
+      <SeoHead path="/" title={title} description={description} keywords={keywords}>
+        {faqJsonLd && (
+          <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
+        )}
+      </SeoHead>
 
       <div className="min-h-screen bg-background">
         <LandingHeader />
