@@ -48,6 +48,7 @@ interface EmailStats {
 
 const Statistics = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [timePeriod, setTimePeriod] = useState('week');
   const [stats, setStats] = useState<EmailStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
