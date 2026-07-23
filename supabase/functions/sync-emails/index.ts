@@ -930,7 +930,32 @@ serve(async (req) => {
           throw new Error(`Unsupported provider: ${connection.provider}`);
         }
 
-        const { insertedCount, updatedCount } = await persistMessages(supabase as any, connection, messages);
+        const { insertedCount, updatedCount, insertedExternalIds } = await persistMessages(supabase as any, connection, messages);
+
+        // Auto-process invoice/receipt attachments for newly inserted Gmail messages
+        let autoProcessedDocs = 0;
+        if (autoProcessAttachments && gmailRawByExternalId && gmailAccessToken && insertedExternalIds.length > 0) {
+          const parsedByExternalId = new Map(messages.map((m: any) => [m.external_id, m]));
+          for (const extId of insertedExternalIds) {
+            const raw = gmailRawByExternalId.get(extId);
+            const parsed = parsedByExternalId.get(extId);
+            if (!raw?.payload || !parsed) continue;
+            try {
+              autoProcessedDocs += await processGmailAttachmentsForEmail(
+                supabase as any,
+                connection.user_id,
+                extId,
+                parsed.subject || "",
+                gmailAccessToken,
+                extId,
+                raw.payload,
+              );
+            } catch (e) {
+              console.error(`[sync-emails] auto-process error for ${extId}:`, e instanceof Error ? e.message : String(e));
+            }
+          }
+          if (autoProcessedDocs > 0) console.log(`[sync-emails] Auto-processed ${autoProcessedDocs} attachment(s) for ${connection.email_address}`);
+        }
 
         await supabase
           .from("email_connections")
