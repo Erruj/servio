@@ -25,7 +25,7 @@ interface EmailRow {
   is_read: boolean;
   labels: string[] | null;
   received_at: string;
-  ai_summary: boolean | null;
+  ai_summary: string | null;
   customer_sentiment: string | null;
 }
 
