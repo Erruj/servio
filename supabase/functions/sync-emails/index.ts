@@ -626,6 +626,174 @@ async function persistMessages(
   return { insertedCount: inserts.length, updatedCount: updates.length };
 }
 
+// ─── Auto-process invoice/receipt attachments (Gmail only) ──────────────
+
+const AUTO_ATTACHMENT_EXTS = ["pdf", "png", "jpg", "jpeg", "webp"];
+const INVOICE_KEYWORDS = /(factuur|invoice|rekening)/i;
+
+function collectGmailAttachmentParts(payload: any): Array<{ filename: string; mimeType: string; attachmentId: string }> {
+  const result: Array<{ filename: string; mimeType: string; attachmentId: string }> = [];
+  function walk(part: any) {
+    if (!part) return;
+    if (part.filename && part.body?.attachmentId) {
+      result.push({ filename: part.filename, mimeType: part.mimeType || "application/octet-stream", attachmentId: part.body.attachmentId });
+    }
+    if (part.parts) part.parts.forEach(walk);
+  }
+  walk(payload);
+  return result;
+}
+
+async function callAiExtract(dataUrl: string, mime: string, docType: "invoice" | "receipt", filename: string): Promise<Record<string, any> | null> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) return null;
+
+  const promptText = docType === "invoice"
+    ? 'Extraheer de volgende data uit deze factuur en geef ALLEEN raw JSON terug zonder markdown: { "vendor_name": string, "date": "YYYY-MM-DD" of null, "due_date": "YYYY-MM-DD" of null, "invoice_number": string of null, "total_amount": number, "vat_amount": number, "description": string, "currency": "EUR"|"USD"|... }. Gebruik null als een veld niet leesbaar is.'
+    : 'Extraheer de volgende data uit dit bonnetje en geef ALLEEN raw JSON terug zonder markdown: { "vendor_name": string, "date": "YYYY-MM-DD" of null, "total_amount": number, "vat_amount": number, "description": string, "currency": "EUR"|"USD"|... }. Gebruik null als een veld niet leesbaar is.';
+
+  const userContent: any[] = [{ type: "text", text: promptText }];
+  if (mime === "application/pdf") {
+    userContent.push({ type: "file", file: { filename, file_data: dataUrl } });
+  } else {
+    userContent.push({ type: "image_url", image_url: { url: dataUrl } });
+  }
+
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: "Je bent een OCR/data-extractie assistent. Antwoord uitsluitend met geldige JSON." },
+        { role: "user", content: userContent },
+      ],
+    }),
+  });
+  if (!resp.ok) {
+    console.error("[sync-emails] AI extract failed:", resp.status, await resp.text());
+    return null;
+  }
+  const aiData = await resp.json();
+  const content = aiData.choices?.[0]?.message?.content || "";
+  try {
+    const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    return JSON.parse(match ? match[0] : cleaned);
+  } catch {
+    return null;
+  }
+}
+
+async function processGmailAttachmentsForEmail(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  emailId: string,
+  emailSubject: string,
+  accessToken: string,
+  gmailMessageId: string,
+  payload: any,
+): Promise<number> {
+  const parts = collectGmailAttachmentParts(payload);
+  if (parts.length === 0) return 0;
+
+  let processed = 0;
+  for (const part of parts) {
+    const ext = (part.filename.split(".").pop() || "").toLowerCase();
+    if (!AUTO_ATTACHMENT_EXTS.includes(ext)) continue;
+
+    try {
+      // Download attachment
+      const attResp = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${gmailMessageId}/attachments/${part.attachmentId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+      if (!attResp.ok) {
+        console.error(`[sync-emails] attachment download failed for ${part.filename}:`, attResp.status);
+        continue;
+      }
+      const attData = await attResp.json();
+      const rawB64 = (attData.data || "").replace(/-/g, "+").replace(/_/g, "/");
+      const binary = atob(rawB64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+      // Upload to storage
+      const safeName = part.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const storagePath = `${userId}/auto/${crypto.randomUUID()}_${safeName}`;
+      const mime = part.mimeType || (ext === "pdf" ? "application/pdf" : `image/${ext === "jpg" ? "jpeg" : ext}`);
+      const { error: uploadErr } = await supabase.storage
+        .from("financial-documents")
+        .upload(storagePath, bytes, { contentType: mime, upsert: false });
+      if (uploadErr) {
+        console.error(`[sync-emails] storage upload failed:`, uploadErr.message);
+        continue;
+      }
+
+      // Decide invoice vs receipt from filename/subject
+      const isInvoice = INVOICE_KEYWORDS.test(part.filename) || INVOICE_KEYWORDS.test(emailSubject || "");
+      const docType: "invoice" | "receipt" = isInvoice ? "invoice" : "receipt";
+
+      // Insert row FIRST so extract-document-data ownership check would pass
+      const nowIso = new Date().toISOString();
+      let recordId: string | null = null;
+      if (docType === "invoice") {
+        const { data, error } = await supabase.from("invoices").insert({
+          user_id: userId,
+          file_path: storagePath,
+          supplier: emailSubject?.slice(0, 100) || "Onbekend",
+          amount: 0,
+          vat_amount: 0,
+          invoice_date: nowIso.slice(0, 10),
+          status: "review",
+        } as any).select("id").single();
+        if (error) { console.error("[sync-emails] invoice insert:", error.message); continue; }
+        recordId = (data as any).id;
+      } else {
+        const { data, error } = await supabase.from("receipts").insert({
+          user_id: userId,
+          file_path: storagePath,
+          merchant: emailSubject?.slice(0, 100) || "Onbekend",
+          amount: 0,
+          receipt_date: nowIso.slice(0, 10),
+          status: "review",
+        } as any).select("id").single();
+        if (error) { console.error("[sync-emails] receipt insert:", error.message); continue; }
+        recordId = (data as any).id;
+      }
+
+      // Run OCR/AI extraction
+      let bin = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) bin += String.fromCharCode(...bytes.subarray(i, i + chunk));
+      const dataUrl = `data:${mime};base64,${btoa(bin)}`;
+      const extracted = await callAiExtract(dataUrl, mime, docType, part.filename);
+
+      if (extracted && recordId) {
+        const patch: any = { ai_summary: extracted.description || null };
+        if (docType === "invoice") {
+          if (extracted.vendor_name) patch.supplier = String(extracted.vendor_name).slice(0, 200);
+          if (extracted.date) patch.invoice_date = extracted.date;
+          if (extracted.due_date) patch.due_date = extracted.due_date;
+          if (extracted.invoice_number) patch.invoice_number = String(extracted.invoice_number).slice(0, 100);
+          if (typeof extracted.total_amount === "number") patch.amount = extracted.total_amount;
+          if (typeof extracted.vat_amount === "number") patch.vat_amount = extracted.vat_amount;
+          await supabase.from("invoices").update(patch).eq("id", recordId);
+        } else {
+          if (extracted.vendor_name) patch.merchant = String(extracted.vendor_name).slice(0, 200);
+          if (extracted.date) patch.receipt_date = extracted.date;
+          if (typeof extracted.total_amount === "number") patch.amount = extracted.total_amount;
+          await supabase.from("receipts").update(patch).eq("id", recordId);
+        }
+      }
+
+      processed++;
+    } catch (e) {
+      console.error(`[sync-emails] auto-process attachment error:`, e instanceof Error ? e.message : String(e));
+    }
+  }
+  return processed;
+
 // ─── Main Handler ────────────────────────────────────────────────────────
 
 serve(async (req) => {
