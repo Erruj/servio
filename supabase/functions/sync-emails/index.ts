@@ -969,6 +969,7 @@ serve(async (req) => {
           fetched_count: messages.length,
           inserted_count: insertedCount,
           updated_count: updatedCount,
+          auto_processed_documents: autoProcessedDocs,
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown sync error";
