@@ -24,6 +24,7 @@ const MailboxSetup = () => {
     connections,
     isLoading,
     startGmailOAuth,
+    startOutlookOAuth,
     disconnectProvider,
     syncEmails,
     refetch,
