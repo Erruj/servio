@@ -311,29 +311,27 @@ const Dashboard = () => {
             <OnboardingWizard />
             <TimeSavedWidget />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-                  <BarChart3 className="h-7 w-7 text-primary" /> Dashboard
-                </h1>
-                <p className="text-muted-foreground">{t('welcome').split('—')[0]}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="text-sm">{tierLabel}</Badge>
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                  <SettingsIcon className="h-4 w-4 mr-1" />
-                  {isEditing ? 'Klaar' : 'Aanpassen'}
-                </Button>
-                <Select value={timeFilter} onValueChange={setTimeFilter}>
-                  <SelectTrigger className="w-36"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">Vandaag</SelectItem>
-                    <SelectItem value="week">Deze week</SelectItem>
-                    <SelectItem value="month">Deze maand</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <PageHeader
+              title="Dashboard"
+              description={t('welcome').split('—')[0]}
+              actions={
+                <>
+                  <Badge variant="outline" className="text-sm">{tierLabel}</Badge>
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
+                    <SettingsIcon className="h-4 w-4 mr-1" />
+                    {isEditing ? 'Klaar' : 'Aanpassen'}
+                  </Button>
+                  <Select value={timeFilter} onValueChange={setTimeFilter}>
+                    <SelectTrigger className="w-36"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="today">Vandaag</SelectItem>
+                      <SelectItem value="week">Deze week</SelectItem>
+                      <SelectItem value="month">Deze maand</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </>
+              }
+            />
 
             {/* Widget toggles when editing */}
             {isEditing && (
