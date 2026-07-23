@@ -65,9 +65,9 @@ serve(async (req) => {
 
     const corrections = await safeQuery('ai_corrections fetch', async () => {
       const { data } = await supabase.from('ai_corrections')
-        .select('original_reply, corrected_reply')
+        .select('original_reply, corrected_reply, correction_type')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false }).limit(3);
+        .order('created_at', { ascending: false }).limit(5);
       return data || [];
     }, [] as any[]);
 
