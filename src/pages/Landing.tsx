@@ -13,8 +13,8 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>Servio – AI Bedrijfsassistent voor ZZP & MKB | Automatiseer je Inbox en Administratie</title>
-        <meta name="description" content="Servio is de slimme AI-assistent voor ondernemers. Automatiseer tot 80% van je e-mails, verwerk facturen automatisch en krijg realtime inzicht in je financiën. Probeer 14 dagen gratis." />
+        <title>Servio – AI Bedrijfsassistent voor ZZP & MKB</title>
+        <meta name="description" content="Automatiseer tot 80% van je e-mails, verwerk facturen automatisch en krijg realtime inzicht in je financiën. 14 dagen gratis." />
         <link rel="canonical" href="https://getservio.co" />
         <meta property="og:title" content="Servio – AI Bedrijfsassistent voor ZZP & MKB" />
         <meta property="og:description" content="Automatiseer je inbox en administratie met AI. Probeer 14 dagen gratis." />

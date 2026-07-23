@@ -12,8 +12,8 @@ export default function Blog() {
   const prefix = isEn ? '/en' : '';
 
   const title = isEn
-    ? "Blog – Tips for Freelancers on AI, Admin & Productivity | Servio"
-    : "Blog – Tips voor ZZP'ers over AI, Administratie & Productiviteit | Servio";
+    ? "Blog – AI & Admin Tips for Freelancers | Servio"
+    : "Blog – AI & Administratie Tips voor ZZP'ers | Servio";
   const description = isEn
     ? 'Practical articles for freelancers and small business owners about AI tools, inbox automation, admin and saving time. By Servio.'
     : "Praktische artikelen voor ZZP'ers en kleine ondernemers over AI tools, inbox automatisering, administratie en tijd besparen. Door Servio.";

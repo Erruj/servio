@@ -125,7 +125,7 @@ const COMPARISON: { feature: string; starter: Cell; pro: Cell; business: Cell; k
 
 function renderCell(v: Cell) {
   if (v === true) return <Check className="w-5 h-5 text-success mx-auto" aria-label="Ja" />;
-  if (v === false) return <X className="w-5 h-5 text-muted-foreground/50 mx-auto" aria-label="Nee" />;
+  if (v === false) return <X className="w-5 h-5 text-muted-foreground mx-auto" aria-label="Nee" />;
   return <span className="text-sm text-foreground">{v}</span>;
 }
 
