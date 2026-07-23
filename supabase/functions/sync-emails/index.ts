@@ -583,8 +583,8 @@ async function persistMessages(
   supabase: ReturnType<typeof createClient>,
   connection: { id: string; user_id: string },
   messages: any[]
-): Promise<{ insertedCount: number; updatedCount: number }> {
-  if (messages.length === 0) return { insertedCount: 0, updatedCount: 0 };
+): Promise<{ insertedCount: number; updatedCount: number; insertedExternalIds: string[] }> {
+  if (messages.length === 0) return { insertedCount: 0, updatedCount: 0, insertedExternalIds: [] };
 
   const externalIds = [...new Set(messages.map((m) => m.external_id).filter(Boolean))];
 
@@ -623,7 +623,11 @@ async function persistMessages(
     if (error) throw new Error(`Failed to update emails: ${error.message}`);
   }
 
-  return { insertedCount: inserts.length, updatedCount: updates.length };
+  return {
+    insertedCount: inserts.length,
+    updatedCount: updates.length,
+    insertedExternalIds: inserts.map((m) => m.external_id).filter(Boolean),
+  };
 }
 
 // ─── Auto-process invoice/receipt attachments (Gmail only) ──────────────
