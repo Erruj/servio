@@ -183,7 +183,8 @@ ${emailContent.substring(0, 3000)}`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: 2000,
+        max_tokens: 6000,
+        response_format: { type: 'json_object' },
       }),
     });
 
@@ -209,13 +210,43 @@ ${emailContent.substring(0, 3000)}`;
     const content = data.choices?.[0]?.message?.content || '';
     console.log('[generate-reply] AI response received');
 
-    let variants;
+    let variants: any[] | null = null;
     try {
       const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      variants = JSON.parse(cleaned).variants;
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed?.variants) && parsed.variants.length > 0) {
+        variants = parsed.variants.filter(
+          (v: any) => v && typeof v.content === 'string' && v.content.trim().length > 0
+        );
+      }
     } catch {
-      console.warn('[generate-reply] JSON parse failed, returning single variant');
-      variants = [{ type: 'Zakelijk', label: 'Zakelijk', content, icon: '💼' }];
+      console.warn('[generate-reply] JSON parse failed, attempting salvage');
+    }
+
+    if (!variants || variants.length === 0) {
+      // Salvage: try to extract at least one "content":"..." block from possibly-truncated JSON
+      const salvaged: { type: string; label: string; content: string; icon: string }[] = [];
+      const iconMap: Record<string, string> = { Zakelijk: '💼', Empathisch: '💝', Uitgebreid: '📋' };
+      const regex = /"type"\s*:\s*"(Zakelijk|Empathisch|Uitgebreid)"[\s\S]*?"content"\s*:\s*"((?:\\.|[^"\\])*)"/g;
+      let m: RegExpExecArray | null;
+      while ((m = regex.exec(content)) !== null) {
+        try {
+          const unescaped = JSON.parse('"' + m[2] + '"');
+          if (unescaped && unescaped.trim().length > 20) {
+            salvaged.push({ type: m[1], label: m[1], content: unescaped, icon: iconMap[m[1]] || '💼' });
+          }
+        } catch { /* skip malformed segment */ }
+      }
+      if (salvaged.length > 0) {
+        console.log('[generate-reply] salvaged variants:', salvaged.length);
+        variants = salvaged;
+      } else {
+        console.error('[generate-reply] no usable content in AI response');
+        return new Response(
+          JSON.stringify({ error: 'De AI gaf een onvolledig antwoord terug. Probeer het opnieuw.' }),
+          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Persist preferred_tone (best-effort)
