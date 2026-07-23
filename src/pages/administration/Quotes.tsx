@@ -56,20 +56,28 @@ export default function Quotes() {
 
   const loadData = async () => {
     setLoading(true);
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return;
-    const [quotesRes, customersRes] = await Promise.all([
-      supabase.from('quotes').select('*').eq('user_id', user.user.id).order('created_at', { ascending: false }),
-      supabase.from('customers').select('id, name, company_name, email').eq('user_id', user.user.id).order('name'),
-    ]);
-    setQuotes((quotesRes.data as any[]) || []);
-    const custs = (customersRes.data as any[]) || [];
-    setCustomers(custs);
-    const map: Record<string, Customer> = {};
-    custs.forEach(c => map[c.id] = c);
-    setCustomerMap(map);
-    setLoading(false);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+      const [quotesRes, customersRes] = await Promise.all([
+        supabase.from('quotes').select('*').eq('user_id', user.user.id).order('created_at', { ascending: false }),
+        supabase.from('customers').select('id, name, company_name, email').eq('user_id', user.user.id).order('name'),
+      ]);
+      if (quotesRes.error) throw quotesRes.error;
+      setQuotes((quotesRes.data as any[]) || []);
+      const custs = (customersRes.data as any[]) || [];
+      setCustomers(custs);
+      const map: Record<string, Customer> = {};
+      custs.forEach(c => map[c.id] = c);
+      setCustomerMap(map);
+    } catch (error) {
+      console.error('Error loading quotes:', error);
+      toast.error('Offertes konden niet worden geladen');
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const calcLine = (l: QuoteLine): QuoteLine => {
     const subtotal = l.quantity * l.unit_price;
