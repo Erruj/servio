@@ -377,17 +377,20 @@ const Templates = () => {
                 )}
 
                 {!isLoading && filteredTemplates.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                    <p className="font-medium text-foreground">
-                      {searchQuery ? 'Geen templates gevonden' : 'Nog geen templates'}
-                    </p>
-                    <p className="text-sm mt-1">
-                      {searchQuery
+                  <EmptyState
+                    icon={FileText}
+                    title={searchQuery ? 'Geen templates gevonden' : 'Nog geen templates'}
+                    description={
+                      searchQuery
                         ? 'Probeer een andere zoekterm'
-                        : 'Maak je eerste template aan met de knop hierboven.'}
-                    </p>
-                  </div>
+                        : 'Maak je eerste template aan met de knop hierboven.'
+                    }
+                    action={
+                      searchQuery
+                        ? undefined
+                        : { label: 'Nieuwe Template', onClick: handleCreateNew, icon: Plus }
+                    }
+                  />
                 )}
               </CardContent>
             </Card>
