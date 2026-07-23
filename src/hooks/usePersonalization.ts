@@ -37,9 +37,29 @@ const ACCENT_COLORS: Record<string, string> = {
   indigo: '239 84% 67%',
 };
 
+const ACCENT_STORAGE_KEY = 'servio.accentColor';
+
+function readStoredAccent(): string {
+  try {
+    const v = typeof window !== 'undefined' ? window.localStorage.getItem(ACCENT_STORAGE_KEY) : null;
+    return v && ACCENT_COLORS[v] ? v : DEFAULT_SETTINGS.accentColor;
+  } catch {
+    return DEFAULT_SETTINGS.accentColor;
+  }
+}
+
+function writeStoredAccent(color: string) {
+  try {
+    if (typeof window !== 'undefined') window.localStorage.setItem(ACCENT_STORAGE_KEY, color);
+  } catch { /* ignore */ }
+}
+
 export function usePersonalization() {
   const { user } = useAuth();
-  const [settings, setSettings] = useState<PersonalizationSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<PersonalizationSettings>(() => ({
+    ...DEFAULT_SETTINGS,
+    accentColor: readStoredAccent(),
+  }));
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
