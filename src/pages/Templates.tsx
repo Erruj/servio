@@ -44,6 +44,9 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface DbTemplateRow {
   id: string;
@@ -71,6 +74,8 @@ const Templates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<TemplateItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TemplateItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -163,14 +168,20 @@ const Templates = () => {
     toast({ title: 'Template gedupliceerd', description: `"${template.name}" is gekopieerd.` });
   };
 
-  const handleDelete = async (template: TemplateItem) => {
-    const { error } = await supabase.from('templates').delete().eq('id', template.id);
-    if (error) {
-      toast({ title: 'Verwijderen mislukt', description: error.message, variant: 'destructive' });
-      return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from('templates').delete().eq('id', deleteTarget.id);
+      if (error) throw error;
+      setTemplates((prev) => prev.filter((t) => t.id !== deleteTarget.id));
+      toast({ title: 'Template verwijderd', description: `"${deleteTarget.name}" is verwijderd.` });
+      setDeleteTarget(null);
+    } catch (err: any) {
+      toast({ title: 'Verwijderen mislukt', description: err?.message, variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
     }
-    setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-    toast({ title: 'Template verwijderd', description: `"${template.name}" is verwijderd.` });
   };
 
   const handleSave = async () => {
@@ -265,18 +276,16 @@ const Templates = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-8 space-y-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Templates</h1>
-                <p className="text-muted-foreground">
-                  Beheer je email templates voor snellere antwoorden
-                </p>
-              </div>
-              <Button onClick={handleCreateNew}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nieuwe Template
-              </Button>
-            </div>
+            <PageHeader
+              title="Templates"
+              description="Beheer je email templates voor snellere antwoorden"
+              actions={
+                <Button onClick={handleCreateNew}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nieuwe Template
+                </Button>
+              }
+            />
 
             <Card>
               <CardContent className="p-4">
@@ -354,7 +363,7 @@ const Templates = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDelete(template)}
+                                onClick={() => setDeleteTarget(template)}
                                 className="text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -368,17 +377,20 @@ const Templates = () => {
                 )}
 
                 {!isLoading && filteredTemplates.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                    <p className="font-medium text-foreground">
-                      {searchQuery ? 'Geen templates gevonden' : 'Nog geen templates'}
-                    </p>
-                    <p className="text-sm mt-1">
-                      {searchQuery
+                  <EmptyState
+                    icon={FileText}
+                    title={searchQuery ? 'Geen templates gevonden' : 'Nog geen templates'}
+                    description={
+                      searchQuery
                         ? 'Probeer een andere zoekterm'
-                        : 'Maak je eerste template aan met de knop hierboven.'}
-                    </p>
-                  </div>
+                        : 'Maak je eerste template aan met de knop hierboven.'
+                    }
+                    action={
+                      searchQuery
+                        ? undefined
+                        : { label: 'Nieuwe Template', onClick: handleCreateNew, icon: Plus }
+                    }
+                  />
                 )}
               </CardContent>
             </Card>
@@ -475,6 +487,16 @@ const Templates = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Template verwijderen"
+        description={deleteTarget ? `Weet je zeker dat je "${deleteTarget.name}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.` : ''}
+        confirmLabel="Verwijderen"
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+      />
     </div>
   );
 };

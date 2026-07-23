@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -70,12 +69,10 @@ export default function AuditLog() {
   return (
     <div className="p-6 space-y-6">
       <AdminBreadcrumb currentPage="Audit Log" />
-      <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-          <Shield className="h-7 w-7 text-primary" /> Audit Log
-        </h1>
-        <p className="text-muted-foreground">Overzicht van alle systeem- en gebruikersacties</p>
-      </div>
+      <PageHeader
+        title="Audit Log"
+        description="Overzicht van alle systeem- en gebruikersacties"
+      />
 
       <Card>
         <CardHeader>
@@ -102,11 +99,11 @@ export default function AuditLog() {
           {loading ? (
             <div className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 space-y-2">
-              <Shield className="h-10 w-10 mx-auto text-muted-foreground/40" />
-              <p className="text-sm font-medium">Geen log entries gevonden</p>
-              <p className="text-xs text-muted-foreground">Systeem- en gebruikersacties verschijnen hier zodra ze plaatsvinden.</p>
-            </div>
+            <EmptyState
+              icon={Shield}
+              title="Geen log entries gevonden"
+              description="Systeem- en gebruikersacties verschijnen hier zodra ze plaatsvinden."
+            />
           ) : (
             <div className="overflow-x-auto">
               <Table>
