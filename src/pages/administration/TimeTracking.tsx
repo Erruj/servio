@@ -228,17 +228,17 @@ export default function TimeTracking() {
       <div className="flex-1 p-4 md:p-8 overflow-auto">
         <AdminBreadcrumb currentPage="Uren" />
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Urenregistratie</h1>
-            <p className="text-muted-foreground">Registreer en beheer je werkuren</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="default" onClick={() => setShowCreateInvoice(true)}><FileText className="h-4 w-4 mr-2" /> Factuur van uren</Button>
-            <Button variant="outline" onClick={handleExportCSV}><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
-            <Button variant="outline" onClick={() => setShowManual(true)}><Plus className="h-4 w-4 mr-2" /> Handmatig</Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Urenregistratie"
+          description="Registreer en beheer je werkuren"
+          actions={
+            <>
+              <Button variant="default" onClick={() => setShowCreateInvoice(true)}><FileText className="h-4 w-4 mr-2" /> Factuur van uren</Button>
+              <Button variant="outline" onClick={handleExportCSV}><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
+              <Button variant="outline" onClick={() => setShowManual(true)}><Plus className="h-4 w-4 mr-2" /> Handmatig</Button>
+            </>
+          }
+        />
 
         <CreateInvoiceFromHoursDialog
           open={showCreateInvoice}
