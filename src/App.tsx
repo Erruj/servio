@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,51 +12,64 @@ import { useLanguagePersistence } from "@/hooks/useLanguagePersistence";
 import { useUrlLanguageSync } from "@/hooks/useUrlLanguageSync";
 import { CookieConsent } from "@/components/CookieConsent";
 import "@/lib/i18n";
-import Inbox from "./pages/Inbox";
-import Dashboard from "./pages/Dashboard";
-import Statistics from "./pages/Statistics";
-import Templates from "./pages/Templates";
-import Settings from "./pages/Settings";
-import Pricing from "./pages/Pricing";
-import Signup from "./pages/Signup";
-import MailboxSetup from "./pages/MailboxSetup";
-import Analytics from "./pages/Analytics";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import Profile from "./pages/Profile";
-import OAuthConsent from "./pages/OAuthConsent";
 import { DebugDrawer } from "./components/DebugDrawer";
 import { MobileBottomNav } from "./components/MobileBottomNav";
-import FinancialOverview from "./pages/administration/FinancialOverview";
-import AIAssistant from "./pages/administration/AIAssistant";
-import Invoices from "./pages/administration/Invoices";
-import Receipts from "./pages/administration/Receipts";
-import Documents from "./pages/administration/Documents";
-import Exports from "./pages/administration/Exports";
-import AuditLog from "./pages/administration/AuditLog";
-import TeamManagement from "./pages/administration/TeamManagement";
-import Customers from "./pages/administration/Customers";
-import Quotes from "./pages/administration/Quotes";
-import TimeTracking from "./pages/administration/TimeTracking";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 import { PageTransition } from "./components/PageTransition";
 import { AppShell } from "./components/AppShell";
 
-// Marketing website pages
-import MarketingHome from "./pages/marketing/Home";
-import MarketingFeatures from "./pages/marketing/Features";
-import MarketingPricing from "./pages/marketing/Pricing";
-import MarketingAbout from "./pages/marketing/About";
-import Blog from "./pages/marketing/Blog";
-import BlogPost from "./pages/marketing/BlogPost";
+// Lazy-loaded pages
+const Inbox = lazy(() => import("./pages/Inbox"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Statistics = lazy(() => import("./pages/Statistics"));
+const Templates = lazy(() => import("./pages/Templates"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Signup = lazy(() => import("./pages/Signup"));
+const MailboxSetup = lazy(() => import("./pages/MailboxSetup"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Profile = lazy(() => import("./pages/Profile"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
-// Legal pages
-import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
-import Terms from "./pages/legal/Terms";
-import Cookies from "./pages/legal/Cookies";
-import Contact from "./pages/legal/Contact";
+// Administration
+const FinancialOverview = lazy(() => import("./pages/administration/FinancialOverview"));
+const AIAssistant = lazy(() => import("./pages/administration/AIAssistant"));
+const Invoices = lazy(() => import("./pages/administration/Invoices"));
+const Receipts = lazy(() => import("./pages/administration/Receipts"));
+const Documents = lazy(() => import("./pages/administration/Documents"));
+const Exports = lazy(() => import("./pages/administration/Exports"));
+const AuditLog = lazy(() => import("./pages/administration/AuditLog"));
+const TeamManagement = lazy(() => import("./pages/administration/TeamManagement"));
+const Customers = lazy(() => import("./pages/administration/Customers"));
+const Quotes = lazy(() => import("./pages/administration/Quotes"));
+const TimeTracking = lazy(() => import("./pages/administration/TimeTracking"));
+
+// Marketing
+const MarketingHome = lazy(() => import("./pages/marketing/Home"));
+const MarketingFeatures = lazy(() => import("./pages/marketing/Features"));
+const MarketingPricing = lazy(() => import("./pages/marketing/Pricing"));
+const MarketingAbout = lazy(() => import("./pages/marketing/About"));
+const Blog = lazy(() => import("./pages/marketing/Blog"));
+const BlogPost = lazy(() => import("./pages/marketing/BlogPost"));
+
+// Legal
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/legal/Terms"));
+const Cookies = lazy(() => import("./pages/legal/Cookies"));
+const Contact = lazy(() => import("./pages/legal/Contact"));
+
+const PageLoader = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-muted-foreground">Laden...</p>
+    </div>
+  </div>
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
