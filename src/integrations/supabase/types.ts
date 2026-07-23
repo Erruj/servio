@@ -999,6 +999,7 @@ export type Database = {
           ai_tone: string | null
           auto_categorize: boolean | null
           auto_export_enabled: boolean
+          auto_process_invoice_attachments: boolean
           auto_reply_enabled: boolean | null
           auto_vat_calculation: boolean | null
           compact_layout: boolean | null
@@ -1031,6 +1032,7 @@ export type Database = {
           ai_tone?: string | null
           auto_categorize?: boolean | null
           auto_export_enabled?: boolean
+          auto_process_invoice_attachments?: boolean
           auto_reply_enabled?: boolean | null
           auto_vat_calculation?: boolean | null
           compact_layout?: boolean | null
@@ -1063,6 +1065,7 @@ export type Database = {
           ai_tone?: string | null
           auto_categorize?: boolean | null
           auto_export_enabled?: boolean
+          auto_process_invoice_attachments?: boolean
           auto_reply_enabled?: boolean | null
           auto_vat_calculation?: boolean | null
           compact_layout?: boolean | null
