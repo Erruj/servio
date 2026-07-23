@@ -302,16 +302,17 @@ export default function Quotes() {
     <div className="flex min-h-screen bg-background">
       <div className="flex-1 p-4 md:p-8 overflow-auto">
         <AdminBreadcrumb currentPage="Offertes" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Offertes</h1>
-            <p className="text-muted-foreground">Maak en beheer je offertes</p>
-          </div>
-          <Button onClick={() => { resetForm(); setShowEditor(true); }}>
-            <Plus className="h-4 w-4 mr-2" /> Nieuwe Offerte
-          </Button>
-        </div>
+
+        <PageHeader
+          title="Offertes"
+          description="Maak en beheer je offertes"
+          actions={
+            <Button onClick={() => { resetForm(); setShowEditor(true); }}>
+              <Plus className="h-4 w-4 mr-2" /> Nieuwe Offerte
+            </Button>
+          }
+        />
+
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
