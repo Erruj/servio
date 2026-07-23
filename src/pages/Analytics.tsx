@@ -186,7 +186,7 @@ const Analytics = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">{derived.aiRate}%</div>
-                      <p className="text-xs text-muted-foreground mt-1">van e-mails met AI-reply</p>
+                      <p className="text-xs text-muted-foreground mt-1">van e-mails door AI verwerkt</p>
                     </CardContent>
                   </Card>
 
@@ -295,7 +295,7 @@ const Analytics = () => {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">AI-antwoorden gegenereerd</span>
+                        <span className="text-sm text-muted-foreground">E-mails samengevat door AI</span>
                         <Badge className="bg-success/10 text-success">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           {rows.filter(r => r.thread_summary).length}
