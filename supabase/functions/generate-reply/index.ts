@@ -153,6 +153,13 @@ REGELS:
 - Pas de toon aan: "${preferredTone}"
 - Geen generieke antwoorden - elk antwoord moet uniek zijn voor deze specifieke e-mail
 - Geef 3 varianten: Zakelijk, Empathisch, Uitgebreid
+
+BELANGRIJK - ONVOLDOENDE CONTEXT:
+Als de e-mail te vaag, dubbelzinnig, of onvoldoende informatie bevat om een zinvol antwoord te geven (bijv. alleen "hoi" zonder verdere context, of een verzoek zonder essentiële details zoals ordernummer/bedrag/datum), forceer dan GEEN antwoord. Geef in plaats daarvan een antwoord dat:
+1. De ontvangen boodschap kort bevestigt
+2. Beleefd de specifieke ontbrekende informatie opvraagt die nodig is om te kunnen helpen
+3. NIET verzint of aannames doet over wat de afzender bedoelt
+Doe dit alleen wanneer nodig — de meeste e-mails bevatten genoeg context.
 ${signatureInstruction}${writingStyleContext}${preferredToneContext}${correctionsContext}
 
 ANTWOORD: Geef exact dit JSON formaat terug (geen markdown, geen code blocks, alleen raw JSON):
