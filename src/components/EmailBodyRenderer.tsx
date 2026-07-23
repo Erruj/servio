@@ -20,9 +20,16 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
   const [iframeHeight, setIframeHeight] = useState(200);
   const [showExternalImages, setShowExternalImages] = useState(false);
   const [hasExternalImages, setHasExternalImages] = useState(false);
+  const [showQuoted, setShowQuoted] = useState(false);
 
   const isHtml = Boolean(bodyHtml && bodyHtml.trim().length > 0);
   const content = isHtml ? bodyHtml! : (bodyText || '');
+
+  // HTML emails: detect common quote containers so we can collapse them in the iframe.
+  const htmlHasQuoted = useMemo(() => {
+    if (!isHtml) return false;
+    return /class\s*=\s*["'][^"']*\bgmail_quote\b[^"']*["']|<blockquote\b|type\s*=\s*["']cite["']|-{2,}\s*(Original Message|Oorspronkelijk bericht|Ursprüngliche Nachricht|Message d'origine)\s*-{2,}/i.test(content);
+  }, [isHtml, content]);
 
   // Use shared encoding fixer (covers more cases than the inline list)
   const fixEncoding = (text: string): string => fixEnc(text);
