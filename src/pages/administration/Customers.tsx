@@ -121,11 +121,16 @@ export default function Customers() {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    const { error } = await supabase.from('customers').delete().eq('id', deleteId);
-    if (error) { toast.error('Fout bij verwijderen'); return; }
-    toast.success('Klant verwijderd');
-    setDeleteId(null);
-    loadCustomers();
+    try {
+      const { error } = await supabase.from('customers').delete().eq('id', deleteId);
+      if (error) throw error;
+      toast.success('Klant verwijderd');
+      setDeleteId(null);
+      loadCustomers();
+    } catch (e) {
+      console.error(e);
+      toast.error('Fout bij verwijderen klant');
+    }
   };
 
   const filtered = customers.filter(c => {
