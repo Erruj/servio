@@ -695,13 +695,22 @@ export function MailDetail({ mail, className }: MailDetailProps) {
                   </SelectContent>
                 </Select>
                 <Button
-                  variant="outline"
+                  variant={reply ? 'outline' : 'default'}
                   size="sm"
                   onClick={generateAiReply}
                   disabled={isGeneratingReply}
                 >
-                  <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isGeneratingReply ? 'animate-spin' : ''}`} />
-                  Vernieuw
+                  {reply ? (
+                    <>
+                      <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isGeneratingReply ? 'animate-spin' : ''}`} />
+                      Vernieuw
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className={`h-3.5 w-3.5 mr-1.5 ${isGeneratingReply ? 'animate-spin' : ''}`} />
+                      Genereer antwoord
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
