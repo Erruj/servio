@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -56,14 +56,21 @@ export const SUBSCRIPTION_TIERS = {
 export const useSubscription = () => {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasFetchedRef = useRef(false);
 
   const checkSubscription = async () => {
     try {
       // Only flip to loading on the initial fetch. Background refreshes (every 60s)
       // must not toggle isLoading, otherwise gated pages briefly unmount their
-      // paywall and flash the underlying paid content.
-      setIsLoading((prev) => (subscriptionStatus === null ? true : prev));
+      // paywall/content. Use a ref so the interval's stale closure still sees
+      // the correct "already fetched" state.
+      if (hasFetchedRef.current) {
+        // no-op: keep isLoading false during background refresh
+      } else {
+        setIsLoading(true);
+      }
       const { data, error } = await supabase.functions.invoke('check-subscription');
+      
       
       if (error) {
         // Check if this is a user-not-found error (happens after DB restore)
@@ -83,6 +90,7 @@ export const useSubscription = () => {
       // Don't show toast for auth errors - user will be redirected to login
       return null;
     } finally {
+      hasFetchedRef.current = true;
       setIsLoading(false);
     }
   };
