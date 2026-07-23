@@ -25,7 +25,7 @@ interface EmailRow {
   is_read: boolean;
   labels: string[] | null;
   received_at: string;
-  ai_summary: string | null;
+  thread_summary: string | null;
   customer_sentiment: string | null;
 }
 
@@ -51,7 +51,7 @@ const Analytics = () => {
         const [curr, prev] = await Promise.all([
           supabase
             .from('emails')
-            .select('is_read, labels, received_at, ai_summary, customer_sentiment')
+            .select('is_read, labels, received_at, thread_summary, customer_sentiment')
             .eq('user_id', user.id)
             .gte('received_at', sevenDaysAgo),
           supabase
@@ -80,7 +80,7 @@ const Analytics = () => {
   const derived = useMemo(() => {
     const total = rows.length;
     const resolved = rows.filter(r => r.is_read).length;
-    const aiHandled = rows.filter(r => r.ai_summary).length;
+    const aiHandled = rows.filter(r => r.thread_summary).length;
     const aiRate = total ? Math.round((aiHandled / total) * 100) : 0;
     const positive = rows.filter(r => (r.customer_sentiment || '').toLowerCase() === 'positive').length;
     const negative = rows.filter(r => (r.customer_sentiment || '').toLowerCase() === 'negative').length;
@@ -298,14 +298,14 @@ const Analytics = () => {
                         <span className="text-sm text-muted-foreground">AI-antwoorden gegenereerd</span>
                         <Badge className="bg-success/10 text-success">
                           <CheckCircle className="h-3 w-3 mr-1" />
-                          {rows.filter(r => r.ai_summary).length}
+                          {rows.filter(r => r.thread_summary).length}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Handmatige afhandeling</span>
                         <Badge variant="secondary">
                           <Users className="h-3 w-3 mr-1" />
-                          {rows.filter(r => !r.ai_summary).length}
+                          {rows.filter(r => !r.thread_summary).length}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
