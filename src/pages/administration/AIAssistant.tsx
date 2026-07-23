@@ -432,10 +432,15 @@ export default function AIAssistant() {
                   ))}
                   {loading && (
                     <div className="flex justify-start">
-                      <div className="bg-muted text-foreground rounded-lg p-4">
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="text-sm">{t('thinking')}</span>
+                      <div className="ai-surface rounded-2xl px-4 py-3 pl-5">
+                        <div className="flex items-center gap-2 text-sm text-primary">
+                          <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                          <span className="font-medium">Servio denkt na over je vraag…</span>
+                          <span className="inline-flex gap-0.5 ml-1">
+                            <span className="w-1 h-1 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1 h-1 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-1 h-1 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </span>
                         </div>
                       </div>
                     </div>
