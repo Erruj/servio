@@ -139,16 +139,16 @@ export default function Customers() {
     <div className="flex min-h-screen bg-background">
       <div className="flex-1 p-4 md:p-8 overflow-auto">
         <AdminBreadcrumb currentPage="Klanten" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Klanten</h1>
-            <p className="text-muted-foreground">Beheer je klanten en relaties</p>
-          </div>
-          <Button onClick={() => { setEditingId(null); setForm(emptyForm); setShowDialog(true); }}>
-            <Plus className="h-4 w-4 mr-2" /> Nieuwe Klant
-          </Button>
-        </div>
+
+        <PageHeader
+          title="Klanten"
+          description="Beheer je klanten en relaties"
+          actions={
+            <Button onClick={() => { setEditingId(null); setForm(emptyForm); setShowDialog(true); }}>
+              <Plus className="h-4 w-4 mr-2" /> Nieuwe Klant
+            </Button>
+          }
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
