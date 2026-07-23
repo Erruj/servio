@@ -53,6 +53,7 @@ const Settings = () => {
     autoVatCalculation: true,
     monthlySummary: false,
     autoExportEnabled: false,
+    autoProcessAttachments: false,
     tagSuggestions: true,
   });
 
@@ -92,6 +93,7 @@ const Settings = () => {
           autoVatCalculation: data.auto_vat_calculation ?? true,
           monthlySummary: data.monthly_summary ?? false,
           autoExportEnabled: (data as any).auto_export_enabled ?? false,
+          autoProcessAttachments: (data as any).auto_process_invoice_attachments ?? false,
           tagSuggestions: data.tag_suggestions ?? true,
         };
         setSettings(loaded);
@@ -139,6 +141,7 @@ const Settings = () => {
           auto_vat_calculation: settings.autoVatCalculation,
           monthly_summary: settings.monthlySummary,
           auto_export_enabled: settings.autoExportEnabled,
+          auto_process_invoice_attachments: settings.autoProcessAttachments,
           tag_suggestions: settings.tagSuggestions,
           updated_at: new Date().toISOString(),
         })
@@ -352,6 +355,10 @@ const Settings = () => {
                 <Separator />
                 <SettingItem icon={FileText} label="Maandelijkse Samenvatting" description="Ontvang een AI-gegenereerd financieel overzicht">
                   <Switch checked={settings.monthlySummary} onCheckedChange={(checked) => setSettings({ ...settings, monthlySummary: checked })} />
+                </SettingItem>
+                <Separator />
+                <SettingItem icon={Sparkles} label="Facturen automatisch verwerken uit e-mail" description="Bijlagen die op een factuur of bon lijken worden automatisch geanalyseerd (OCR) en toegevoegd aan Facturen/Bonnetjes met status 'Controleren'. Je moet ze zelf goedkeuren voor ze definitief zijn.">
+                  <Switch checked={settings.autoProcessAttachments} onCheckedChange={(checked) => setSettings({ ...settings, autoProcessAttachments: checked })} />
                 </SettingItem>
                 <Separator />
                 <SettingItem icon={Download} label="Automatische Maandelijkse Export" description="ZIP met facturen, bonnetjes en uren wordt elke maand klaargezet in opslag">

@@ -1,0 +1,1 @@
+ALTER TABLE public.user_settings ADD COLUMN IF NOT EXISTS auto_process_invoice_attachments boolean NOT NULL DEFAULT false;
