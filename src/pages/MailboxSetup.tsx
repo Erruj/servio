@@ -61,6 +61,15 @@ const MailboxSetup = () => {
     }
   };
 
+  const handleConnectOutlook = async () => {
+    setConnectingProvider('outlook');
+    try {
+      await startOutlookOAuth();
+    } finally {
+      setConnectingProvider(null);
+    }
+  };
+
   const getProviderIcon = (provider: string) => {
     switch (provider) {
       case 'gmail': return '📧';
