@@ -5,13 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Search, Edit, Trash2, Users, Mail, Phone, Building, FileText, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Customer {
   id: string;
@@ -119,11 +121,16 @@ export default function Customers() {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    const { error } = await supabase.from('customers').delete().eq('id', deleteId);
-    if (error) { toast.error('Fout bij verwijderen'); return; }
-    toast.success('Klant verwijderd');
-    setDeleteId(null);
-    loadCustomers();
+    try {
+      const { error } = await supabase.from('customers').delete().eq('id', deleteId);
+      if (error) throw error;
+      toast.success('Klant verwijderd');
+      setDeleteId(null);
+      loadCustomers();
+    } catch (e) {
+      console.error(e);
+      toast.error('Fout bij verwijderen klant');
+    }
   };
 
   const filtered = customers.filter(c => {
@@ -137,16 +144,16 @@ export default function Customers() {
     <div className="flex min-h-screen bg-background">
       <div className="flex-1 p-4 md:p-8 overflow-auto">
         <AdminBreadcrumb currentPage="Klanten" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Klanten</h1>
-            <p className="text-muted-foreground">Beheer je klanten en relaties</p>
-          </div>
-          <Button onClick={() => { setEditingId(null); setForm(emptyForm); setShowDialog(true); }}>
-            <Plus className="h-4 w-4 mr-2" /> Nieuwe Klant
-          </Button>
-        </div>
+
+        <PageHeader
+          title="Klanten"
+          description="Beheer je klanten en relaties"
+          actions={
+            <Button onClick={() => { setEditingId(null); setForm(emptyForm); setShowDialog(true); }}>
+              <Plus className="h-4 w-4 mr-2" /> Nieuwe Klant
+            </Button>
+          }
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -194,43 +201,56 @@ export default function Customers() {
         {/* Table */}
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Naam</TableHead>
-                  <TableHead className="hidden md:table-cell">Bedrijf</TableHead>
-                  <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead className="hidden md:table-cell">Facturen</TableHead>
-                  <TableHead className="hidden md:table-cell">Offertes</TableHead>
-                  <TableHead>Acties</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Laden...</TableCell></TableRow>
-                ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Geen klanten gevonden</TableCell></TableRow>
-                ) : filtered.map(c => (
-                  <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailCustomer(c)}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell className="hidden md:table-cell">{c.company_name || '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">{c.email || '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="secondary">{stats[c.id]?.invoiceCount || 0}</Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="secondary">{stats[c.id]?.quoteCount || 0}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(c)}><Edit className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    </TableCell>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Laden...</div>
+            ) : customers.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title="Nog geen klanten"
+                description="Voeg je eerste klant toe om facturen en offertes te koppelen."
+                action={{
+                  label: 'Nieuwe klant',
+                  icon: Plus,
+                  onClick: () => { setEditingId(null); setForm(emptyForm); setShowDialog(true); },
+                }}
+              />
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">Geen klanten gevonden voor deze zoekopdracht</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Naam</TableHead>
+                    <TableHead className="hidden md:table-cell">Bedrijf</TableHead>
+                    <TableHead className="hidden md:table-cell">Email</TableHead>
+                    <TableHead className="hidden md:table-cell">Facturen</TableHead>
+                    <TableHead className="hidden md:table-cell">Offertes</TableHead>
+                    <TableHead>Acties</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map(c => (
+                    <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailCustomer(c)}>
+                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="hidden md:table-cell">{c.company_name || '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{c.email || '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="secondary">{stats[c.id]?.invoiceCount || 0}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="secondary">{stats[c.id]?.quoteCount || 0}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(c)}><Edit className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
@@ -306,18 +326,14 @@ export default function Customers() {
         </Dialog>
 
         {/* Delete Dialog */}
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Klant verwijderen</AlertDialogTitle>
-              <AlertDialogDescription>Weet je zeker dat je deze klant wilt verwijderen? Facturen en offertes blijven behouden.</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuleren</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Verwijderen</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          open={!!deleteId}
+          onOpenChange={(o) => !o && setDeleteId(null)}
+          title="Klant verwijderen"
+          description="Weet je zeker dat je deze klant wilt verwijderen? Facturen en offertes blijven behouden."
+          confirmLabel="Verwijderen"
+          onConfirm={handleDelete}
+        />
       </div>
     </div>
   );

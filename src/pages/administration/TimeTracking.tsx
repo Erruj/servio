@@ -12,6 +12,9 @@ import { Play, Square, Plus, Clock, Timer, Download, Trash2, Pencil, FileText } 
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 import { CreateInvoiceFromHoursDialog } from '@/components/CreateInvoiceFromHoursDialog';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -31,6 +34,7 @@ export default function TimeTracking() {
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [timerStartTime, setTimerStartTime] = useState<Date | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Edit state
@@ -172,10 +176,18 @@ export default function TimeTracking() {
     loadData();
   };
 
-  const handleDelete = async (id: string) => {
-    await supabase.from('time_entries').delete().eq('id', id);
-    toast.success('Verwijderd');
-    loadData();
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      const { error } = await supabase.from('time_entries').delete().eq('id', deleteId);
+      if (error) throw error;
+      toast.success('Registratie verwijderd');
+      setDeleteId(null);
+      loadData();
+    } catch (e) {
+      console.error(e);
+      toast.error('Fout bij verwijderen registratie');
+    }
   };
 
   const handleExportCSV = () => {
@@ -216,17 +228,17 @@ export default function TimeTracking() {
       <div className="flex-1 p-4 md:p-8 overflow-auto">
         <AdminBreadcrumb currentPage="Uren" />
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Urenregistratie</h1>
-            <p className="text-muted-foreground">Registreer en beheer je werkuren</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="default" onClick={() => setShowCreateInvoice(true)}><FileText className="h-4 w-4 mr-2" /> Factuur van uren</Button>
-            <Button variant="outline" onClick={handleExportCSV}><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
-            <Button variant="outline" onClick={() => setShowManual(true)}><Plus className="h-4 w-4 mr-2" /> Handmatig</Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Urenregistratie"
+          description="Registreer en beheer je werkuren"
+          actions={
+            <>
+              <Button variant="default" onClick={() => setShowCreateInvoice(true)}><FileText className="h-4 w-4 mr-2" /> Factuur van uren</Button>
+              <Button variant="outline" onClick={handleExportCSV}><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
+              <Button variant="outline" onClick={() => setShowManual(true)}><Plus className="h-4 w-4 mr-2" /> Handmatig</Button>
+            </>
+          }
+        />
 
         <CreateInvoiceFromHoursDialog
           open={showCreateInvoice}
@@ -290,49 +302,65 @@ export default function TimeTracking() {
         {/* Table */}
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Datum</TableHead>
-                  <TableHead>Tijd</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead className="hidden md:table-cell">Klant</TableHead>
-                  <TableHead className="hidden md:table-cell">Uurtarief</TableHead>
-                  <TableHead className="hidden md:table-cell text-right">Totaal</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8">Laden...</TableCell></TableRow>
-                ) : entries.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nog geen uren geregistreerd</TableCell></TableRow>
-                ) : entries.map(e => (
-                  <TableRow key={e.id}>
-                    <TableCell>{format(new Date(e.start_time), 'd MMM', { locale: nl })}</TableCell>
-                    <TableCell className="text-sm">
-                      {e.duration_minutes ? (
-                        <span>{formatTimeRange(e)}</span>
-                      ) : (
-                        <Badge variant="secondary">Actief</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{e.project || '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">{e.customer_id ? customerMap[e.customer_id] || '-' : '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">{e.hourly_rate ? `€${e.hourly_rate}` : '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell text-right">{e.hourly_rate && e.duration_minutes ? `€${((e.duration_minutes / 60) * e.hourly_rate).toFixed(2)}` : '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(e)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    </TableCell>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Laden...</div>
+            ) : entries.length === 0 ? (
+              <EmptyState
+                icon={Clock}
+                title="Nog geen uren geregistreerd"
+                description="Start een timer of voeg handmatig een tijdregistratie toe om te beginnen."
+                action={{ label: 'Handmatig invoeren', icon: Plus, onClick: () => setShowManual(true) }}
+              />
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Datum</TableHead>
+                    <TableHead>Tijd</TableHead>
+                    <TableHead>Project</TableHead>
+                    <TableHead className="hidden md:table-cell">Klant</TableHead>
+                    <TableHead className="hidden md:table-cell">Uurtarief</TableHead>
+                    <TableHead className="hidden md:table-cell text-right">Totaal</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {entries.map(e => (
+                    <TableRow key={e.id}>
+                      <TableCell>{format(new Date(e.start_time), 'd MMM', { locale: nl })}</TableCell>
+                      <TableCell className="text-sm">
+                        {e.duration_minutes ? (
+                          <span>{formatTimeRange(e)}</span>
+                        ) : (
+                          <Badge variant="secondary">Actief</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{e.project || '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{e.customer_id ? customerMap[e.customer_id] || '-' : '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{e.hourly_rate ? `€${e.hourly_rate}` : '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">{e.hourly_rate && e.duration_minutes ? `€${((e.duration_minutes / 60) * e.hourly_rate).toFixed(2)}` : '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(e)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
+
+        <ConfirmDialog
+          open={!!deleteId}
+          onOpenChange={(o) => !o && setDeleteId(null)}
+          title="Registratie verwijderen"
+          description="Weet je zeker dat je deze tijdregistratie wilt verwijderen?"
+          confirmLabel="Verwijderen"
+          onConfirm={handleDelete}
+        />
 
         {/* Manual Entry Dialog */}
         <Dialog open={showManual} onOpenChange={setShowManual}>

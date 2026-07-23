@@ -9,9 +9,11 @@ import { Upload, FileText, Search, AlertCircle, CheckCircle, Loader2, Eye, Trash
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { toast as sonnerToast } from 'sonner';
 
 interface Document {
@@ -187,17 +189,17 @@ export default function Documents() {
     <div className="space-y-6 p-6">
       <AdminBreadcrumb currentPage="Documenten" />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t('documents')}</h1>
-          <p className="text-muted-foreground">{t('documentsDescription')}</p>
-        </div>
-        <Button disabled={uploading} className="relative">
-          <Upload className="mr-2 h-4 w-4" />
-          {uploading ? 'Uploaden...' : t('uploadDocument')}
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
-        </Button>
-      </div>
+      <PageHeader
+        title={t('documents')}
+        description={t('documentsDescription')}
+        actions={
+          <Button disabled={uploading} className="relative">
+            <Upload className="mr-2 h-4 w-4" />
+            {uploading ? 'Uploaden...' : t('uploadDocument')}
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
+          </Button>
+        }
+      />
 
       <Card>
         <CardHeader>
@@ -223,11 +225,11 @@ export default function Documents() {
           {loading ? (
             <div className="text-center py-8 text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
           ) : filteredDocuments.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Nog geen documenten</h3>
-              <p className="max-w-sm mx-auto">Upload je eerste document om te beginnen. Servio analyseert het automatisch met AI.</p>
-            </div>
+            <EmptyState
+              icon={FileText}
+              title="Nog geen documenten"
+              description="Upload je eerste document om te beginnen. Servio analyseert het automatisch met AI."
+            />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredDocuments.map((doc) => (
@@ -282,18 +284,14 @@ export default function Documents() {
       </Card>
 
       {/* Delete confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Document verwijderen?</AlertDialogTitle>
-            <AlertDialogDescription>Dit kan niet ongedaan worden gemaakt.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuleren</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteDocument} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Verwijderen</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+        title="Document verwijderen?"
+        description="Dit kan niet ongedaan worden gemaakt."
+        confirmLabel="Verwijderen"
+        onConfirm={handleDeleteDocument}
+      />
 
       {/* Preview modal */}
       <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) { setPreviewUrl(null); setSelectedDoc(null); } }}>
