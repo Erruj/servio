@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Shield, ImageIcon } from 'lucide-react';
-import { fixEncoding as fixEnc, stripToPlainText } from '@/lib/emailText';
+import { Shield, ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { fixEncoding as fixEnc, stripToPlainText, splitQuotedReply } from '@/lib/emailText';
 
 interface EmailBodyRendererProps {
   bodyHtml?: string;
@@ -20,9 +20,16 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
   const [iframeHeight, setIframeHeight] = useState(200);
   const [showExternalImages, setShowExternalImages] = useState(false);
   const [hasExternalImages, setHasExternalImages] = useState(false);
+  const [showQuoted, setShowQuoted] = useState(false);
 
   const isHtml = Boolean(bodyHtml && bodyHtml.trim().length > 0);
   const content = isHtml ? bodyHtml! : (bodyText || '');
+
+  // HTML emails: detect common quote containers so we can collapse them in the iframe.
+  const htmlHasQuoted = useMemo(() => {
+    if (!isHtml) return false;
+    return /class\s*=\s*["'][^"']*\bgmail_quote\b[^"']*["']|<blockquote\b|type\s*=\s*["']cite["']|-{2,}\s*(Original Message|Oorspronkelijk bericht|Ursprüngliche Nachricht|Message d'origine)\s*-{2,}/i.test(content);
+  }, [isHtml, content]);
 
   // Use shared encoding fixer (covers more cases than the inline list)
   const fixEncoding = (text: string): string => fixEnc(text);
@@ -75,11 +82,14 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
     table { max-width: 100% !important; display: block; overflow-x: auto; }
     pre, code { white-space: pre-wrap; word-wrap: break-word; }
     blockquote { border-left: 3px solid #d1d5db; padding-left: 12px; margin: 8px 0; color: #4b5563; }
+    body[data-hide-quoted="1"] .gmail_quote,
+    body[data-hide-quoted="1"] blockquote,
+    body[data-hide-quoted="1"] [type="cite"] { display: none !important; }
   </style>
 </head>
-<body>${processed}</body>
+<body${!showQuoted ? ' data-hide-quoted="1"' : ''}>${processed}</body>
 </html>`;
-  }, [showExternalImages, blockExternalImages]);
+  }, [showExternalImages, blockExternalImages, showQuoted]);
 
   // Write content to iframe and auto-resize
   useEffect(() => {
@@ -128,11 +138,33 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
   if (!isHtml) {
     const looksLikeMarkup = /<\/?[a-z][^>]*>|@font-face|@media|\{[^}]*:[^}]*\}/i.test(content);
     const cleanText = looksLikeMarkup ? stripToPlainText(content) : fixEncoding(content);
+    const { main, quoted } = splitQuotedReply(cleanText);
     return (
       <div className={`bg-secondary/30 rounded-xl p-4 ${className}`}>
         <pre className="whitespace-pre-wrap text-foreground leading-relaxed font-sans text-sm">
-          {cleanText}
+          {main}
         </pre>
+        {quoted && (
+          <div className="mt-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowQuoted(v => !v)}
+              className="text-xs h-7 -ml-2 text-muted-foreground hover:text-foreground"
+            >
+              {showQuoted ? (
+                <><ChevronUp className="h-3 w-3 mr-1" /> Verberg eerdere e-mail</>
+              ) : (
+                <><ChevronDown className="h-3 w-3 mr-1" /> Toon eerdere e-mail</>
+              )}
+            </Button>
+            {showQuoted && (
+              <pre className="mt-2 whitespace-pre-wrap font-sans text-xs leading-relaxed text-muted-foreground border-l-2 border-border pl-3">
+                {quoted}
+              </pre>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -167,6 +199,22 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
           className="w-full border-0"
           style={{ height: `${iframeHeight}px`, minHeight: '100px' }}
         />
+        {htmlHasQuoted && (
+          <div className="mt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowQuoted(v => !v)}
+              className="text-xs h-7 -ml-2 text-muted-foreground hover:text-foreground"
+            >
+              {showQuoted ? (
+                <><ChevronUp className="h-3 w-3 mr-1" /> Verberg eerdere e-mail</>
+              ) : (
+                <><ChevronDown className="h-3 w-3 mr-1" /> Toon eerdere e-mail</>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
