@@ -846,6 +846,14 @@ serve(async (req) => {
     console.log(`[sync-emails] Start sync for user ${userId}. Connections: ${connections.length}`);
     const results: Array<Record<string, unknown>> = [];
 
+    // Load user setting for auto-processing attachments
+    const { data: settingsRow } = await supabase
+      .from("user_settings")
+      .select("auto_process_invoice_attachments")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const autoProcessAttachments = Boolean((settingsRow as any)?.auto_process_invoice_attachments);
+
     for (const connection of connections) {
       try {
         let messages: any[] = [];
