@@ -93,6 +93,7 @@ const Settings = () => {
           autoVatCalculation: data.auto_vat_calculation ?? true,
           monthlySummary: data.monthly_summary ?? false,
           autoExportEnabled: (data as any).auto_export_enabled ?? false,
+          autoProcessAttachments: (data as any).auto_process_invoice_attachments ?? false,
           tagSuggestions: data.tag_suggestions ?? true,
         };
         setSettings(loaded);
