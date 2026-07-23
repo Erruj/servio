@@ -308,18 +308,14 @@ export default function Customers() {
         </Dialog>
 
         {/* Delete Dialog */}
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Klant verwijderen</AlertDialogTitle>
-              <AlertDialogDescription>Weet je zeker dat je deze klant wilt verwijderen? Facturen en offertes blijven behouden.</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuleren</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Verwijderen</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          open={!!deleteId}
+          onOpenChange={(o) => !o && setDeleteId(null)}
+          title="Klant verwijderen"
+          description="Weet je zeker dat je deze klant wilt verwijderen? Facturen en offertes blijven behouden."
+          confirmLabel="Verwijderen"
+          onConfirm={handleDelete}
+        />
       </div>
     </div>
   );
