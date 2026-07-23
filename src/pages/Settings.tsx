@@ -141,6 +141,7 @@ const Settings = () => {
           auto_vat_calculation: settings.autoVatCalculation,
           monthly_summary: settings.monthlySummary,
           auto_export_enabled: settings.autoExportEnabled,
+          auto_process_invoice_attachments: settings.autoProcessAttachments,
           tag_suggestions: settings.tagSuggestions,
           updated_at: new Date().toISOString(),
         })
