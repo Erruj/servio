@@ -302,49 +302,65 @@ export default function TimeTracking() {
         {/* Table */}
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Datum</TableHead>
-                  <TableHead>Tijd</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead className="hidden md:table-cell">Klant</TableHead>
-                  <TableHead className="hidden md:table-cell">Uurtarief</TableHead>
-                  <TableHead className="hidden md:table-cell text-right">Totaal</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8">Laden...</TableCell></TableRow>
-                ) : entries.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nog geen uren geregistreerd</TableCell></TableRow>
-                ) : entries.map(e => (
-                  <TableRow key={e.id}>
-                    <TableCell>{format(new Date(e.start_time), 'd MMM', { locale: nl })}</TableCell>
-                    <TableCell className="text-sm">
-                      {e.duration_minutes ? (
-                        <span>{formatTimeRange(e)}</span>
-                      ) : (
-                        <Badge variant="secondary">Actief</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{e.project || '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">{e.customer_id ? customerMap[e.customer_id] || '-' : '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell">{e.hourly_rate ? `€${e.hourly_rate}` : '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell text-right">{e.hourly_rate && e.duration_minutes ? `€${((e.duration_minutes / 60) * e.hourly_rate).toFixed(2)}` : '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(e)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    </TableCell>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Laden...</div>
+            ) : entries.length === 0 ? (
+              <EmptyState
+                icon={Clock}
+                title="Nog geen uren geregistreerd"
+                description="Start een timer of voeg handmatig een tijdregistratie toe om te beginnen."
+                action={{ label: 'Handmatig invoeren', icon: Plus, onClick: () => setShowManual(true) }}
+              />
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Datum</TableHead>
+                    <TableHead>Tijd</TableHead>
+                    <TableHead>Project</TableHead>
+                    <TableHead className="hidden md:table-cell">Klant</TableHead>
+                    <TableHead className="hidden md:table-cell">Uurtarief</TableHead>
+                    <TableHead className="hidden md:table-cell text-right">Totaal</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {entries.map(e => (
+                    <TableRow key={e.id}>
+                      <TableCell>{format(new Date(e.start_time), 'd MMM', { locale: nl })}</TableCell>
+                      <TableCell className="text-sm">
+                        {e.duration_minutes ? (
+                          <span>{formatTimeRange(e)}</span>
+                        ) : (
+                          <Badge variant="secondary">Actief</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{e.project || '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{e.customer_id ? customerMap[e.customer_id] || '-' : '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{e.hourly_rate ? `€${e.hourly_rate}` : '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">{e.hourly_rate && e.duration_minutes ? `€${((e.duration_minutes / 60) * e.hourly_rate).toFixed(2)}` : '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(e)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
+
+        <ConfirmDialog
+          open={!!deleteId}
+          onOpenChange={(o) => !o && setDeleteId(null)}
+          title="Registratie verwijderen"
+          description="Weet je zeker dat je deze tijdregistratie wilt verwijderen?"
+          confirmLabel="Verwijderen"
+          onConfirm={handleDelete}
+        />
 
         {/* Manual Entry Dialog */}
         <Dialog open={showManual} onOpenChange={setShowManual}>
