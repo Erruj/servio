@@ -395,18 +395,16 @@ export default function Quotes() {
           </CardContent>
         </Card>
 
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Offerte verwijderen</AlertDialogTitle>
-              <AlertDialogDescription>Weet je zeker dat je deze offerte wilt verwijderen?</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuleren</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Verwijderen</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          open={!!deleteId}
+          onOpenChange={(open) => !open && setDeleteId(null)}
+          title="Offerte verwijderen"
+          description="Weet je zeker dat je deze offerte wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+          confirmLabel="Verwijderen"
+          variant="destructive"
+          onConfirm={handleDelete}
+        />
+
       </div>
     </div>
   );
