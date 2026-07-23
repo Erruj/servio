@@ -174,6 +174,33 @@
     @apply w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm;
   }
 
+  /* ============================================================
+     AI content distinction
+     Any block that renders AI-generated content should use one of:
+       - <AiBadge />        — small "AI" chip
+       - .ai-surface        — subtle primary tint + left accent bar
+       - .ai-gradient-border — gradient border for hero AI blocks
+     Never mix with user-input surfaces so the eye can tell them apart.
+     ============================================================ */
+  .ai-surface {
+    position: relative;
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.02));
+    border: 1px solid hsl(var(--primary) / 0.14);
+  }
+  .ai-surface::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary) / 0.5));
+    border-top-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+  }
+  .dark .ai-surface {
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.10), hsl(var(--primary) / 0.04));
+    border-color: hsl(var(--primary) / 0.22);
+  }
+
   /* Thin Apple-style scrollbars (4px, rounded, fade) */
   * { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
   .dark * { scrollbar-color: #3a3a3c transparent; }

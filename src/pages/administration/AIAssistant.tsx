@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Send, Brain, TrendingUp, FileText, Tag, History, Lightbulb, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Send, Brain, TrendingUp, FileText, Tag, History, Lightbulb, Loader2, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
@@ -370,18 +370,25 @@ export default function AIAssistant() {
                         }`}
                       >
                         <div
-                          className={`max-w-[85%] rounded-lg p-4 ${
+                          className={
                             message.role === 'user'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-foreground'
-                          }`}
+                              ? 'max-w-[85%] rounded-2xl px-4 py-3 bg-primary text-primary-foreground shadow-subtle'
+                              : 'ai-surface max-w-[85%] rounded-2xl px-4 py-3 pl-5 text-foreground'
+                          }
                         >
-                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                          <span className="text-xs opacity-70 mt-2 block">
+                          {message.role === 'assistant' && (
+                            <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-medium text-primary">
+                              <Sparkles className="h-3 w-3" />
+                              <span>Servio AI</span>
+                            </div>
+                          )}
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+                          <span className="text-[11px] opacity-60 mt-2 block">
                             {message.timestamp.toLocaleTimeString()}
                           </span>
                         </div>
                       </div>
+                      
                       
                       {/* AI Actions */}
                       {message.actions && message.actions.length > 0 && (
@@ -425,10 +432,15 @@ export default function AIAssistant() {
                   ))}
                   {loading && (
                     <div className="flex justify-start">
-                      <div className="bg-muted text-foreground rounded-lg p-4">
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="text-sm">{t('thinking')}</span>
+                      <div className="ai-surface rounded-2xl px-4 py-3 pl-5">
+                        <div className="flex items-center gap-2 text-sm text-primary">
+                          <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                          <span className="font-medium">Servio denkt na over je vraag…</span>
+                          <span className="inline-flex gap-0.5 ml-1">
+                            <span className="w-1 h-1 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1 h-1 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-1 h-1 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </span>
                         </div>
                       </div>
                     </div>
