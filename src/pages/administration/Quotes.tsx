@@ -344,57 +344,77 @@ export default function Quotes() {
         {/* Table */}
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nummer</TableHead>
-                  <TableHead>Klant</TableHead>
-                  <TableHead className="hidden md:table-cell">Status</TableHead>
-                  <TableHead className="hidden md:table-cell">Geldig tot</TableHead>
-                  <TableHead className="text-right">Totaal</TableHead>
-                  <TableHead>Acties</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8">Laden...</TableCell></TableRow>
-                ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Geen offertes gevonden</TableCell></TableRow>
-                ) : filtered.map(q => {
-                  const customer = q.customer_id ? customerMap[q.customer_id] : null;
-                  return (
-                    <TableRow key={q.id}>
-                      <TableCell className="font-medium">{q.quote_number || '-'}</TableCell>
-                      <TableCell>{customer?.name || '-'}</TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Badge className={statusColors[q.status]}>{statusLabels[q.status] || q.status}</Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {q.valid_until ? format(new Date(q.valid_until), 'd MMM yyyy', { locale: nl }) : '-'}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">€{Number(q.total).toFixed(2)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm">Acties</Button></DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleEdit(q)}><Edit className="h-4 w-4 mr-2" /> Bewerken</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownloadPDF(q)}><Download className="h-4 w-4 mr-2" /> Download PDF</DropdownMenuItem>
-                            {q.status === 'draft' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'sent')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer verzonden</DropdownMenuItem>}
-                            {q.status === 'sent' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'accepted')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer geaccepteerd</DropdownMenuItem>}
-                            {(q.status === 'sent' || q.status === 'accepted') && (
-                              <DropdownMenuItem onClick={() => handleConvertToInvoice(q)}><FileText className="h-4 w-4 mr-2" /> Omzetten naar factuur</DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => setDeleteId(q.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Verwijderen</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">Laden...</div>
+            ) : filtered.length === 0 ? (
+              quotes.length === 0 ? (
+                <EmptyState
+                  icon={FileText}
+                  title="Nog geen offertes"
+                  description="Maak je eerste offerte en stuur hem direct als PDF naar je klant."
+                  action={{
+                    label: 'Nieuwe offerte',
+                    icon: Plus,
+                    onClick: () => { resetForm(); setShowEditor(true); },
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  icon={Search}
+                  title="Geen offertes gevonden"
+                  description="Pas je zoekterm of filter aan om resultaten te zien."
+                />
+              )
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nummer</TableHead>
+                    <TableHead>Klant</TableHead>
+                    <TableHead className="hidden md:table-cell">Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Geldig tot</TableHead>
+                    <TableHead className="text-right">Totaal</TableHead>
+                    <TableHead>Acties</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map(q => {
+                    const customer = q.customer_id ? customerMap[q.customer_id] : null;
+                    return (
+                      <TableRow key={q.id}>
+                        <TableCell className="font-medium">{q.quote_number || '-'}</TableCell>
+                        <TableCell>{customer?.name || '-'}</TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge className={statusColors[q.status]}>{statusLabels[q.status] || q.status}</Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {q.valid_until ? format(new Date(q.valid_until), 'd MMM yyyy', { locale: nl }) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">€{Number(q.total).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm">Acties</Button></DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => handleEdit(q)}><Edit className="h-4 w-4 mr-2" /> Bewerken</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDownloadPDF(q)}><Download className="h-4 w-4 mr-2" /> Download PDF</DropdownMenuItem>
+                              {q.status === 'draft' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'sent')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer verzonden</DropdownMenuItem>}
+                              {q.status === 'sent' && <DropdownMenuItem onClick={() => handleStatusChange(q.id, 'accepted')}><ArrowRight className="h-4 w-4 mr-2" /> Markeer geaccepteerd</DropdownMenuItem>}
+                              {(q.status === 'sent' || q.status === 'accepted') && (
+                                <DropdownMenuItem onClick={() => handleConvertToInvoice(q)}><FileText className="h-4 w-4 mr-2" /> Omzetten naar factuur</DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem onClick={() => setDeleteId(q.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" /> Verwijderen</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
+
 
         <ConfirmDialog
           open={!!deleteId}
