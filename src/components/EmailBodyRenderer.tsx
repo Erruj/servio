@@ -138,11 +138,33 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
   if (!isHtml) {
     const looksLikeMarkup = /<\/?[a-z][^>]*>|@font-face|@media|\{[^}]*:[^}]*\}/i.test(content);
     const cleanText = looksLikeMarkup ? stripToPlainText(content) : fixEncoding(content);
+    const { main, quoted } = splitQuotedReply(cleanText);
     return (
       <div className={`bg-secondary/30 rounded-xl p-4 ${className}`}>
         <pre className="whitespace-pre-wrap text-foreground leading-relaxed font-sans text-sm">
-          {cleanText}
+          {main}
         </pre>
+        {quoted && (
+          <div className="mt-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowQuoted(v => !v)}
+              className="text-xs h-7 -ml-2 text-muted-foreground hover:text-foreground"
+            >
+              {showQuoted ? (
+                <><ChevronUp className="h-3 w-3 mr-1" /> Verberg eerdere e-mail</>
+              ) : (
+                <><ChevronDown className="h-3 w-3 mr-1" /> Toon eerdere e-mail</>
+              )}
+            </Button>
+            {showQuoted && (
+              <pre className="mt-2 whitespace-pre-wrap font-sans text-xs leading-relaxed text-muted-foreground border-l-2 border-border pl-3">
+                {quoted}
+              </pre>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -177,6 +199,22 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
           className="w-full border-0"
           style={{ height: `${iframeHeight}px`, minHeight: '100px' }}
         />
+        {htmlHasQuoted && (
+          <div className="mt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowQuoted(v => !v)}
+              className="text-xs h-7 -ml-2 text-muted-foreground hover:text-foreground"
+            >
+              {showQuoted ? (
+                <><ChevronUp className="h-3 w-3 mr-1" /> Verberg eerdere e-mail</>
+              ) : (
+                <><ChevronDown className="h-3 w-3 mr-1" /> Toon eerdere e-mail</>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
