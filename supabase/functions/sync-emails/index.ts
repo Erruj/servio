@@ -895,6 +895,10 @@ serve(async (req) => {
             console.log(`[sync-emails] Gmail fetch | mode=${hasPreviousSync ? "incremental" : "full"} | max=${maxResults}`);
             const rawMessages = await fetchGmailMessages(accessToken, { maxResults, query, includeSpamTrash: true });
             messages = rawMessages.map(parseGmailMessage);
+            if (autoProcessAttachments) {
+              gmailAccessToken = accessToken;
+              gmailRawByExternalId = new Map(rawMessages.map((m: any) => [m.id, m]));
+            }
           } else {
             const maxResults = connection.last_sync_at && !forceFullSync ? INCREMENTAL_SYNC_LIMIT : INITIAL_SYNC_LIMIT;
             console.log(`[sync-emails] Outlook fetch | max=${maxResults}`);
