@@ -89,11 +89,13 @@ export function usePersonalization() {
 
       if (error) throw error;
       if (data) {
+        const accent = data.accent_color || 'blue';
+        writeStoredAccent(accent);
         setSettings({
           aiPersonality: data.ai_personality || 'neutral',
           aiCustomPersonality: data.ai_custom_personality || '',
           emailSignature: data.email_signature || '',
-          accentColor: data.accent_color || 'blue',
+          accentColor: accent,
           compactLayout: data.compact_layout || false,
           sidebarOrder: data.sidebar_order as string[] | null,
           sidebarFavorites: (data.sidebar_favorites as string[]) || [],
