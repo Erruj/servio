@@ -189,17 +189,17 @@ export default function Documents() {
     <div className="space-y-6 p-6">
       <AdminBreadcrumb currentPage="Documenten" />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t('documents')}</h1>
-          <p className="text-muted-foreground">{t('documentsDescription')}</p>
-        </div>
-        <Button disabled={uploading} className="relative">
-          <Upload className="mr-2 h-4 w-4" />
-          {uploading ? 'Uploaden...' : t('uploadDocument')}
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
-        </Button>
-      </div>
+      <PageHeader
+        title={t('documents')}
+        description={t('documentsDescription')}
+        actions={
+          <Button disabled={uploading} className="relative">
+            <Upload className="mr-2 h-4 w-4" />
+            {uploading ? 'Uploaden...' : t('uploadDocument')}
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
+          </Button>
+        }
+      />
 
       <Card>
         <CardHeader>
