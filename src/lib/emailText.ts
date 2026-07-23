@@ -124,3 +124,47 @@ export function buildPreview(opts: { bodyText?: string | null; bodyHtml?: string
     .trim();
   return scrubbed.length > maxLen ? scrubbed.slice(0, maxLen).trimEnd() + '…' : scrubbed;
 }
+
+/**
+ * Split a plain-text email body into the new reply and the quoted previous message.
+ * Detects common markers in Dutch/English/German/French plus classic `>` quoting
+ * and Outlook-style "-----Original Message-----" separators.
+ */
+export function splitQuotedReply(text: string): { main: string; quoted: string | null } {
+  if (!text) return { main: '', quoted: null };
+
+  // Patterns that mark the beginning of a quoted previous email. Each is anchored
+  // to line start so we don't split on the word "op" mid-sentence.
+  const markers: RegExp[] = [
+    // Dutch: "Op maandag 12 mei 2025 om 10:00 schreef Jan <jan@x.nl>:"
+    /^[ \t>]*Op\s.{1,300}\bschreef\b[^\n]*:?\s*$/im,
+    // English: "On Mon, May 12, 2025 at 10:00 AM John Doe <john@x.com> wrote:"
+    /^[ \t>]*On\s.{1,300}\bwrote\b[^\n]*:?\s*$/im,
+    // German: "Am 12.05.2025 um 10:00 schrieb Jan:"
+    /^[ \t>]*Am\s.{1,300}\bschrieb\b[^\n]*:?\s*$/im,
+    // French: "Le 12 mai 2025 à 10:00, Jean a écrit :"
+    /^[ \t>]*Le\s.{1,300}\ba\s+écrit\b[^\n]*:?\s*$/im,
+    // Outlook separator
+    /^[ \t>]*-{2,}\s*(Original Message|Oorspronkelijk bericht|Ursprüngliche Nachricht|Message d'origine)\s*-{2,}\s*$/im,
+    // Header block that starts with From:/Van:/Von:/De:
+    /^[ \t>]*(From|Van|Von|De)\s*:\s.{1,200}$/im,
+    // A run of at least 2 consecutive lines starting with ">"
+    /(?:^|\n)(?:[ \t]*>[^\n]*\n){2,}/,
+  ];
+
+  let earliest = -1;
+  for (const re of markers) {
+    const m = text.match(re);
+    if (m && typeof m.index === 'number') {
+      if (earliest === -1 || m.index < earliest) earliest = m.index;
+    }
+  }
+
+  if (earliest === -1) return { main: text, quoted: null };
+
+  const main = text.slice(0, earliest).replace(/\s+$/, '');
+  const quoted = text.slice(earliest).replace(/^\s+/, '');
+  if (!main || !quoted) return { main: text, quoted: null };
+  return { main, quoted };
+}
+
