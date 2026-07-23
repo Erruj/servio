@@ -487,6 +487,16 @@ const Templates = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Template verwijderen"
+        description={deleteTarget ? `Weet je zeker dat je "${deleteTarget.name}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.` : ''}
+        confirmLabel="Verwijderen"
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+      />
     </div>
   );
 };
