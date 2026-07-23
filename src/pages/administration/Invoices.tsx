@@ -508,11 +508,20 @@ export default function Invoices() {
           {loading ? (
             <div className="text-center py-8 text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Laden...</div>
           ) : filteredInvoices.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Nog geen facturen</h3>
-              <p className="max-w-sm mx-auto">Upload je eerste factuur om te beginnen.</p>
-            </div>
+            invoices.length === 0 ? (
+              <EmptyState
+                icon={FileText}
+                title="Nog geen facturen"
+                description="Upload je eerste factuur — Servio leest bedrag, BTW en leverancier automatisch uit."
+              />
+            ) : (
+              <EmptyState
+                icon={Search}
+                title="Geen facturen gevonden"
+                description="Pas je zoekterm of filters aan om resultaten te zien."
+              />
+            )
+
           ) : (
             <Table>
               <TableHeader>
