@@ -159,7 +159,7 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '' }: EmailB
       )}
 
       {/* Sandboxed iframe for HTML email */}
-      <div className="bg-secondary/30 rounded-xl overflow-hidden">
+      <div className="bg-secondary/30 rounded-xl overflow-hidden p-4">
         <iframe
           ref={iframeRef}
           sandbox="allow-same-origin"
