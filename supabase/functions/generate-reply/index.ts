@@ -103,10 +103,20 @@ serve(async (req) => {
 
     let correctionsContext = '';
     if (corrections.length > 0) {
-      correctionsContext = `\n\nLEER VAN EERDERE CORRECTIES - de gebruiker heeft eerder AI-antwoorden aangepast. Gebruik dit als richtlijn voor stijl en toon:\n`;
-      corrections.forEach((c: any, i: number) => {
-        correctionsContext += `Correctie ${i + 1}:\n- Origineel: "${(c.original_reply || '').substring(0, 200)}..."\n- Aangepast naar: "${(c.corrected_reply || '').substring(0, 200)}..."\n`;
-      });
+      const edits = corrections.filter((c: any) => c.correction_type !== 'rejected');
+      const rejected = corrections.filter((c: any) => c.correction_type === 'rejected');
+      if (edits.length > 0) {
+        correctionsContext += `\n\nLEER VAN EERDERE CORRECTIES - de gebruiker heeft AI-antwoorden bijgesteld. Match deze stijl en toon:\n`;
+        edits.forEach((c: any, i: number) => {
+          correctionsContext += `Correctie ${i + 1}:\n- AI schreef: "${(c.original_reply || '').substring(0, 200)}"\n- Gebruiker maakte: "${(c.corrected_reply || '').substring(0, 200)}"\n`;
+        });
+      }
+      if (rejected.length > 0) {
+        correctionsContext += `\n\nNEGATIEF SIGNAAL - deze eerdere AI-suggesties werden verworpen zonder aanpassing. Vermijd deze toon/structuur:\n`;
+        rejected.forEach((c: any, i: number) => {
+          correctionsContext += `Verworpen ${i + 1}: "${(c.original_reply || '').substring(0, 200)}"\n`;
+        });
+      }
     }
 
     let writingStyleContext = '';
