@@ -17,6 +17,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Invoice {
   id: string;
