@@ -53,6 +53,7 @@ const Settings = () => {
     autoVatCalculation: true,
     monthlySummary: false,
     autoExportEnabled: false,
+    autoProcessAttachments: false,
     tagSuggestions: true,
   });
 
