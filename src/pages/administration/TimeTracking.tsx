@@ -176,10 +176,18 @@ export default function TimeTracking() {
     loadData();
   };
 
-  const handleDelete = async (id: string) => {
-    await supabase.from('time_entries').delete().eq('id', id);
-    toast.success('Verwijderd');
-    loadData();
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      const { error } = await supabase.from('time_entries').delete().eq('id', deleteId);
+      if (error) throw error;
+      toast.success('Registratie verwijderd');
+      setDeleteId(null);
+      loadData();
+    } catch (e) {
+      console.error(e);
+      toast.error('Fout bij verwijderen registratie');
+    }
   };
 
   const handleExportCSV = () => {
