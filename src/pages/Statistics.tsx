@@ -4,6 +4,9 @@ import { Topbar } from '@/components/Topbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { 
@@ -45,6 +48,7 @@ interface EmailStats {
 
 const Statistics = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [timePeriod, setTimePeriod] = useState('week');
   const [stats, setStats] = useState<EmailStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,8 +119,13 @@ const Statistics = () => {
         }));
 
       setStats({ totalEmails, unreadEmails, readEmails, labelCounts, dailyVolume });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading statistics:', error);
+      toast({
+        title: 'Statistieken laden mislukt',
+        description: error.message || 'Probeer het opnieuw of ververs de pagina.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -161,21 +170,12 @@ const Statistics = () => {
         <Topbar />
         
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-          {/* Header with Filters */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <BarChart3 className="h-6 w-6 text-primary" />
-                Statistieken
-              </h1>
-              <p className="text-muted-foreground">
-                Overzicht van je email activiteit
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3">
+          <PageHeader
+            title="Statistieken"
+            description="Overzicht van je e-mailactiviteit."
+            actions={
               <Select value={timePeriod} onValueChange={setTimePeriod}>
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="w-40">
                   <Calendar className="h-4 w-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -186,23 +186,23 @@ const Statistics = () => {
                   <SelectItem value="quarter">Dit kwartaal</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+            }
+          />
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : !stats || stats.totalEmails === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center max-w-md">
-                <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-foreground mb-2">Geen data beschikbaar</h2>
-                <p className="text-muted-foreground">
-                  Er zijn geen emails gevonden voor deze periode. Koppel je mailbox en synchroniseer je emails om statistieken te zien.
-                </p>
-              </div>
-            </div>
+            <Card className="shadow-card">
+              <CardContent className="p-0">
+                <EmptyState
+                  icon={Mail}
+                  title="Nog geen statistieken"
+                  description="Er zijn geen e-mails gevonden voor deze periode. Koppel je mailbox en synchroniseer om statistieken te zien."
+                />
+              </CardContent>
+            </Card>
           ) : (
             <>
               {/* KPI Cards */}
