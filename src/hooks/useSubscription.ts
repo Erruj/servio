@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -53,46 +53,42 @@ export const SUBSCRIPTION_TIERS = {
   }
 } as const;
 
+const SUBSCRIPTION_QUERY_KEY = ['subscription-status'] as const;
+
+async function fetchSubscription(): Promise<SubscriptionStatus | null> {
+  const { data, error } = await supabase.functions.invoke('check-subscription');
+
+  if (error) {
+    const errorBody = await error.context?.json?.() || {};
+    if (errorBody?.error?.includes('does not exist') || errorBody?.error?.includes('User from sub claim')) {
+      console.warn('User session invalid, signing out');
+      await supabase.auth.signOut();
+      return null;
+    }
+    throw error;
+  }
+
+  return data as SubscriptionStatus;
+}
+
 export const useSubscription = () => {
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const hasFetchedRef = useRef(false);
+  const queryClient = useQueryClient();
+
+  // Shared, deduplicated query: all 13+ consumers hit the same cache entry.
+  // React Query guarantees only one in-flight request per key, and caches
+  // the result across the whole tree.
+  const { data: subscriptionStatus = null, isLoading, refetch } = useQuery({
+    queryKey: SUBSCRIPTION_QUERY_KEY,
+    queryFn: fetchSubscription,
+    staleTime: 60_000,          // fresh for 60s → no refetch on mount within that window
+    refetchInterval: 60_000,    // background refresh every 60s (once, not per-consumer)
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 
   const checkSubscription = async () => {
-    try {
-      // Only flip to loading on the initial fetch. Background refreshes (every 60s)
-      // must not toggle isLoading, otherwise gated pages briefly unmount their
-      // paywall/content. Use a ref so the interval's stale closure still sees
-      // the correct "already fetched" state.
-      if (hasFetchedRef.current) {
-        // no-op: keep isLoading false during background refresh
-      } else {
-        setIsLoading(true);
-      }
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      
-      
-      if (error) {
-        // Check if this is a user-not-found error (happens after DB restore)
-        const errorBody = await error.context?.json?.() || {};
-        if (errorBody?.error?.includes('does not exist') || errorBody?.error?.includes('User from sub claim')) {
-          console.warn('User session invalid, signing out');
-          await supabase.auth.signOut();
-          return null;
-        }
-        throw error;
-      }
-      
-      setSubscriptionStatus(data);
-      return data;
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-      // Don't show toast for auth errors - user will be redirected to login
-      return null;
-    } finally {
-      hasFetchedRef.current = true;
-      setIsLoading(false);
-    }
+    const result = await refetch();
+    return result.data ?? null;
   };
 
   const createCheckoutSession = async (tier: string, billingCycle: 'monthly' | 'yearly' = 'monthly') => {
@@ -100,13 +96,15 @@ export const useSubscription = () => {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { tier, billing_cycle: billingCycle }
       });
-      
+
       if (error) throw error;
-      
+
       if (data?.url) {
         window.open(data.url, '_blank');
         // Refresh subscription status after a delay
-        setTimeout(() => checkSubscription(), 2000);
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: SUBSCRIPTION_QUERY_KEY });
+        }, 2000);
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
@@ -117,9 +115,9 @@ export const useSubscription = () => {
   const openCustomerPortal = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
-      
+
       if (error) throw error;
-      
+
       if (data?.url) {
         window.open(data.url, '_blank');
       }
@@ -131,7 +129,7 @@ export const useSubscription = () => {
 
   const getCurrentTier = () => {
     if (!subscriptionStatus?.product_id) return null;
-    
+
     return Object.entries(SUBSCRIPTION_TIERS).find(
       ([_, tier]) => tier.product_id === subscriptionStatus.product_id
     )?.[0] as keyof typeof SUBSCRIPTION_TIERS | null;
@@ -147,15 +145,6 @@ export const useSubscription = () => {
     const diff = new Date(subscriptionStatus.trial_end_date).getTime() - new Date().getTime();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
-
-  useEffect(() => {
-    checkSubscription();
-    
-    // Auto-refresh every 60 seconds
-    const interval = setInterval(checkSubscription, 60000);
-    
-    return () => clearInterval(interval);
-  }, []);
 
   return {
     subscriptionStatus,
