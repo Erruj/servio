@@ -10,6 +10,7 @@ import { Mail, MapPin, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 
 export default function Contact() {
@@ -31,9 +32,17 @@ export default function Contact() {
     setErrors({});
 
     try {
-      contactSchema.parse(formData);
+      const validated = contactSchema.parse(formData);
       setIsSubmitting(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const { error } = await supabase.from('contact_submissions').insert({
+        name: validated.name,
+        email: validated.email,
+        message: validated.message,
+      });
+
+      if (error) throw error;
+
       toast({
         title: t('marketing.contact.sent'),
         description: t('marketing.contact.sentDesc')
@@ -46,6 +55,13 @@ export default function Contact() {
           if (err.path[0]) fieldErrors[err.path[0].toString()] = err.message;
         });
         setErrors(fieldErrors);
+      } else {
+        console.error('Contact form error:', error);
+        toast({
+          title: t('marketing.contact.error'),
+          description: t('marketing.contact.errorDesc'),
+          variant: 'destructive',
+        });
       }
     } finally {
       setIsSubmitting(false);

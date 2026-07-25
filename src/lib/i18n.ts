@@ -623,6 +623,8 @@ const resources = {
           nameError: 'Name must be at least 2 characters',
           emailError: 'Invalid email address',
           messageError: 'Message must be at least 10 characters',
+          error: 'Could not send message',
+          errorDesc: 'Something went wrong. Please try again or email us directly at info@getservio.co.',
         },
         faq: {
           title: 'Frequently asked questions',
@@ -1276,6 +1278,8 @@ const resources = {
           nameError: 'Naam moet minimaal 2 karakters bevatten',
           emailError: 'Ongeldig e-mailadres',
           messageError: 'Bericht moet minimaal 10 karakters bevatten',
+          error: 'Kon bericht niet verzenden',
+          errorDesc: 'Er ging iets mis. Probeer het opnieuw of mail ons direct op info@getservio.co.',
         },
         faq: {
           title: 'Veelgestelde vragen',
