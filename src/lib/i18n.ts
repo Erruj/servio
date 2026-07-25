@@ -463,7 +463,7 @@ const resources = {
           startFree: 'Start Free',
         },
         hero: {
-          badge: '500+ entrepreneurs save 8+ hours every week',
+          badge: 'New: automate your inbox & admin today',
           title1: 'Stop doing admin.',
           title2: 'Start doing business.',
           subtitle: 'Servio automates up to 80% of your emails, processes invoices automatically and gives you real-time insight into your finances — so you can focus on growing.',
