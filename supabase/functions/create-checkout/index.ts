@@ -86,7 +86,7 @@ serve(async (req) => {
       ],
       mode: "subscription",
       success_url: `https://getservio.co/dashboard?subscription=success`,
-      cancel_url: `https://getservio.co/prijzen?subscription=canceled`,
+      cancel_url: `https://getservio.co/pricing?subscription=canceled`,
       metadata: {
         user_id: user.id,
       },
