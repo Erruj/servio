@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
+import { SubscriptionProvider } from "@/components/SubscriptionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useLanguagePersistence } from "@/hooks/useLanguagePersistence";
 import { useUrlLanguageSync } from "@/hooks/useUrlLanguageSync";
