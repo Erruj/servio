@@ -1176,7 +1176,7 @@ const resources = {
         },
         cta: {
           title: 'Klaar om tijd terug te winnen?',
-          subtitle: 'Sluit je aan bij 500+ ondernemers die hun administratie hebben geautomatiseerd en nu focussen op wat écht telt.',
+          subtitle: 'Automatiseer je administratie en focus op wat écht telt.',
           trust1: '14 dagen gratis',
           trust2: 'Geen creditcard nodig',
           trust3: 'Direct aan de slag',
