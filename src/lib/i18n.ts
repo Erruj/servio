@@ -521,7 +521,7 @@ const resources = {
         },
         cta: {
           title: 'Ready to win back time?',
-          subtitle: 'Join 500+ entrepreneurs who have automated their administration and now focus on what really matters.',
+          subtitle: 'Automate your admin and focus on what really matters.',
           trust1: '14 days free',
           trust2: 'No credit card required',
           trust3: 'Get started immediately',
