@@ -797,6 +797,7 @@ async function processGmailAttachmentsForEmail(
     }
   }
   return processed;
+}
 
 // ─── Main Handler ────────────────────────────────────────────────────────
 
