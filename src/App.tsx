@@ -287,16 +287,18 @@ const App = () => (
       <ThemeProvider>
         <TooltipProvider>
           <AuthProvider>
-            <ErrorBoundary>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppRoutes />
-                <MobileBottomNav />
-                <DebugDrawer />
-                <CookieConsent />
-              </BrowserRouter>
-            </ErrorBoundary>
+            <SubscriptionProvider>
+              <ErrorBoundary>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppRoutes />
+                  <MobileBottomNav />
+                  <DebugDrawer />
+                  <CookieConsent />
+                </BrowserRouter>
+              </ErrorBoundary>
+            </SubscriptionProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
