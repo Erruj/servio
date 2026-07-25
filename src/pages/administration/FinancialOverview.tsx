@@ -4,10 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, TrendingDown, DollarSign, Wallet, AlertTriangle, Lightbulb, Target, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Wallet, AlertTriangle, Lightbulb, Target, BarChart3, Inbox } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart, Bar } from 'recharts';
 import { toast } from 'sonner';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
+import { EmptyState } from '@/components/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface MonthlyData {
   month: string;
@@ -48,6 +51,7 @@ export default function FinancialOverview() {
   const { t } = useTranslation();
   const [data, setData] = useState<FinancialData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEmpty, setIsEmpty] = useState(false);
   const [period, setPeriod] = useState<PeriodFilter>('month');
   const [aiInsights, setAiInsights] = useState<string[]>([]);
   const [loadingInsights, setLoadingInsights] = useState(false);
@@ -227,48 +231,13 @@ export default function FinancialOverview() {
         ? `Je kosten liggen ${Math.abs(benchmarkDiff).toFixed(0)}% ${benchmarkDiff > 0 ? 'boven' : 'onder'} je 3-maand gemiddelde`
         : null;
 
-      // Use placeholder data if no real data exists yet
+      // Real empty state — do NOT fabricate demo numbers
       if (invoices.length === 0 && receipts.length === 0 && transactions.length === 0) {
-        setData({
-          totalIncome: 15000,
-          totalExpenses: 8500,
-          profit: 6500,
-          profitMargin: 43.3,
-          totalVat: 1785,
-          previousPeriodComparison: {
-            incomeChange: 12.5,
-            expenseChange: 5.2,
-            profitChange: 8.3
-          },
-          monthlyData: [
-            { month: 'Jan', monthNum: 0, year: 2024, income: 12000, expenses: 7000, profit: 5000 },
-            { month: 'Feb', monthNum: 1, year: 2024, income: 13500, expenses: 7500, profit: 6000 },
-            { month: 'Mar', monthNum: 2, year: 2024, income: 14000, expenses: 8000, profit: 6000 },
-            { month: 'Apr', monthNum: 3, year: 2024, income: 13000, expenses: 7200, profit: 5800 },
-            { month: 'May', monthNum: 4, year: 2024, income: 14500, expenses: 8200, profit: 6300 },
-            { month: 'Jun', monthNum: 5, year: 2024, income: 15000, expenses: 8500, profit: 6500 },
-          ],
-          topCategories: [
-            { category: 'Software', amount: 2500, percentage: 29.4, vatAmount: 525 },
-            { category: 'Marketing', amount: 2000, percentage: 23.5, vatAmount: 420 },
-            { category: 'Office', amount: 1500, percentage: 17.6, vatAmount: 315 },
-            { category: 'Travel', amount: 1200, percentage: 14.1, vatAmount: 252 },
-            { category: 'Utilities', amount: 1300, percentage: 15.3, vatAmount: 273 },
-          ],
-          insights: [
-            '📈 Omzet is 12.5% gestegen t.o.v. vorige maand',
-            '💰 Winstmarge van 43.3% is uitstekend',
-            '💡 Software vormt 29% van je uitgaven - overweeg jaarlicenties voor korting',
-            '🧾 BTW te reserveren: €1.785,00'
-          ],
-          benchmark: 'Je kosten liggen 3% onder je 3-maand gemiddelde'
-        });
-        setAiInsights([
-          'Je financiële situatie is gezond met een sterke winstmarge.',
-          'Software en marketing zijn je grootste kostenposten - dit is normaal voor digitale dienstverlening.',
-          'Overweeg kwartaalbetalingen voor software om cashflow te optimaliseren.'
-        ]);
+        setIsEmpty(true);
+        setData(null);
+        setAiInsights([]);
       } else {
+        setIsEmpty(false);
         setData({
           totalIncome,
           totalExpenses,
@@ -285,7 +254,7 @@ export default function FinancialOverview() {
           insights,
           benchmark
         });
-        
+
         // Load AI insights
         loadAiInsights(totalIncome, totalExpenses, profitMargin, topCategories, totalVat);
       }
@@ -367,6 +336,36 @@ export default function FinancialOverview() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-muted-foreground">{t('loading')}...</div>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="space-y-6 p-6">
+        <AdminBreadcrumb currentPage="Financieel Overzicht" />
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">{t('financialOverview')}</h1>
+          <p className="text-muted-foreground">{t('financialOverviewDescription')}</p>
+        </div>
+        <EmptyState
+          icon={Inbox}
+          title="Nog geen financiële data"
+          description="Koppel je mailbox of upload je eerste factuur of bonnetje om je financieel overzicht te zien."
+          action={
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Button asChild>
+                <Link to="/mailbox-setup">Mailbox koppelen</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/administration/invoices">Factuur uploaden</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/administration/receipts">Bonnetje uploaden</Link>
+              </Button>
+            </div>
+          }
+        />
       </div>
     );
   }
