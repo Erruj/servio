@@ -352,20 +352,18 @@ export default function FinancialOverview() {
           icon={Inbox}
           title="Nog geen financiële data"
           description="Koppel je mailbox of upload je eerste factuur of bonnetje om je financieel overzicht te zien."
-          action={
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Button asChild>
-                <Link to="/mailbox-setup">Mailbox koppelen</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/administration/invoices">Factuur uploaden</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/administration/receipts">Bonnetje uploaden</Link>
-              </Button>
-            </div>
-          }
         />
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button asChild>
+            <Link to="/mailbox-setup">Mailbox koppelen</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/administration/invoices">Factuur uploaden</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/administration/receipts">Bonnetje uploaden</Link>
+          </Button>
+        </div>
       </div>
     );
   }
