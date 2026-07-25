@@ -371,8 +371,18 @@ const Settings = () => {
                   <Switch checked={settings.monthlySummary} onCheckedChange={(checked) => setSettings({ ...settings, monthlySummary: checked })} />
                 </SettingItem>
                 <Separator />
-                <SettingItem icon={Sparkles} label="Facturen automatisch verwerken uit e-mail" description="Bijlagen die op een factuur of bon lijken worden automatisch geanalyseerd (OCR) en toegevoegd aan Facturen/Bonnetjes met status 'Controleren'. Je moet ze zelf goedkeuren voor ze definitief zijn.">
-                  <Switch checked={settings.autoProcessAttachments} onCheckedChange={(checked) => setSettings({ ...settings, autoProcessAttachments: checked })} />
+                <SettingItem icon={Sparkles} label="Facturen automatisch verwerken uit e-mail" description="Bijlagen die op een factuur of bon lijken worden automatisch geanalyseerd (OCR) en toegevoegd aan Facturen/Bonnetjes met status 'Controleren'. Je moet ze zelf goedkeuren voor ze definitief zijn. Werkt momenteel alleen voor mailboxen gekoppeld via Gmail.">
+                  <Switch
+                    checked={settings.autoProcessAttachments}
+                    onCheckedChange={(checked) => {
+                      if (checked && hasGmailConnection === false) {
+                        toast.warning('Geen Gmail-mailbox gekoppeld', {
+                          description: 'Deze functie werkt momenteel alleen voor Gmail. Koppel eerst een Gmail-account, anders wordt er niets automatisch verwerkt.',
+                        });
+                      }
+                      setSettings({ ...settings, autoProcessAttachments: checked });
+                    }}
+                  />
                 </SettingItem>
                 <Separator />
                 <SettingItem icon={Download} label="Automatische Maandelijkse Export" description="ZIP met facturen, bonnetjes en uren wordt elke maand klaargezet in opslag">
