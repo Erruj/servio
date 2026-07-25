@@ -1118,7 +1118,7 @@ const resources = {
           startFree: 'Start Gratis',
         },
         hero: {
-          badge: '500+ ondernemers besparen wekelijks 8+ uur',
+          badge: 'Nieuw: automatiseer je mailbox & administratie vandaag nog',
           title1: 'Stop met administratie.',
           title2: 'Start met ondernemen.',
           subtitle: 'Servio automatiseert tot 80% van je e-mails, verwerkt facturen automatisch en geeft je realtime inzicht in je financiën — zodat jij kunt focussen op groeien.',
