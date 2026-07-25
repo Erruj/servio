@@ -72,7 +72,21 @@ const Settings = () => {
     setCompactLayout(personalization.compactLayout);
   }, [personalization]);
 
-  useEffect(() => { loadSettings(); }, [user]);
+  const [hasGmailConnection, setHasGmailConnection] = useState<boolean | null>(null);
+
+  useEffect(() => { loadSettings(); loadEmailConnections(); }, [user]);
+
+  const loadEmailConnections = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('email_connections')
+        .select('provider')
+        .eq('user_id', user.id);
+      const providers = (data ?? []).map((c: any) => (c.provider || '').toLowerCase());
+      setHasGmailConnection(providers.some((p) => p.includes('gmail') || p.includes('google')));
+    } catch (error) { console.error('Error loading email connections:', error); }
+  };
 
   const loadSettings = async () => {
     if (!user) return;
