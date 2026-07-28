@@ -475,6 +475,8 @@ const resources = {
           trustNoCard: 'No credit card required',
           trustQuickSetup: 'Active in 2 minutes',
           trustCancel: 'Cancel anytime',
+          uniqueClaim: 'The only tool that automates both your inbox and your admin',
+
         },
         features: {
           eyebrow: 'What Servio delivers',
@@ -1130,6 +1132,8 @@ const resources = {
           trustNoCard: 'Geen creditcard nodig',
           trustQuickSetup: 'In 2 minuten actief',
           trustCancel: 'Annuleren wanneer je wilt',
+          uniqueClaim: 'De enige tool die je mailbox én je administratie automatiseert',
+
         },
         features: {
           eyebrow: 'Wat Servio oplevert',

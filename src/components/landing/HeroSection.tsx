@@ -56,6 +56,15 @@ export function HeroSection() {
           </p>
 
           <div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-sm font-medium text-primary mb-8 animate-fade-in"
+            style={{ animationDelay: '110ms' }}
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            {t('marketing.hero.uniqueClaim')}
+          </div>
+
+
+          <div
             className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 text-sm animate-fade-in"
             style={{ animationDelay: '125ms' }}
           >
