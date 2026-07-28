@@ -303,35 +303,8 @@ export default function MarketingPricing() {
             </div>
           </section>
 
-          {/* Testimonials */}
-          <section className="py-16 md:py-20">
-            <div className="container mx-auto px-6">
-              <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-12">
-                Wat ondernemers zeggen over Servio
-              </h2>
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {TESTIMONIALS.map((tm, i) => (
-                  <div key={i} className="relative rounded-2xl bg-muted/40 border border-border/40 p-6 md:p-7">
-                    <Quote className="absolute top-5 left-5 w-7 h-7 text-primary/20" aria-hidden />
-                    <div className="pl-10">
-                      <div className="flex gap-0.5 mb-3" aria-label="5 sterren">
-                        {Array.from({ length: 5 }).map((_, s) => (
-                          <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                        ))}
-                      </div>
-                      <p className="text-foreground text-[15px] leading-relaxed mb-5">"{tm.quote}"</p>
-                      <div>
-                        <p className="font-medium text-foreground text-sm">{tm.name}</p>
-                        <p className="text-xs text-muted-foreground">{tm.role}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
           {/* Comparison table */}
+
           <section className="py-16 md:py-20">
             <div className="container mx-auto px-6">
               <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-3">
