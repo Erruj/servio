@@ -24,6 +24,26 @@ const YEARLY_PRICE_IDS: Record<string, string> = {
 
 const PLANS = [
   {
+    tier: 'free',
+    name: 'Gratis',
+    description: 'Voor wie eerst wil proberen',
+    monthly: 0,
+    yearlyMonthly: 0,
+    yearlyTotal: 0,
+    yearlySavings: 0,
+    cta: 'Direct beginnen',
+    popular: false,
+    isFree: true,
+    features: [
+      '20 e-mails per maand',
+      '10 AI-calls per maand',
+      '1 gebruiker',
+      'AI antwoordsuggesties',
+      'Basis inbox automatisering',
+      'Permanent gratis — geen creditcard',
+    ],
+  },
+  {
     tier: 'starter',
     name: 'Starter',
     description: 'Voor net startende ZZP\'ers',
@@ -86,25 +106,25 @@ const PLANS = [
 
 
 type Cell = string | boolean;
-const COMPARISON: { feature: string; starter: Cell; pro: Cell; business: Cell; key?: boolean }[] = [
-  { feature: 'E-mails per maand', starter: '100', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
-  { feature: 'AI-calls per maand', starter: '50', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
-  { feature: 'Gebruikers', starter: '1', pro: '3', business: 'Onbeperkt', key: true },
-  { feature: 'AI antwoordsuggesties', starter: true, pro: true, business: true, key: true },
-  { feature: 'Inbox automatisering', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
-  { feature: 'Factuurverwerking', starter: true, pro: true, business: true, key: true },
-  { feature: 'Financieel dashboard', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
-  { feature: 'AI Boekhoudassistent', starter: false, pro: true, business: true, key: true },
-  { feature: 'Offertes', starter: false, pro: true, business: true },
-  { feature: 'Klantenbeheer', starter: false, pro: true, business: true },
-  { feature: 'Urenregistratie', starter: false, pro: true, business: true, key: true },
-  { feature: 'Geavanceerde rapportages', starter: false, pro: true, business: true },
-  { feature: 'Exports (PDF/Excel/ZIP)', starter: false, pro: true, business: true },
-  { feature: 'Priority support', starter: false, pro: true, business: true, key: true },
-  { feature: 'API toegang', starter: false, pro: false, business: true },
-  { feature: 'Dedicated accountmanager', starter: false, pro: false, business: true },
-  { feature: 'Priority SLA (4 uur)', starter: false, pro: false, business: true },
-  { feature: 'Op-maat onboarding', starter: false, pro: false, business: true },
+const COMPARISON: { feature: string; free: Cell; starter: Cell; pro: Cell; business: Cell; key?: boolean }[] = [
+  { feature: 'E-mails per maand', free: '20', starter: '100', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
+  { feature: 'AI-calls per maand', free: '10', starter: '50', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
+  { feature: 'Gebruikers', free: '1', starter: '1', pro: '3', business: 'Onbeperkt', key: true },
+  { feature: 'AI antwoordsuggesties', free: true, starter: true, pro: true, business: true, key: true },
+  { feature: 'Inbox automatisering', free: 'Basis', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
+  { feature: 'Factuurverwerking', free: false, starter: true, pro: true, business: true, key: true },
+  { feature: 'Financieel dashboard', free: 'Basis', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
+  { feature: 'AI Boekhoudassistent', free: false, starter: false, pro: true, business: true, key: true },
+  { feature: 'Offertes', free: false, starter: false, pro: true, business: true },
+  { feature: 'Klantenbeheer', free: false, starter: false, pro: true, business: true },
+  { feature: 'Urenregistratie', free: false, starter: false, pro: true, business: true, key: true },
+  { feature: 'Geavanceerde rapportages', free: false, starter: false, pro: true, business: true },
+  { feature: 'Exports (PDF/Excel/ZIP)', free: false, starter: false, pro: true, business: true },
+  { feature: 'Priority support', free: false, starter: false, pro: true, business: true, key: true },
+  { feature: 'API toegang', free: false, starter: false, pro: false, business: true },
+  { feature: 'Dedicated accountmanager', free: false, starter: false, pro: false, business: true },
+  { feature: 'Priority SLA (4 uur)', free: false, starter: false, pro: false, business: true },
+  { feature: 'Op-maat onboarding', free: false, starter: false, pro: false, business: true },
 ];
 
 function renderCell(v: Cell) {
