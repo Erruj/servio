@@ -309,7 +309,7 @@ export default function MarketingPricing() {
                           </p>
                         )}
                         <p className={cn('text-xs mt-1.5 font-medium', plan.popular ? 'text-background/70' : 'text-success')}>
-                          {isYearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen'}
+                          {plan.isFree ? 'Permanent gratis — geen creditcard' : (isYearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen')}
                         </p>
                       </div>
 
