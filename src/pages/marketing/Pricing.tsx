@@ -4,7 +4,7 @@ import { FAQSection } from '@/components/landing/FAQSection';
 import { SeoHead } from '@/components/SeoHead';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, ArrowRight, CheckCircle2, Quote, Star } from 'lucide-react';
+import { Check, X, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
