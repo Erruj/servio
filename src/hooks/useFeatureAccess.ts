@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSubscription, SUBSCRIPTION_TIERS } from './useSubscription';
 
-export type SubscriptionTier = 'starter' | 'pro' | 'business' | 'trial' | 'none';
+export type SubscriptionTier = 'free' | 'starter' | 'pro' | 'business' | 'trial' | 'none';
 
 export interface FeatureLimits {
   emailsPerMonth: number | null; // null = unlimited
@@ -32,6 +32,7 @@ export interface FeatureAccess {
 }
 
 const TIER_LABELS: Record<SubscriptionTier, string> = {
+  free: 'Gratis',
   starter: 'Starter',
   pro: 'Pro',
   business: 'Business',
@@ -78,42 +79,41 @@ export function useFeatureAccess(): FeatureAccess {
   } = useSubscription();
 
   const tier = useMemo<SubscriptionTier>(() => {
-    // While subscription is loading, optimistically assume trial-level access so
-    // the sidebar doesn't flicker locked items into an unlocked state once data
-    // arrives. Actual gating still happens once loading completes.
     if (isLoading) return 'trial';
+
+    // Active subscription → check product (paid plans win)
+    if (hasActiveSubscription) {
+      const mapped = getTierFromProductId(subscriptionStatus?.product_id);
+      return mapped === 'none' ? 'pro' : mapped;
+    }
+
+    // Explicit permanent-free selection (recorded in user_settings)
+    if (subscriptionStatus?.subscription_status === 'free') return 'free';
 
     // Active trial → Pro features
     if (isOnTrial) return 'trial';
 
-    // Active subscription → check product
-    if (hasActiveSubscription) {
-      const mapped = getTierFromProductId(subscriptionStatus?.product_id);
-      // Safety net: active subscriber should never be 'none' — default to Pro
-      return mapped === 'none' ? 'pro' : mapped;
-    }
-
     // Trial expired, no sub → Starter (locked down)
     if (isTrialExpired()) return 'starter';
 
-    // Fallback during loading/no data
     return 'none';
   }, [isLoading, isOnTrial, hasActiveSubscription, subscriptionStatus, isTrialExpired]);
 
   const effectiveTier = useMemo(() => {
-    // trial gives Pro-level access
     if (tier === 'trial') return 'pro';
-    if (tier === 'none') return 'starter'; // default to starter
+    if (tier === 'none') return 'starter';
     return tier;
   }, [tier]);
 
   const isAtLeast = (required: SubscriptionTier): boolean => {
-    const order: SubscriptionTier[] = ['starter', 'pro', 'business'];
+    const order: SubscriptionTier[] = ['free', 'starter', 'pro', 'business'];
     return order.indexOf(effectiveTier) >= order.indexOf(required);
   };
 
   const limits = useMemo<FeatureLimits>(() => {
     switch (effectiveTier) {
+      case 'free':
+        return { emailsPerMonth: 20, aiCallsPerMonth: 10, maxUsers: 1 };
       case 'starter':
         return { emailsPerMonth: 100, aiCallsPerMonth: 50, maxUsers: 1 };
       case 'pro':
@@ -121,7 +121,7 @@ export function useFeatureAccess(): FeatureAccess {
       case 'business':
         return { emailsPerMonth: null, aiCallsPerMonth: null, maxUsers: null };
       default:
-        return { emailsPerMonth: 100, aiCallsPerMonth: 50, maxUsers: 1 };
+        return { emailsPerMonth: 20, aiCallsPerMonth: 10, maxUsers: 1 };
     }
   }, [effectiveTier]);
 

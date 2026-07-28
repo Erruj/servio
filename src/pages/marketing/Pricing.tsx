@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
 import { useSubscription } from '@/hooks/useSubscription';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,26 @@ const YEARLY_PRICE_IDS: Record<string, string> = {
 };
 
 const PLANS = [
+  {
+    tier: 'free',
+    name: 'Gratis',
+    description: 'Voor wie eerst wil proberen',
+    monthly: 0,
+    yearlyMonthly: 0,
+    yearlyTotal: 0,
+    yearlySavings: 0,
+    cta: 'Direct beginnen',
+    popular: false,
+    isFree: true,
+    features: [
+      '20 e-mails per maand',
+      '10 AI-calls per maand',
+      '1 gebruiker',
+      'AI antwoordsuggesties',
+      'Basis inbox automatisering',
+      'Permanent gratis — geen creditcard',
+    ],
+  },
   {
     tier: 'starter',
     name: 'Starter',
@@ -85,25 +106,25 @@ const PLANS = [
 
 
 type Cell = string | boolean;
-const COMPARISON: { feature: string; starter: Cell; pro: Cell; business: Cell; key?: boolean }[] = [
-  { feature: 'E-mails per maand', starter: '100', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
-  { feature: 'AI-calls per maand', starter: '50', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
-  { feature: 'Gebruikers', starter: '1', pro: '3', business: 'Onbeperkt', key: true },
-  { feature: 'AI antwoordsuggesties', starter: true, pro: true, business: true, key: true },
-  { feature: 'Inbox automatisering', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
-  { feature: 'Factuurverwerking', starter: true, pro: true, business: true, key: true },
-  { feature: 'Financieel dashboard', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
-  { feature: 'AI Boekhoudassistent', starter: false, pro: true, business: true, key: true },
-  { feature: 'Offertes', starter: false, pro: true, business: true },
-  { feature: 'Klantenbeheer', starter: false, pro: true, business: true },
-  { feature: 'Urenregistratie', starter: false, pro: true, business: true, key: true },
-  { feature: 'Geavanceerde rapportages', starter: false, pro: true, business: true },
-  { feature: 'Exports (PDF/Excel/ZIP)', starter: false, pro: true, business: true },
-  { feature: 'Priority support', starter: false, pro: true, business: true, key: true },
-  { feature: 'API toegang', starter: false, pro: false, business: true },
-  { feature: 'Dedicated accountmanager', starter: false, pro: false, business: true },
-  { feature: 'Priority SLA (4 uur)', starter: false, pro: false, business: true },
-  { feature: 'Op-maat onboarding', starter: false, pro: false, business: true },
+const COMPARISON: { feature: string; free: Cell; starter: Cell; pro: Cell; business: Cell; key?: boolean }[] = [
+  { feature: 'E-mails per maand', free: '20', starter: '100', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
+  { feature: 'AI-calls per maand', free: '10', starter: '50', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
+  { feature: 'Gebruikers', free: '1', starter: '1', pro: '3', business: 'Onbeperkt', key: true },
+  { feature: 'AI antwoordsuggesties', free: true, starter: true, pro: true, business: true, key: true },
+  { feature: 'Inbox automatisering', free: 'Basis', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
+  { feature: 'Factuurverwerking', free: false, starter: true, pro: true, business: true, key: true },
+  { feature: 'Financieel dashboard', free: 'Basis', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
+  { feature: 'AI Boekhoudassistent', free: false, starter: false, pro: true, business: true, key: true },
+  { feature: 'Offertes', free: false, starter: false, pro: true, business: true },
+  { feature: 'Klantenbeheer', free: false, starter: false, pro: true, business: true },
+  { feature: 'Urenregistratie', free: false, starter: false, pro: true, business: true, key: true },
+  { feature: 'Geavanceerde rapportages', free: false, starter: false, pro: true, business: true },
+  { feature: 'Exports (PDF/Excel/ZIP)', free: false, starter: false, pro: true, business: true },
+  { feature: 'Priority support', free: false, starter: false, pro: true, business: true, key: true },
+  { feature: 'API toegang', free: false, starter: false, pro: false, business: true },
+  { feature: 'Dedicated accountmanager', free: false, starter: false, pro: false, business: true },
+  { feature: 'Priority SLA (4 uur)', free: false, starter: false, pro: false, business: true },
+  { feature: 'Op-maat onboarding', free: false, starter: false, pro: false, business: true },
 ];
 
 function renderCell(v: Cell) {
@@ -117,13 +138,29 @@ export default function MarketingPricing() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
   const { user } = useAuth();
-  const { createCheckoutSession } = useSubscription();
+  const { createCheckoutSession, checkSubscription } = useSubscription();
   const [billing, setBilling] = useState<BillingCycle>('monthly');
   const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   const handlePlanClick = async (tier: string) => {
     if (!user) {
-      navigate('/signup');
+      navigate(tier === 'free' ? '/signup?plan=free' : '/signup');
+      return;
+    }
+    if (tier === 'free') {
+      try {
+        const { error } = await supabase
+          .from('user_settings')
+          .update({ subscription_status: 'free' })
+          .eq('user_id', user.id);
+        if (error) throw error;
+        await checkSubscription();
+        toast.success('Je bent nu op het gratis plan.');
+        navigate('/app');
+      } catch (e: any) {
+        console.error('Kon gratis plan niet activeren:', e);
+        toast.error('Kon gratis plan niet activeren. Probeer opnieuw.');
+      }
       return;
     }
     toast.info('Checkout...');
@@ -223,7 +260,7 @@ export default function MarketingPricing() {
           {/* Pricing cards */}
           <section className="pb-20">
             <div className="container mx-auto px-6">
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 {PLANS.map((plan) => {
                   const isYearly = billing === 'yearly';
                   const displayMonthly = isYearly ? plan.yearlyMonthly : plan.monthly;
@@ -272,7 +309,7 @@ export default function MarketingPricing() {
                           </p>
                         )}
                         <p className={cn('text-xs mt-1.5 font-medium', plan.popular ? 'text-background/70' : 'text-success')}>
-                          {isYearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen'}
+                          {plan.isFree ? 'Permanent gratis — geen creditcard' : (isYearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen')}
                         </p>
                       </div>
 
@@ -318,7 +355,8 @@ export default function MarketingPricing() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/40">
-                      <th className="text-left p-4 md:p-5 font-medium text-muted-foreground w-2/5">Feature</th>
+                      <th className="text-left p-4 md:p-5 font-medium text-muted-foreground w-1/3">Feature</th>
+                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">Gratis</th>
                       <th className="p-4 md:p-5 font-semibold text-foreground text-center">Starter</th>
                       <th className="p-4 md:p-5 font-semibold text-center bg-[#2563eb] text-white relative">
                         Pro
@@ -331,6 +369,7 @@ export default function MarketingPricing() {
                     {visibleFeatures.map((row, i) => (
                       <tr key={i} className="border-b border-border/30 last:border-0">
                         <td className="p-4 md:p-5 text-foreground">{row.feature}</td>
+                        <td className="p-4 md:p-5 text-center">{renderCell(row.free)}</td>
                         <td className="p-4 md:p-5 text-center">{renderCell(row.starter)}</td>
                         <td className="p-4 md:p-5 text-center bg-[#2563eb]/5">{renderCell(row.pro)}</td>
                         <td className="p-4 md:p-5 text-center">{renderCell(row.business)}</td>

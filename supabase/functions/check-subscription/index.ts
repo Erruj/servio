@@ -82,6 +82,21 @@ serve(async (req) => {
       });
     }
 
+    // Permanent free plan (no Stripe check needed, no expiration)
+    if (settings?.subscription_status === 'free') {
+      logStep("Permanent free plan selected");
+      return new Response(JSON.stringify({
+        subscribed: false,
+        product_id: null,
+        subscription_status: 'free',
+        trial_end_date: trialEndDate?.toISOString() ?? null,
+        subscription_end: null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
     });

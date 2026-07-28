@@ -1,7 +1,7 @@
 export interface SubscriptionStatus {
   subscribed: boolean;
   product_id: string | null;
-  subscription_status: 'trial' | 'active' | 'expired' | 'canceled';
+  subscription_status: 'trial' | 'active' | 'expired' | 'canceled' | 'free';
   trial_end_date: string | null;
   subscription_end: string | null;
 }
