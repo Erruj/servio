@@ -115,7 +115,12 @@ const Settings = () => {
         localStorage.setItem('servio-language', loaded.language);
         setAppTheme(loaded.theme);
       }
-    } catch (error) { console.error('Error loading settings:', error); }
+    } catch (error: any) {
+      console.error('Error loading settings:', error);
+      toast.error('Kon instellingen niet laden', {
+        description: error?.message || 'Er ging iets mis bij het ophalen van je voorkeuren. Probeer de pagina te vernieuwen.',
+      });
+    }
   };
 
   const handleThemeChange = (value: string) => {
