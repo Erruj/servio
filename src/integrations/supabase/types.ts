@@ -1035,6 +1035,7 @@ export type Database = {
           monthly_summary: boolean | null
           preferred_tone: string | null
           quick_actions: Json | null
+          review_requested_at: string | null
           sidebar_favorites: string[] | null
           sidebar_order: Json | null
           stripe_customer_id: string | null
@@ -1068,6 +1069,7 @@ export type Database = {
           monthly_summary?: boolean | null
           preferred_tone?: string | null
           quick_actions?: Json | null
+          review_requested_at?: string | null
           sidebar_favorites?: string[] | null
           sidebar_order?: Json | null
           stripe_customer_id?: string | null
@@ -1101,6 +1103,7 @@ export type Database = {
           monthly_summary?: boolean | null
           preferred_tone?: string | null
           quick_actions?: Json | null
+          review_requested_at?: string | null
           sidebar_favorites?: string[] | null
           sidebar_order?: Json | null
           stripe_customer_id?: string | null
