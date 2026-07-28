@@ -4,7 +4,7 @@ import { FAQSection } from '@/components/landing/FAQSection';
 import { SeoHead } from '@/components/SeoHead';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, ArrowRight, CheckCircle2, Quote, Star } from 'lucide-react';
+import { Check, X, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
@@ -83,23 +83,6 @@ const PLANS = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote: 'Ik bespaar makkelijk 6 uur per week. De AI antwoorden zijn verrassend goed en ik hoef ze bijna nooit aan te passen.',
-    name: 'Lars van den Berg',
-    role: 'Freelance designer, Amsterdam',
-  },
-  {
-    quote: 'Eindelijk één plek voor mijn facturen, emails en financiën. Had dit jaren geleden al gewild.',
-    name: 'Mira Janssen',
-    role: 'ZZP Marketingconsultant',
-  },
-  {
-    quote: 'De BTW reminder alleen al is het geld waard. Nooit meer vergeten aangifte te doen.',
-    name: 'Thomas de Wit',
-    role: 'Zelfstandig boekhouder',
-  },
-];
 
 type Cell = string | boolean;
 const COMPARISON: { feature: string; starter: Cell; pro: Cell; business: Cell; key?: boolean }[] = [
@@ -320,35 +303,8 @@ export default function MarketingPricing() {
             </div>
           </section>
 
-          {/* Testimonials */}
-          <section className="py-16 md:py-20">
-            <div className="container mx-auto px-6">
-              <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-12">
-                Wat ondernemers zeggen over Servio
-              </h2>
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {TESTIMONIALS.map((tm, i) => (
-                  <div key={i} className="relative rounded-2xl bg-muted/40 border border-border/40 p-6 md:p-7">
-                    <Quote className="absolute top-5 left-5 w-7 h-7 text-primary/20" aria-hidden />
-                    <div className="pl-10">
-                      <div className="flex gap-0.5 mb-3" aria-label="5 sterren">
-                        {Array.from({ length: 5 }).map((_, s) => (
-                          <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                        ))}
-                      </div>
-                      <p className="text-foreground text-[15px] leading-relaxed mb-5">"{tm.quote}"</p>
-                      <div>
-                        <p className="font-medium text-foreground text-sm">{tm.name}</p>
-                        <p className="text-xs text-muted-foreground">{tm.role}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
           {/* Comparison table */}
+
           <section className="py-16 md:py-20">
             <div className="container mx-auto px-6">
               <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-3">
