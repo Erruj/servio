@@ -138,13 +138,29 @@ export default function MarketingPricing() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
   const { user } = useAuth();
-  const { createCheckoutSession } = useSubscription();
+  const { createCheckoutSession, checkSubscription } = useSubscription();
   const [billing, setBilling] = useState<BillingCycle>('monthly');
   const [showAllFeatures, setShowAllFeatures] = useState(false);
 
   const handlePlanClick = async (tier: string) => {
     if (!user) {
-      navigate('/signup');
+      navigate(tier === 'free' ? '/signup?plan=free' : '/signup');
+      return;
+    }
+    if (tier === 'free') {
+      try {
+        const { error } = await supabase
+          .from('user_settings')
+          .update({ subscription_status: 'free' })
+          .eq('user_id', user.id);
+        if (error) throw error;
+        await checkSubscription();
+        toast.success('Je bent nu op het gratis plan.');
+        navigate('/app');
+      } catch (e: any) {
+        console.error('Kon gratis plan niet activeren:', e);
+        toast.error('Kon gratis plan niet activeren. Probeer opnieuw.');
+      }
       return;
     }
     toast.info('Checkout...');
