@@ -1132,6 +1132,8 @@ const resources = {
           trustNoCard: 'Geen creditcard nodig',
           trustQuickSetup: 'In 2 minuten actief',
           trustCancel: 'Annuleren wanneer je wilt',
+          uniqueClaim: 'De enige tool die je mailbox én je administratie automatiseert',
+
         },
         features: {
           eyebrow: 'Wat Servio oplevert',
