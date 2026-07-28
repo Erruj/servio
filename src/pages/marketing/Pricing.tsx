@@ -355,7 +355,8 @@ export default function MarketingPricing() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/40">
-                      <th className="text-left p-4 md:p-5 font-medium text-muted-foreground w-2/5">Feature</th>
+                      <th className="text-left p-4 md:p-5 font-medium text-muted-foreground w-1/3">Feature</th>
+                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">Gratis</th>
                       <th className="p-4 md:p-5 font-semibold text-foreground text-center">Starter</th>
                       <th className="p-4 md:p-5 font-semibold text-center bg-[#2563eb] text-white relative">
                         Pro
@@ -368,6 +369,7 @@ export default function MarketingPricing() {
                     {visibleFeatures.map((row, i) => (
                       <tr key={i} className="border-b border-border/30 last:border-0">
                         <td className="p-4 md:p-5 text-foreground">{row.feature}</td>
+                        <td className="p-4 md:p-5 text-center">{renderCell(row.free)}</td>
                         <td className="p-4 md:p-5 text-center">{renderCell(row.starter)}</td>
                         <td className="p-4 md:p-5 text-center bg-[#2563eb]/5">{renderCell(row.pro)}</td>
                         <td className="p-4 md:p-5 text-center">{renderCell(row.business)}</td>
