@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSubscription, SUBSCRIPTION_TIERS } from './useSubscription';
 
-export type SubscriptionTier = 'starter' | 'pro' | 'business' | 'trial' | 'none';
+export type SubscriptionTier = 'free' | 'starter' | 'pro' | 'business' | 'trial' | 'none';
 
 export interface FeatureLimits {
   emailsPerMonth: number | null; // null = unlimited
