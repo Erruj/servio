@@ -32,6 +32,7 @@ export interface FeatureAccess {
 }
 
 const TIER_LABELS: Record<SubscriptionTier, string> = {
+  free: 'Gratis',
   starter: 'Starter',
   pro: 'Pro',
   business: 'Business',
