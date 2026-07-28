@@ -260,7 +260,7 @@ export default function MarketingPricing() {
           {/* Pricing cards */}
           <section className="pb-20">
             <div className="container mx-auto px-6">
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 {PLANS.map((plan) => {
                   const isYearly = billing === 'yearly';
                   const displayMonthly = isYearly ? plan.yearlyMonthly : plan.monthly;
