@@ -27,7 +27,7 @@ export function SubscriptionGate({ children, feature, requiredTier = 'pro' }: Su
   }
 
   const effectiveTier = tier === 'trial' ? 'pro' : (tier === 'none' ? 'starter' : tier);
-  const tierOrder = ['starter', 'pro', 'business'];
+  const tierOrder = ['free', 'starter', 'pro', 'business'];
   const hasAccess = tierOrder.indexOf(effectiveTier) >= tierOrder.indexOf(requiredTier);
 
   if (hasAccess) return <>{children}</>;
