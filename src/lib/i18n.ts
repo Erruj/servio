@@ -475,6 +475,8 @@ const resources = {
           trustNoCard: 'No credit card required',
           trustQuickSetup: 'Active in 2 minutes',
           trustCancel: 'Cancel anytime',
+          uniqueClaim: 'The only tool that automates both your inbox and your admin',
+
         },
         features: {
           eyebrow: 'What Servio delivers',
