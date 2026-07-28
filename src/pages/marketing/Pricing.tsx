@@ -83,23 +83,6 @@ const PLANS = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote: 'Ik bespaar makkelijk 6 uur per week. De AI antwoorden zijn verrassend goed en ik hoef ze bijna nooit aan te passen.',
-    name: 'Lars van den Berg',
-    role: 'Freelance designer, Amsterdam',
-  },
-  {
-    quote: 'Eindelijk één plek voor mijn facturen, emails en financiën. Had dit jaren geleden al gewild.',
-    name: 'Mira Janssen',
-    role: 'ZZP Marketingconsultant',
-  },
-  {
-    quote: 'De BTW reminder alleen al is het geld waard. Nooit meer vergeten aangifte te doen.',
-    name: 'Thomas de Wit',
-    role: 'Zelfstandig boekhouder',
-  },
-];
 
 type Cell = string | boolean;
 const COMPARISON: { feature: string; starter: Cell; pro: Cell; business: Cell; key?: boolean }[] = [
