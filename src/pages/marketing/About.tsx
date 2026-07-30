@@ -4,6 +4,7 @@ import { CTASection } from '@/components/landing/CTASection';
 import { SeoHead } from '@/components/SeoHead';
 import { Heart, Lightbulb, Users, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 
 const icons = [Target, Heart, Lightbulb, Users];
 
