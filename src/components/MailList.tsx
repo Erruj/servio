@@ -193,6 +193,7 @@ export function MailList({
         selectedIds={selectedIds}
         selectedMailId={selectedMailId}
         onSelectMail={onSelectMail}
+        newMailIds={newMailIds}
         toggleSelect={toggleSelect}
         getEmailPreview={getEmailPreview}
         getMailAnalysis={getMailAnalysis}
@@ -211,6 +212,7 @@ interface VirtualMailListProps {
   selectedIds: Set<string>;
   selectedMailId?: string;
   onSelectMail: (mail: MailItem) => void;
+  newMailIds: Set<string>;
   toggleSelect: (id: string) => void;
   getEmailPreview: (mail: MailItem) => string;
   getMailAnalysis: (mail: MailItem) => { category: Category; urgency: Urgency };
@@ -221,7 +223,7 @@ interface VirtualMailListProps {
 }
 
 function VirtualMailList(props: VirtualMailListProps) {
-  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, toggleSelect, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
+  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, newMailIds, toggleSelect, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
   const parentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: mails.length,
