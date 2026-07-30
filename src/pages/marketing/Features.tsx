@@ -113,10 +113,10 @@ export default function Features() {
                             </div>
                           </div>
                         </div>
+                      </div>
                     </Reveal>
-
-                    </div>
                   </div>
+
                 </div>
               </section>
             );
