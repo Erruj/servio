@@ -23,7 +23,7 @@ export function FAQSection() {
         </Reveal>
 
         <div className="max-w-2xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-2" asChild>
+          <Accordion type="single" collapsible asChild={false}>
             <StaggerGroup stagger={0.06} className="space-y-2">
               {items.map((faq, index) => (
                 <StaggerItem key={index} y={12}>
