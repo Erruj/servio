@@ -7,6 +7,7 @@ import { Calendar, Clock, Linkedin, Twitter, LinkIcon, ArrowLeft } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import React from 'react';
+import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 
 function renderMarkdown(content: string) {
   const lines = content.split('\n');
@@ -146,25 +147,28 @@ export default function BlogPost() {
           </nav>
 
           {/* Meta */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{new Date(post.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{post.readingTime} min leestijd</span>
-          </div>
+          <Reveal>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+              <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{new Date(post.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{post.readingTime} min leestijd</span>
+            </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-8 leading-tight">{post.title}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-8 leading-tight">{post.title}</h1>
 
-          {/* Share */}
-          <div className="flex items-center gap-2 mb-10 pb-8 border-b border-border">
-            <span className="text-sm text-muted-foreground mr-2">Delen:</span>
-            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Deel op LinkedIn"><Linkedin className="h-4 w-4" /></a>
-            <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(post.title)}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Deel op X"><Twitter className="h-4 w-4" /></a>
-            <button onClick={copyLink} className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Kopieer link"><LinkIcon className="h-4 w-4" /></button>
-          </div>
+            {/* Share */}
+            <div className="flex items-center gap-2 mb-10 pb-8 border-b border-border">
+              <span className="text-sm text-muted-foreground mr-2">Delen:</span>
+              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Deel op LinkedIn"><Linkedin className="h-4 w-4" /></a>
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(post.title)}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Deel op X"><Twitter className="h-4 w-4" /></a>
+              <button onClick={copyLink} className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Kopieer link"><LinkIcon className="h-4 w-4" /></button>
+            </div>
+          </Reveal>
 
           {/* Content */}
-          <article className="prose-custom text-foreground leading-relaxed">
+          <Reveal as="article" delay={0.08} className="prose-custom text-foreground leading-relaxed">
             {renderMarkdown(post.content)}
-          </article>
+          </Reveal>
+
 
           {/* CTA */}
           <div className="mt-16 p-8 rounded-2xl bg-primary/5 border border-primary/20 text-center">
