@@ -276,6 +276,12 @@
   .stagger-6 { animation-delay: 180ms; }
 }
 
+@keyframes routeFade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes itemIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes itemFade { from { opacity: 0 } to { opacity: 1 } }
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
