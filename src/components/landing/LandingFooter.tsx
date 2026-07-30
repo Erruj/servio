@@ -15,7 +15,7 @@ export function LandingFooter() {
               <img
                 src={servioLogo}
                 alt="Servio AI Business Assistant logo"
-                className="h-10 w-auto"
+                className="h-10 w-auto brightness-0 invert"
                 loading="lazy"
               />
             </div>
