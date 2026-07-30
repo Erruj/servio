@@ -16,6 +16,8 @@ import { Upload, FileText, Download, Search, MoreHorizontal, CheckCircle, Clock,
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { useNewItems } from '@/hooks/useNewItems';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
@@ -370,6 +372,8 @@ export default function Invoices() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   }).filter(Boolean))].sort().reverse();
 
+  const newInvoiceIds = useNewItems(invoices.map((inv) => inv.id));
+
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = inv.supplier?.toLowerCase().includes(searchTerm.toLowerCase()) || inv.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
@@ -539,7 +543,14 @@ export default function Invoices() {
               </TableHeader>
               <TableBody>
                 {filteredInvoices.map((invoice) => (
-                  <TableRow key={invoice.id} className={selectedInvoices.has(invoice.id) ? 'bg-muted/50' : ''}>
+                  <TableRow
+                    key={invoice.id}
+                    className={cn(
+                      'transition-colors duration-150 hover:bg-muted/40',
+                      selectedInvoices.has(invoice.id) && 'bg-muted/50',
+                      newInvoiceIds.has(invoice.id) && 'animate-item-in'
+                    )}
+                  >
                     <TableCell><Checkbox checked={selectedInvoices.has(invoice.id)} onCheckedChange={() => toggleSelect(invoice.id)} /></TableCell>
                     <TableCell className="font-medium">{invoice.invoice_number || '-'}</TableCell>
                     <TableCell>{invoice.supplier || t('unknown')}</TableCell>

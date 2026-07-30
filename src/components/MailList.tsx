@@ -11,6 +11,7 @@ import { searchQuerySchema, sanitizeText, SecurityError } from '@/lib/security';
 import { buildPreview } from '@/lib/emailText';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, MailOpen, Trash2, CheckSquare } from 'lucide-react';
+import { useNewItems } from '@/hooks/useNewItems';
 
 interface MailListProps {
   mails: MailItem[];
@@ -32,6 +33,8 @@ export function MailList({
   const { toast } = useToast();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
+  // Alleen nieuw binnengekomen mails krijgen een korte entrance.
+  const newMailIds = useNewItems(mails.map((m) => m.id));
 
   const filterLabels: Record<string, string> = {
     all: 'Alle mails', inbox: 'Inbox', unread: 'Ongelezen', starred: 'Met ster',
@@ -190,6 +193,7 @@ export function MailList({
         selectedIds={selectedIds}
         selectedMailId={selectedMailId}
         onSelectMail={onSelectMail}
+        newMailIds={newMailIds}
         toggleSelect={toggleSelect}
         getEmailPreview={getEmailPreview}
         getMailAnalysis={getMailAnalysis}
@@ -208,6 +212,7 @@ interface VirtualMailListProps {
   selectedIds: Set<string>;
   selectedMailId?: string;
   onSelectMail: (mail: MailItem) => void;
+  newMailIds: Set<string>;
   toggleSelect: (id: string) => void;
   getEmailPreview: (mail: MailItem) => string;
   getMailAnalysis: (mail: MailItem) => { category: Category; urgency: Urgency };
@@ -218,7 +223,7 @@ interface VirtualMailListProps {
 }
 
 function VirtualMailList(props: VirtualMailListProps) {
-  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, toggleSelect, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
+  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, newMailIds, toggleSelect, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
   const parentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: mails.length,
@@ -260,6 +265,7 @@ function VirtualMailList(props: VirtualMailListProps) {
               className={cn(
                 'relative px-4 py-3 cursor-pointer transition-colors duration-150 border-b border-border/40',
                 !isSelected && 'hover:bg-secondary/60',
+                newMailIds.has(mail.id) && 'animate-item-fade',
                 isSelected && 'bg-[hsl(214,100%,96%)] dark:bg-primary/15',
                 isChecked && 'bg-accent/15'
               )}

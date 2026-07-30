@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { cn } from '@/lib/utils';
+import { useNewItems } from '@/hooks/useNewItems';
 
 interface Customer {
   id: string;
@@ -43,6 +45,7 @@ const emptyForm = {
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const newCustomerIds = useNewItems(customers.map((c) => c.id));
   const [stats, setStats] = useState<Record<string, CustomerStats>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -230,7 +233,14 @@ export default function Customers() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map(c => (
-                    <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailCustomer(c)}>
+                    <TableRow
+                      key={c.id}
+                      className={cn(
+                        'cursor-pointer transition-colors duration-150 hover:bg-muted/50',
+                        newCustomerIds.has(c.id) && 'animate-item-in'
+                      )}
+                      onClick={() => setDetailCustomer(c)}
+                    >
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell className="hidden md:table-cell">{c.company_name || '-'}</TableCell>
                       <TableCell className="hidden md:table-cell">{c.email || '-'}</TableCell>

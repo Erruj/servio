@@ -28,8 +28,11 @@ export const AiLoadingState = ({
         role="status"
         aria-live="polite"
       >
-        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-        <span>{label}</span>
+        <span className="relative flex h-4 w-4 items-center justify-center">
+          <span className="absolute inset-0 rounded-full bg-primary/15 animate-pulse" />
+          <Loader2 className="h-4 w-4 animate-spin text-primary relative" />
+        </span>
+        <span className="animate-pulse">{label}</span>
       </div>
     );
   }
