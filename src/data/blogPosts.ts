@@ -1,5 +1,8 @@
+export type BlogCategory = "AI & Automatisering" | "Boekhouding" | "Ondernemen" | "Product";
+
 export interface BlogPost {
   slug: string;
+  category: BlogCategory;
   title: string;
   metaTitle: string;
   metaDescription: string;
@@ -14,6 +17,7 @@ export interface BlogPost {
 export const blogPosts: BlogPost[] = [
   {
     slug: "ai-tools-zzp-2026",
+    category: "AI & Automatisering",
     title: "De 7 beste AI tools voor ZZP'ers in 2026 (eerlijk getest)",
     metaTitle: "De 7 beste AI tools voor ZZP'ers in 2026 (eerlijk getest)",
     metaDescription: "Welke AI tools zijn echt nuttig voor ZZP'ers? We testten de 7 beste en vertellen je wat ze kosten, wat ze doen en waar je mee kunt beginnen.",
@@ -116,6 +120,7 @@ Voor de meeste ZZP'ers zijn e-mail en administratie de grootste tijdvreters. Als
   },
   {
     slug: "inbox-automatiseren-ondernemer",
+    category: "AI & Automatisering",
     title: "Inbox automatiseren als ondernemer: zo bespaar je 8 uur per week",
     metaTitle: "Inbox automatiseren als ondernemer: zo bespaar je 8 uur per week",
     metaDescription: "Je inbox loopt over en je komt niet meer toe aan echt werk. Zo automatiseer je je e-mails stap voor stap, zonder technische kennis.",
@@ -221,6 +226,7 @@ De vraag is niet óf je je inbox moet automatiseren. De vraag is hoeveel uur je 
   },
   {
     slug: "administratie-software-zzp-vergelijken",
+    category: "Boekhouding",
     title: "Administratie software voor ZZP'ers vergelijken (eerlijke beoordeling 2026)",
     metaTitle: "Administratie software voor ZZP'ers vergelijken: eerlijke beoordeling 2026",
     metaDescription: "Moneybird, Jortt, Servio — welk administratiepakket past bij jou? We vergelijken eerlijk op prijs, functies en gebruiksgemak.",
@@ -358,6 +364,7 @@ Wat je ook kiest: stop met die Excel-sheet. Het is 2026.`
   },
   {
     slug: "klantenservice-automatiseren-kleine-bedrijven",
+    category: "AI & Automatisering",
     title: "Klantenservice automatiseren als klein bedrijf: complete gids",
     metaTitle: "Klantenservice automatiseren als klein bedrijf: complete gids voor 2026",
     metaDescription: "Geen budget voor een klantenserviceteam maar wel snel willen reageren? Zo automatiseer je je klantenservice als ZZP'er of klein bedrijf.",
@@ -455,6 +462,7 @@ Meer weten over [tijd besparen als ZZP'er](/blog/tijd-besparen-als-zzper)? Lees 
   },
   {
     slug: "ai-boekhouding-assistent-uitleg",
+    category: "Boekhouding",
     title: "AI boekhouding assistent: wat is het en heb jij het nodig?",
     metaTitle: "AI boekhouding assistent: wat is het en heb jij het nodig?",
     metaDescription: "Een AI die je boekhouding begrijpt en vragen beantwoordt. Klinkt futuristisch maar het bestaat al. Uitleg voor ondernemers die geen boekhoudkundige zijn.",
@@ -554,6 +562,7 @@ En als je toch bezig bent: lees ook ons [vergelijkingsartikel over administratie
   },
   {
     slug: "facturen-automatisch-verwerken",
+    category: "Boekhouding",
     title: "Facturen automatisch verwerken: zo doe je het in 2026",
     metaTitle: "Facturen automatisch verwerken: zo doe je het in 2026",
     metaDescription: "Handmatig facturen invoeren is tijdverspilling. Zo verwerk je facturen automatisch met AI — inclusief BTW-herkenning en categorisatie.",
@@ -652,6 +661,7 @@ Het is 2026. Laat de AI het saaie werk doen.`
   },
   {
     slug: "tijd-besparen-als-zzper",
+    category: "Ondernemen",
     title: "8 manieren om tijd te besparen als ZZP'er (die je vandaag kunt doen)",
     metaTitle: "8 manieren om tijd te besparen als ZZP'er (die je vandaag kunt doen)",
     metaDescription: "Als ZZP'er doe je alles zelf. Maar niet alles verdient jouw tijd. 8 concrete manieren om uren te besparen op administratie en communicatie.",
@@ -756,6 +766,7 @@ Begin met de tips die het minst moeite kosten (1, 4, 5) en werk je omhoog. Of ne
   },
   {
     slug: "btw-aangifte-zzp-tips",
+    category: "Boekhouding",
     title: "BTW aangifte als ZZP'er: zo doe je het zonder stress",
     metaTitle: "BTW aangifte als ZZP'er: zo doe je het zonder stress",
     metaDescription: "BTW aangifte hoeft geen hoofdpijn te zijn. Zo houd je het hele jaar overzicht en zit je nooit met verrassingen bij de Belastingdienst.",
@@ -866,6 +877,7 @@ En als je daar hulp bij wilt: bekijk hoe Servio je [financieel overzicht](/blog/
   },
   {
     slug: "alles-in-een-software-ondernemer",
+    category: "Product",
     title: "Alles-in-één software voor ondernemers: is het de moeite waard?",
     metaTitle: "Alles-in-één software voor ondernemers: is het de moeite waard?",
     metaDescription: "Aparte tools voor email, facturen, boekhouding en klanten — of alles in één dashboard? We leggen de voor- en nadelen eerlijk uit.",
@@ -978,6 +990,7 @@ Maar de kans is groot dat je na twee weken niet meer terug wilt.`
   },
   {
     slug: "financieel-overzicht-ondernemer",
+    category: "Boekhouding",
     title: "Financieel overzicht als ondernemer: altijd weten waar je staat",
     metaTitle: "Financieel overzicht als ondernemer: altijd weten waar je staat",
     metaDescription: "Weet jij precies wat je omzet, winst en BTW-schuld is op dit moment? Zo krijg je realtime financieel inzicht zonder accountant.",
