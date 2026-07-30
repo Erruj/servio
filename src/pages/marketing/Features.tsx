@@ -59,28 +59,30 @@ export default function Features() {
               >
                 <div className="container mx-auto px-6">
                   <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center max-w-6xl mx-auto">
-                    <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
+                    <Reveal className={index % 2 === 1 ? 'lg:order-2' : ''}>
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
                         <Icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
                       </div>
                       <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-2">{feature.title}</h2>
                       <p className="text-lg text-primary font-medium mb-4">{feature.subtitle}</p>
                       <p className="text-lg text-muted-foreground mb-8 leading-relaxed">{feature.description}</p>
-                      <ul className="space-y-4 mb-8">
+                      <StaggerGroup as="ul" className="space-y-4 mb-8">
                         {feature.details.map((detail, i) => (
-                          <li key={i} className="flex items-start gap-3">
+                          <StaggerItem as="li" key={i} className="flex items-start gap-3">
                             <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                             <span className="text-foreground">{detail}</span>
-                          </li>
+                          </StaggerItem>
                         ))}
-                      </ul>
+                      </StaggerGroup>
+
                       <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary font-medium">
                         <ArrowRight className="w-4 h-4" />
                         {feature.result}
                       </div>
-                    </div>
+                    </Reveal>
 
-                    <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
+                    <Reveal delay={0.12} className={index % 2 === 1 ? 'lg:order-1' : ''}>
+
                       <div className="rounded-2xl border border-border/60 bg-card shadow-xl-soft overflow-hidden">
                         <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/30">
                           <div className="flex gap-1.5">
@@ -111,7 +113,8 @@ export default function Features() {
                             </div>
                           </div>
                         </div>
-                      </div>
+                    </Reveal>
+
                     </div>
                   </div>
                 </div>
@@ -121,7 +124,7 @@ export default function Features() {
 
           <section className="py-20 md:py-28 bg-muted/30">
             <div className="container mx-auto px-6">
-              <div className="max-w-3xl mx-auto text-center">
+              <Reveal className="max-w-3xl mx-auto text-center">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 </div>
@@ -131,15 +134,16 @@ export default function Features() {
                 <p className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto mb-8">
                   {security.description}
                 </p>
-                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+                <StaggerGroup className="flex flex-wrap items-center justify-center gap-6 text-sm">
                   {security.points.map((item, i) => (
-                    <span key={i} className="flex items-center gap-2 text-muted-foreground">
+                    <StaggerItem as="span" key={i} className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-success" />
                       {item}
-                    </span>
+                    </StaggerItem>
                   ))}
-                </div>
-              </div>
+                </StaggerGroup>
+              </Reveal>
+
             </div>
           </section>
 
