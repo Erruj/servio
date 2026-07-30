@@ -106,7 +106,9 @@ export function FeaturesSection() {
                     className={`absolute -inset-4 bg-gradient-to-br ${s.tint} rounded-xl blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
                   />
                   <div className="relative transform transition-transform duration-500 group-hover:-translate-y-1">
-                    <Visual />
+                    <div className="marketing-mockup rounded-xl overflow-hidden">
+                      <Visual />
+                    </div>
                   </div>
                 </div>
               </div>
