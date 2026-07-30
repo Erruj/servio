@@ -23,13 +23,31 @@ function CategoryVisual({ category, className }: { category: BlogCategory; class
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden ${className ?? ''}`}
-      style={{
-        background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 18%, transparent), color-mix(in srgb, ${accent} 6%, transparent))`,
-      }}
       aria-hidden="true"
     >
+      {/* basis-gradient */}
+      <div
+        className="absolute inset-0 transition-opacity duration-300 ease-out group-hover:opacity-0"
+        style={{
+          background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 18%, transparent), color-mix(in srgb, ${accent} 6%, transparent))`,
+        }}
+      />
+      {/* intensere gradient bij hover */}
+      <div
+        className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+        style={{
+          background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 24%, transparent), color-mix(in srgb, ${accent} 10%, transparent))`,
+        }}
+      />
+      {/* zachte glow achter het icoon */}
+      <div
+        className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
+        style={{
+          background: `radial-gradient(closest-side, color-mix(in srgb, ${accent} 20%, transparent), transparent 70%)`,
+        }}
+      />
       <Icon
-        className="transition-transform duration-200 ease-out group-hover:scale-105"
+        className="relative transition-transform duration-[350ms] ease-out group-hover:scale-[1.15] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         style={{ color: accent, opacity: 0.5 }}
         strokeWidth={1.25}
         size="35%"
@@ -42,7 +60,7 @@ function CategoryBadge({ category }: { category: BlogCategory }) {
   const accent = `hsl(${CATEGORY_META[category].color})`;
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
+      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-300 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       style={{
         color: accent,
         backgroundColor: `color-mix(in srgb, ${accent} 12%, transparent)`,
@@ -52,6 +70,7 @@ function CategoryBadge({ category }: { category: BlogCategory }) {
     </span>
   );
 }
+
 
 export default function Blog() {
   const { t, i18n } = useTranslation();
