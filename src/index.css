@@ -243,6 +243,15 @@
 
   /* Page transitions */
   .animate-page-in { animation: pageIn 0.22s ease-out both; }
+
+  /* Korte fade tussen route-wissels in de app (alleen opacity, geen layout shift) */
+  .animate-route-fade { animation: routeFade 0.15s ease-out both; }
+
+  /* Entrance voor een NIEUW toegevoegd lijstitem (nooit bij page-load) */
+  .animate-item-in { animation: itemIn 0.2s ease-out both; }
+  /* Variant zonder transform, voor gevirtualiseerde rijen */
+  .animate-item-fade { animation: itemFade 0.18s ease-out both; }
+
   .animate-fade-in { animation: fadeIn 0.4s ease-out both; opacity: 0; }
   .animate-fade-in-up { animation: fadeInUp 0.45s ease-out both; opacity: 0; }
   .animate-slide-in-left { animation: slideInLeft 0.45s ease-out both; opacity: 0; }
