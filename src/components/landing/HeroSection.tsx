@@ -82,7 +82,7 @@ export function HeroSection() {
           >
             <Button
               size="lg"
-              className="h-12 px-8 text-[15px] font-medium rounded-lg transition-smooth glow-primary hover:glow"
+              className="h-12 px-8 text-[15px] font-medium rounded-full transition-smooth"
               onClick={() => navigate('/signup')}
             >
               {t('marketing.hero.ctaPrimary')}
@@ -91,7 +91,7 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="h-12 px-8 text-[15px] font-medium rounded-lg"
+              className="h-12 px-8 text-[15px] font-medium rounded-full bg-transparent border border-foreground/25 text-foreground hover:bg-foreground/5 hover:text-foreground"
               onClick={() => navigate(`${prefix}/features`)}
             >
               <Play className="mr-2 h-4 w-4" />
@@ -118,7 +118,9 @@ export function HeroSection() {
         >
           <div className="absolute -bottom-1 inset-x-0 h-32 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
 
-          <div className="relative mx-auto max-w-5xl rounded-xl border border-border/60 bg-card shadow-xl-soft overflow-hidden">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[520px] max-w-[95vw] bg-primary/25 blur-[140px] rounded-full pointer-events-none" />
+
+          <div className="relative mx-auto max-w-5xl rounded-xl bg-card overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/30">
@@ -135,10 +137,8 @@ export function HeroSection() {
               <div className="w-16" />
             </div>
 
-            <div className="aspect-[16/10] bg-muted/20 relative overflow-hidden">
+            <div className="marketing-mockup aspect-[16/10] relative overflow-hidden">
               <ProductPreview />
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/[0.04] via-transparent to-accent/[0.04] pointer-events-none" />
-              <div className="absolute inset-0 ring-1 ring-inset ring-border/40 pointer-events-none" />
             </div>
           </div>
         </div>
