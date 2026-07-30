@@ -3,12 +3,15 @@ import { ArrowRight, Play, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ProductPreview } from '@/components/landing/ProductPreview';
+import { LoadIn } from '@/components/landing/motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 export function HeroSection() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
   const prefix = isEn ? '/en' : '';
+  const reduced = useReducedMotion();
 
   const checks = [
     t('marketing.hero.checkAutoEmail'),
@@ -31,58 +34,47 @@ export function HeroSection() {
 
       <div className="container mx-auto px-6 relative">
         <div className="max-w-4xl mx-auto text-center">
-          <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-background text-sm text-muted-foreground mb-8 animate-fade-in"
-            style={{ animationDelay: '0ms' }}
-          >
+          <LoadIn index={0} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-background text-sm text-muted-foreground mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             {t('marketing.hero.badge')}
-          </div>
+          </LoadIn>
 
-          <h1
-            className="text-[2.75rem] md:text-6xl lg:text-[4.5rem] font-semibold tracking-[-0.02em] text-foreground mb-6 leading-[1.08] animate-fade-in"
-            style={{ animationDelay: '50ms' }}
+          <LoadIn
+            as="h1"
+            index={1}
+            className="text-[2.75rem] md:text-6xl lg:text-[4.5rem] font-semibold tracking-[-0.02em] text-foreground mb-6 leading-[1.08]"
           >
             {t('marketing.hero.title1')}
             <br />
             <span className="text-primary">{t('marketing.hero.title2')}</span>
-          </h1>
+          </LoadIn>
 
-          <p
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed animate-fade-in"
-            style={{ animationDelay: '100ms' }}
+          <LoadIn
+            as="p"
+            index={2}
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed"
           >
             {t('marketing.hero.subtitle')}
-          </p>
+          </LoadIn>
 
-          <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-sm font-medium text-primary mb-8 animate-fade-in"
-            style={{ animationDelay: '110ms' }}
-          >
+          <LoadIn index={3} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-sm font-medium text-primary mb-8">
             <CheckCircle2 className="w-4 h-4" />
             {t('marketing.hero.uniqueClaim')}
-          </div>
+          </LoadIn>
 
-
-          <div
-            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 text-sm animate-fade-in"
-            style={{ animationDelay: '125ms' }}
-          >
+          <LoadIn index={4} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10 text-sm">
             {checks.map((item, i) => (
               <span key={i} className="flex items-center gap-2 text-muted-foreground">
                 <CheckCircle2 className="w-4 h-4 text-success" />
                 {item}
               </span>
             ))}
-          </div>
+          </LoadIn>
 
-          <div
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in"
-            style={{ animationDelay: '150ms' }}
-          >
+          <LoadIn index={5} className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               size="lg"
-              className="h-12 px-8 text-[15px] font-medium rounded-lg transition-smooth glow-primary hover:glow"
+              className="h-12 px-8 text-[15px] font-medium rounded-lg glow-primary hover:glow transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-lg"
               onClick={() => navigate('/signup')}
             >
               {t('marketing.hero.ctaPrimary')}
@@ -91,32 +83,40 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="h-12 px-8 text-[15px] font-medium rounded-lg"
+              className="h-12 px-8 text-[15px] font-medium rounded-lg transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-md"
               onClick={() => navigate(`${prefix}/features`)}
             >
               <Play className="mr-2 h-4 w-4" />
               {t('marketing.hero.ctaSecondary')}
             </Button>
-          </div>
+          </LoadIn>
 
-          <div
-            className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-muted-foreground animate-fade-in"
-            style={{ animationDelay: '200ms' }}
-          >
+          <LoadIn index={6} className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-muted-foreground">
             {trust.map((item, i) => (
               <span key={i} className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-success" />
                 {item}
               </span>
             ))}
-          </div>
+          </LoadIn>
         </div>
 
-        <div
-          className="mt-20 md:mt-28 relative animate-fade-in"
-          style={{ animationDelay: '250ms' }}
-        >
+        <LoadIn index={7} y={24} className="mt-20 md:mt-28 relative">
           <div className="absolute -bottom-1 inset-x-0 h-32 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
+
+          {/* Subtiele, langzame gloed achter de mockup — puur decoratief */}
+          {!reduced && (
+            <motion.div
+              aria-hidden="true"
+              className="absolute -inset-16 pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(closest-side, hsl(var(--primary) / 0.10), transparent 70%)',
+              }}
+              animate={{ opacity: [0.5, 0.9, 0.5], scale: [1, 1.06, 1] }}
+              transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          )}
 
           <div className="relative mx-auto max-w-5xl rounded-xl border border-border/60 bg-card shadow-xl-soft overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -141,7 +141,7 @@ export function HeroSection() {
               <div className="absolute inset-0 ring-1 ring-inset ring-border/40 pointer-events-none" />
             </div>
           </div>
-        </div>
+        </LoadIn>
       </div>
     </section>
   );
