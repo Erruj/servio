@@ -58,8 +58,6 @@ const Blog = lazy(() => import("./pages/marketing/Blog"));
 const BlogPost = lazy(() => import("./pages/marketing/BlogPost"));
 
 // Legal
-import { MarketingTheme } from "./components/marketing/MarketingTheme";
-
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/legal/Terms"));
 const Cookies = lazy(() => import("./pages/legal/Cookies"));
@@ -104,30 +102,30 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
     <Routes>
       {/* Marketing website - public, no auth (NL default) */}
-      <Route path="/" element={<MarketingTheme><MarketingHome /></MarketingTheme>} />
-      <Route path="/features" element={<MarketingTheme><MarketingFeatures /></MarketingTheme>} />
-      <Route path="/pricing" element={<MarketingTheme><MarketingPricing /></MarketingTheme>} />
-      <Route path="/about" element={<MarketingTheme><MarketingAbout /></MarketingTheme>} />
-      <Route path="/blog" element={<MarketingTheme><Blog /></MarketingTheme>} />
-      <Route path="/blog/:slug" element={<MarketingTheme><BlogPost /></MarketingTheme>} />
+      <Route path="/" element={<MarketingHome />} />
+      <Route path="/features" element={<MarketingFeatures />} />
+      <Route path="/pricing" element={<MarketingPricing />} />
+      <Route path="/about" element={<MarketingAbout />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
 
       {/* Marketing website - English (/en/*) */}
-      <Route path="/en" element={<MarketingTheme><MarketingHome /></MarketingTheme>} />
-      <Route path="/en/features" element={<MarketingTheme><MarketingFeatures /></MarketingTheme>} />
-      <Route path="/en/pricing" element={<MarketingTheme><MarketingPricing /></MarketingTheme>} />
-      <Route path="/en/about" element={<MarketingTheme><MarketingAbout /></MarketingTheme>} />
-      <Route path="/en/blog" element={<MarketingTheme><Blog /></MarketingTheme>} />
-      <Route path="/en/blog/:slug" element={<MarketingTheme><BlogPost /></MarketingTheme>} />
-      <Route path="/en/contact" element={<MarketingTheme><Contact /></MarketingTheme>} />
-      <Route path="/en/privacy" element={<MarketingTheme><PrivacyPolicy /></MarketingTheme>} />
-      <Route path="/en/terms" element={<MarketingTheme><Terms /></MarketingTheme>} />
-      <Route path="/en/cookies" element={<MarketingTheme><Cookies /></MarketingTheme>} />
+      <Route path="/en" element={<MarketingHome />} />
+      <Route path="/en/features" element={<MarketingFeatures />} />
+      <Route path="/en/pricing" element={<MarketingPricing />} />
+      <Route path="/en/about" element={<MarketingAbout />} />
+      <Route path="/en/blog" element={<Blog />} />
+      <Route path="/en/blog/:slug" element={<BlogPost />} />
+      <Route path="/en/contact" element={<Contact />} />
+      <Route path="/en/privacy" element={<PrivacyPolicy />} />
+      <Route path="/en/terms" element={<Terms />} />
+      <Route path="/en/cookies" element={<Cookies />} />
 
       {/* Legal pages - public */}
-      <Route path="/privacy" element={<MarketingTheme><PrivacyPolicy /></MarketingTheme>} />
-      <Route path="/terms" element={<MarketingTheme><Terms /></MarketingTheme>} />
-      <Route path="/cookies" element={<MarketingTheme><Cookies /></MarketingTheme>} />
-      <Route path="/contact" element={<MarketingTheme><Contact /></MarketingTheme>} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/cookies" element={<Cookies />} />
+      <Route path="/contact" element={<Contact />} />
       
       {/* Auth pages */}
       <Route path="/login" element={<Auth />} />
