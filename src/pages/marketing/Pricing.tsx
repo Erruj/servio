@@ -361,7 +361,7 @@ export default function MarketingPricing() {
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
                   Transparante prijzen,
                   <br />
-                  <span className="text-primary">geen verrassingen</span>
+                  <span className="text-foreground">geen verrassingen</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
                   Kies het plan dat bij je past.{" "}
@@ -419,7 +419,7 @@ export default function MarketingPricing() {
                       Jaarlijks
                     </button>
                   </div>
-                  <Badge className="bg-success/15 text-success hover:bg-success/20 border-0">
+                  <Badge className="bg-secondary text-foreground hover:bg-secondary border-0">
                     Bespaar 17%
                   </Badge>
                 </div>
@@ -442,7 +442,7 @@ export default function MarketingPricing() {
                       className={cn(
                         "relative rounded-xl p-8 transition-all duration-300",
                         plan.popular
-                          ? "bg-foreground text-background border-2 border-foreground md:scale-[1.03]"
+                          ? "bg-secondary md:scale-[1.03]"
                           : "bg-card hover:border-border ",
                       )}
                     >
@@ -459,7 +459,7 @@ export default function MarketingPricing() {
                           className={cn(
                             "text-xl font-semibold mb-1",
                             plan.popular
-                              ? "text-background"
+                              ? "text-foreground"
                               : "text-foreground",
                           )}
                         >
@@ -469,7 +469,7 @@ export default function MarketingPricing() {
                           className={cn(
                             "text-sm",
                             plan.popular
-                              ? "text-background/70"
+                              ? "text-muted-foreground"
                               : "text-muted-foreground",
                           )}
                         >
@@ -484,7 +484,7 @@ export default function MarketingPricing() {
                               className={cn(
                                 "text-lg line-through",
                                 plan.popular
-                                  ? "text-background/40"
+                                  ? "text-muted-foreground/60"
                                   : "text-muted-foreground/60",
                               )}
                             >
@@ -495,7 +495,7 @@ export default function MarketingPricing() {
                             className={cn(
                               "text-4xl font-semibold transition-all",
                               plan.popular
-                                ? "text-background"
+                                ? "text-foreground"
                                 : "text-foreground",
                             )}
                           >
@@ -505,7 +505,7 @@ export default function MarketingPricing() {
                             className={cn(
                               "text-sm",
                               plan.popular
-                                ? "text-background/70"
+                                ? "text-muted-foreground"
                                 : "text-muted-foreground",
                             )}
                           >
@@ -517,7 +517,7 @@ export default function MarketingPricing() {
                             className={cn(
                               "text-xs mt-2",
                               plan.popular
-                                ? "text-background/70"
+                                ? "text-muted-foreground"
                                 : "text-muted-foreground",
                             )}
                           >
@@ -531,7 +531,7 @@ export default function MarketingPricing() {
                           className={cn(
                             "text-xs mt-1.5 font-medium",
                             plan.popular
-                              ? "text-background/70"
+                              ? "text-muted-foreground"
                               : "text-success",
                           )}
                         >
@@ -553,14 +553,14 @@ export default function MarketingPricing() {
                               className={cn(
                                 "w-4 h-4 flex-shrink-0 mt-0.5",
                                 plan.popular
-                                  ? "text-background/70"
+                                  ? "text-muted-foreground"
                                   : "text-success",
                               )}
                             />
                             <span
                               className={
                                 plan.popular
-                                  ? "text-background/90"
+                                  ? "text-foreground"
                                   : "text-foreground"
                               }
                             >
@@ -573,10 +573,8 @@ export default function MarketingPricing() {
                       <Button
                         className={cn(
                           "w-full h-12 rounded-xl text-sm font-medium",
-                          plan.popular &&
-                            "bg-background text-foreground hover:bg-background/90",
                         )}
-                        variant={plan.popular ? "secondary" : "default"}
+                        variant="default"
                         onClick={() => handlePlanClick(plan.tier)}
                       >
                         {plan.cta}
@@ -613,9 +611,9 @@ export default function MarketingPricing() {
                       <th className="p-4 md:p-5 font-semibold text-foreground text-center">
                         Starter
                       </th>
-                      <th className="p-4 md:p-5 font-semibold text-center bg-[#2563eb] text-white relative">
+                      <th className="p-4 md:p-5 font-semibold text-center bg-secondary text-foreground relative">
                         Pro
-                        <span className="block text-[10px] font-normal text-white/80 mt-0.5">
+                        <span className="block text-[10px] font-normal text-muted-foreground mt-0.5">
                           Meest gekozen
                         </span>
                       </th>
@@ -639,7 +637,7 @@ export default function MarketingPricing() {
                         <td className="p-4 md:p-5 text-center">
                           {renderCell(row.starter)}
                         </td>
-                        <td className="p-4 md:p-5 text-center bg-[#2563eb]/5">
+                        <td className="p-4 md:p-5 text-center bg-secondary/60">
                           {renderCell(row.pro)}
                         </td>
                         <td className="p-4 md:p-5 text-center">

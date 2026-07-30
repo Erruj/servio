@@ -43,7 +43,7 @@ export function LandingHeader() {
             <img
               src={servioLogo}
               alt="Servio AI Business Assistant logo"
-              className="h-9 md:h-10 w-auto transition-transform duration-300 group-hover:scale-105"
+              className="h-9 md:h-10 w-auto brightness-0 invert transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
 
