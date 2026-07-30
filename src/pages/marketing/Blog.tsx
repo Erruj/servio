@@ -3,7 +3,7 @@ import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { SeoHead } from '@/components/SeoHead';
 import { blogPosts, type BlogCategory, type BlogPost } from '@/data/blogPosts';
-import { Calendar, Clock, Sparkles, Calculator, TrendingUp, Package } from 'lucide-react';
+import { Calendar, Clock, Sparkles, Calculator, TrendingUp, Package, ArrowRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
