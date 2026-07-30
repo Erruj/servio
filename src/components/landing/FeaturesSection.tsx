@@ -1,6 +1,7 @@
 import { Mail, BarChart3, FileText, Bot, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { featureVisuals } from '@/components/landing/FeatureVisuals';
+import { Reveal } from '@/components/landing/motion';
 
 const styling = [
   { icon: Mail, tint: 'from-primary/10 to-primary/0', iconBg: 'bg-primary/10', iconColor: 'text-primary' },
@@ -27,7 +28,7 @@ export function FeaturesSection() {
       <div className="absolute -bottom-40 -right-20 w-[450px] h-[450px] bg-accent/[0.05] rounded-full blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-6 relative">
-        <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in-up">
+        <Reveal className="max-w-2xl mx-auto text-center mb-16">
           <span className="text-sm font-medium text-primary mb-4 block">
             {t('marketing.features.eyebrow')}
           </span>
@@ -35,7 +36,7 @@ export function FeaturesSection() {
             {t('marketing.features.title')}
           </h2>
           <p className="text-lg text-muted-foreground">{t('marketing.features.subtitle')}</p>
-        </div>
+        </Reveal>
 
         <div className="space-y-16 md:space-y-24 max-w-6xl mx-auto">
           {items.map((feature, index) => {
@@ -45,12 +46,11 @@ export function FeaturesSection() {
             const reverse = index % 2 === 1;
 
             return (
-              <div
+              <Reveal
                 key={index}
-                className={`grid md:grid-cols-2 gap-8 md:gap-12 items-center animate-fade-in-up ${
+                className={`grid md:grid-cols-2 gap-8 md:gap-12 items-center ${
                   reverse ? 'md:[&>*:first-child]:order-2' : ''
                 }`}
-                style={{ animationDelay: `${index * 80}ms` }}
               >
                 {/* Text */}
                 <div>
@@ -78,11 +78,11 @@ export function FeaturesSection() {
                   <div
                     className={`absolute -inset-4 bg-gradient-to-br ${s.tint} rounded-2xl blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
                   />
-                  <div className="relative transform transition-transform duration-500 group-hover:-translate-y-1">
+                  <div className="relative transform transition-transform duration-300 ease-out group-hover:-translate-y-1">
                     <Visual />
                   </div>
                 </div>
-              </div>
+              </Reveal>
             );
           })}
         </div>
