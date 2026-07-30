@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Sparkles,
   Mail,
@@ -9,7 +9,7 @@ import {
   Bot,
   Send,
   Star,
-} from 'lucide-react';
+} from "lucide-react";
 
 /**
  * Compact, code-built feature visuals that mirror real Servio UI.
@@ -17,7 +17,13 @@ import {
  */
 
 /* ---------- Shared frame ---------- */
-function Frame({ children, label }: { children: React.ReactNode; label?: string }) {
+function Frame({
+  children,
+  label,
+}: {
+  children: React.ReactNode;
+  label?: string;
+}) {
   return (
     <div className="relative w-full aspect-[16/10] rounded-lg border border-border/60 bg-card shadow-card overflow-hidden">
       <div className="flex items-center gap-1.5 px-3 h-7 border-b border-border/40 bg-muted/40">
@@ -25,7 +31,9 @@ function Frame({ children, label }: { children: React.ReactNode; label?: string 
         <div className="w-2 h-2 rounded-full bg-border" />
         <div className="w-2 h-2 rounded-full bg-border" />
         {label && (
-          <span className="ml-2 text-[10px] text-muted-foreground font-medium">{label}</span>
+          <span className="ml-2 text-[10px] text-muted-foreground font-medium">
+            {label}
+          </span>
         )}
       </div>
       <div className="relative h-[calc(100%-1.75rem)]">{children}</div>
@@ -36,10 +44,31 @@ function Frame({ children, label }: { children: React.ReactNode; label?: string 
 /* ---------- 1. Inbox / AI mail triage ---------- */
 export function InboxVisual() {
   const items = [
-    { from: 'Anna Bakker', subj: 'Vraag over offerte', tag: 'Klant', tagClass: 'bg-primary/10 text-primary', unread: true },
-    { from: 'Stripe', subj: 'Betaling € 1.250 ontvangen', tag: 'Financieel', tagClass: 'bg-success/10 text-success' },
-    { from: 'KPN Zakelijk', subj: 'Factuur november', tag: 'Leverancier', tagClass: 'bg-warning/10 text-warning' },
-    { from: 'Tom Janssen', subj: 'Re: Project planning', tag: 'Intern', tagClass: 'bg-muted text-muted-foreground' },
+    {
+      from: "Anna Bakker",
+      subj: "Vraag over offerte",
+      tag: "Klant",
+      tagClass: "bg-primary/10 text-primary",
+      unread: true,
+    },
+    {
+      from: "Stripe",
+      subj: "Betaling € 1.250 ontvangen",
+      tag: "Financieel",
+      tagClass: "bg-success/10 text-success",
+    },
+    {
+      from: "KPN Zakelijk",
+      subj: "Factuur november",
+      tag: "Leverancier",
+      tagClass: "bg-warning/10 text-warning",
+    },
+    {
+      from: "Tom Janssen",
+      subj: "Re: Project planning",
+      tag: "Intern",
+      tagClass: "bg-muted text-muted-foreground",
+    },
   ];
   return (
     <Frame label="Inbox">
@@ -48,31 +77,45 @@ export function InboxVisual() {
           <div
             key={i}
             className={`flex items-center gap-2 px-2 py-1.5 rounded-md border border-border/40 ${
-              i === 0 ? 'bg-primary/[0.04]' : 'bg-card'
+              i === 0 ? "bg-primary/[0.04]" : "bg-card"
             }`}
             style={{ animation: `fade-in 500ms ease-out ${i * 90}ms both` }}
           >
             <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium text-muted-foreground shrink-0">
-              {m.from.split(' ').map((p) => p[0]).join('').slice(0, 2)}
+              {m.from
+                .split(" ")
+                .map((p) => p[0])
+                .join("")
+                .slice(0, 2)}
             </div>
             <div className="min-w-0 flex-1">
-              <div className={`text-[10px] truncate ${m.unread ? 'font-semibold' : 'font-medium'}`}>
+              <div
+                className={`text-[10px] truncate ${m.unread ? "font-semibold" : "font-medium"}`}
+              >
                 {m.from}
               </div>
-              <div className="text-[9px] text-muted-foreground truncate">{m.subj}</div>
+              <div className="text-[9px] text-muted-foreground truncate">
+                {m.subj}
+              </div>
             </div>
-            <span className={`text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0 ${m.tagClass}`}>
+            <span
+              className={`text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0 ${m.tagClass}`}
+            >
               {m.tag}
             </span>
-            {i === 0 && <Star className="w-2.5 h-2.5 text-warning fill-warning shrink-0" />}
+            {i === 0 && (
+              <Star className="w-2.5 h-2.5 text-warning fill-warning shrink-0" />
+            )}
           </div>
         ))}
         <div
           className="mt-2 flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-primary/5 border border-primary/20"
-          style={{ animation: 'fade-in 600ms ease-out 500ms both' }}
+          style={{ animation: "fade-in 600ms ease-out 500ms both" }}
         >
           <Sparkles className="w-3 h-3 text-primary" />
-          <span className="text-[9px] text-primary font-medium">AI sorteerde 12 mails • bespaarde 18 min</span>
+          <span className="text-[9px] text-primary font-medium">
+            AI sorteerde 12 mails • bespaarde 18 min
+          </span>
         </div>
       </div>
     </Frame>
@@ -92,9 +135,9 @@ export function AnalyticsVisual() {
       <div className="p-3 h-full flex flex-col">
         <div className="grid grid-cols-3 gap-1.5 mb-2">
           {[
-            { l: 'Omzet', v: '€ 24.380', d: '+12,4%' },
-            { l: 'Openstaand', v: '€ 3.210', d: '−€ 540' },
-            { l: 'Marge', v: '38%', d: '+3,1%' },
+            { l: "Omzet", v: "€ 24.380", d: "+12,4%" },
+            { l: "Openstaand", v: "€ 3.210", d: "−€ 540" },
+            { l: "Marge", v: "38%", d: "+3,1%" },
           ].map((s, i) => (
             <div
               key={i}
@@ -115,14 +158,16 @@ export function AnalyticsVisual() {
               style={{
                 height: `${h}%`,
                 animation: `grow-up 700ms ease-out ${i * 40}ms both`,
-                transformOrigin: 'bottom',
+                transformOrigin: "bottom",
               }}
             />
           ))}
         </div>
         <div className="mt-2 flex items-center gap-1.5 text-[9px] text-success">
           <TrendingUp className="w-3 h-3" />
-          <span className="font-medium">Beste maand van het jaar — automatisch gematcht</span>
+          <span className="font-medium">
+            Beste maand van het jaar — automatisch gematcht
+          </span>
         </div>
       </div>
     </Frame>
@@ -137,7 +182,9 @@ export function DocumentVisual() {
         <div className="w-[42%] rounded-md border border-border/50 bg-muted/30 p-2 flex flex-col">
           <div className="flex items-center gap-1 mb-1.5">
             <FileText className="w-3 h-3 text-primary" />
-            <span className="text-[9px] font-medium truncate">factuur-kpn.pdf</span>
+            <span className="text-[9px] font-medium truncate">
+              factuur-kpn.pdf
+            </span>
           </div>
           <div className="flex-1 space-y-1">
             <div className="h-1 rounded bg-border w-full" />
@@ -149,7 +196,10 @@ export function DocumentVisual() {
             <div className="h-1 rounded bg-primary/40 w-2/5" />
           </div>
           <div className="mt-1.5 h-0.5 rounded-full bg-border overflow-hidden">
-            <div className="h-full bg-primary" style={{ animation: 'progress 2.5s ease-out infinite' }} />
+            <div
+              className="h-full bg-primary"
+              style={{ animation: "progress 2.5s ease-out infinite" }}
+            />
           </div>
           <div className="text-[8px] text-muted-foreground mt-1 flex items-center gap-1">
             <Sparkles className="w-2.5 h-2.5 text-primary" /> AI leest uit...
@@ -163,19 +213,25 @@ export function DocumentVisual() {
             </span>
           </div>
           {[
-            { l: 'Leverancier', v: 'KPN Zakelijk' },
-            { l: 'Factuurnr.', v: 'KPN-11-4421' },
-            { l: 'Datum', v: '01-11-2026' },
-            { l: 'BTW (21%)', v: '€ 18,74' },
-            { l: 'Totaal', v: '€ 107,99', h: true },
+            { l: "Leverancier", v: "KPN Zakelijk" },
+            { l: "Factuurnr.", v: "KPN-11-4421" },
+            { l: "Datum", v: "01-11-2026" },
+            { l: "BTW (21%)", v: "€ 18,74" },
+            { l: "Totaal", v: "€ 107,99", h: true },
           ].map((f, i) => (
             <div
               key={i}
               className="flex items-center justify-between text-[9px] py-0.5 border-b border-border/30 last:border-0"
-              style={{ animation: `fade-in 400ms ease-out ${300 + i * 100}ms both` }}
+              style={{
+                animation: `fade-in 400ms ease-out ${300 + i * 100}ms both`,
+              }}
             >
               <span className="text-muted-foreground">{f.l}</span>
-              <span className={f.h ? 'font-semibold text-primary' : 'font-medium'}>{f.v}</span>
+              <span
+                className={f.h ? "font-semibold text-primary" : "font-medium"}
+              >
+                {f.v}
+              </span>
             </div>
           ))}
         </div>
@@ -187,10 +243,10 @@ export function DocumentVisual() {
 /* ---------- 4. AI Reply Generator ---------- */
 export function AIReplyVisual() {
   const reply = `Hoi Anna,\n\nEind januari is haalbaar — we leveren in week 4. Ik stuur de aangepaste offerte vandaag door.\n\nGroet,\nMark`;
-  const [out, setOut] = useState('');
+  const [out, setOut] = useState("");
   const [cycle, setCycle] = useState(0);
   useEffect(() => {
-    setOut('');
+    setOut("");
     let i = 0;
     const id = setInterval(() => {
       i += 2;
@@ -210,7 +266,9 @@ export function AIReplyVisual() {
           <div className="w-5 h-5 rounded-md bg-primary/15 flex items-center justify-center">
             <Wand2 className="w-3 h-3 text-primary" />
           </div>
-          <span className="text-[10px] font-semibold">Professioneel antwoord</span>
+          <span className="text-[10px] font-semibold">
+            Professioneel antwoord
+          </span>
           <span className="ml-auto text-[8px] text-success flex items-center gap-0.5">
             <Bot className="w-2.5 h-2.5" /> Gemini-3
           </span>
@@ -235,4 +293,9 @@ export function AIReplyVisual() {
   );
 }
 
-export const featureVisuals = [InboxVisual, AnalyticsVisual, DocumentVisual, AIReplyVisual];
+export const featureVisuals = [
+  InboxVisual,
+  AnalyticsVisual,
+  DocumentVisual,
+  AIReplyVisual,
+];
