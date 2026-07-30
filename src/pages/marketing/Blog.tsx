@@ -155,7 +155,7 @@ export default function Blog() {
               <StaggerItem key={post.slug}>
                 <Link
                   to={`${prefix}/blog/${post.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md hover:border-primary/30"
+                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-md hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
                 >
                   <CategoryVisual category={post.category} className="aspect-[16/10]" />
                   <div className="flex flex-1 flex-col p-6">
@@ -173,7 +173,12 @@ export default function Blog() {
                     </div>
                     <h2 className="text-lg font-semibold leading-snug mb-2 group-hover:text-primary transition-colors">
                       {post.title}
+                      <ArrowRight
+                        className="ml-1.5 inline-block h-4 w-4 -translate-x-1.5 opacity-0 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-100 motion-reduce:transition-none"
+                        aria-hidden="true"
+                      />
                     </h2>
+
                     <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
                     <div className="mt-auto pt-5 flex justify-end">
                       <CategoryBadge category={post.category} />
