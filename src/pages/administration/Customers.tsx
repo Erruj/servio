@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { cn } from '@/lib/utils';
+import { useNewItems } from '@/hooks/useNewItems';
 
 interface Customer {
   id: string;
@@ -43,6 +45,7 @@ const emptyForm = {
 
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const newCustomerIds = useNewItems(customers.map((c) => c.id));
   const [stats, setStats] = useState<Record<string, CustomerStats>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

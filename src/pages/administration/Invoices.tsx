@@ -16,6 +16,8 @@ import { Upload, FileText, Download, Search, MoreHorizontal, CheckCircle, Clock,
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { useNewItems } from '@/hooks/useNewItems';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
@@ -369,6 +371,8 @@ export default function Invoices() {
     const d = new Date(i.invoice_date);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   }).filter(Boolean))].sort().reverse();
+
+  const newInvoiceIds = useNewItems(invoices.map((inv) => inv.id));
 
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = inv.supplier?.toLowerCase().includes(searchTerm.toLowerCase()) || inv.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase());
