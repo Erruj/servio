@@ -32,7 +32,7 @@ export default function About() {
         <main>
           <section className="pt-32 pb-20 md:pt-44 md:pb-28">
             <div className="container mx-auto px-6">
-              <div className="max-w-3xl mx-auto text-center">
+              <Reveal className="max-w-3xl mx-auto text-center">
                 <span className="text-sm font-medium text-primary mb-4 block">{t('marketing.about.eyebrow')}</span>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
                   {t('marketing.about.h1Top')}
@@ -42,8 +42,8 @@ export default function About() {
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
                   {t('marketing.about.subtitle')}
                 </p>
-              </div>
-            </div>
+              </Reveal>
+
           </section>
 
           <section className="py-20 md:py-28 bg-muted/30">
