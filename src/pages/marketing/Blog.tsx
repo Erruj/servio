@@ -16,15 +16,6 @@ const CATEGORY_META: Record<BlogCategory, { color: string; icon: LucideIcon }> =
   Product: { color: '35 62% 50%', icon: Package },
 };
 
-function categoryStyle(category: BlogCategory) {
-  const raw = CATEGORY_META[category].color;
-  const c = raw.startsWith('var(') ? `hsl(${raw})` : `hsl(${raw})`;
-  return {
-    accent: c,
-    tint: c.replace(')', ' / 0.12)').replace('hsl(', 'hsl('),
-  };
-}
-
 function CategoryVisual({ category, className }: { category: BlogCategory; className?: string }) {
   const meta = CATEGORY_META[category];
   const accent = `hsl(${meta.color})`;
