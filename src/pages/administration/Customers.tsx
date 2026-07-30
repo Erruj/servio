@@ -230,7 +230,14 @@ export default function Customers() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map(c => (
-                    <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailCustomer(c)}>
+                    <TableRow
+                      key={c.id}
+                      className={cn(
+                        'cursor-pointer transition-colors duration-150 hover:bg-muted/50',
+                        newCustomerIds.has(c.id) && 'animate-item-in'
+                      )}
+                      onClick={() => setDetailCustomer(c)}
+                    >
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell className="hidden md:table-cell">{c.company_name || '-'}</TableCell>
                       <TableCell className="hidden md:table-cell">{c.email || '-'}</TableCell>
