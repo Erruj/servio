@@ -1,5 +1,6 @@
 import { Link2, Sparkles, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 
 const icons = [Link2, Sparkles, TrendingUp];
 
@@ -10,7 +11,7 @@ export function HowItWorksSection() {
   return (
     <section className="py-24 md:py-32">
       <div className="container mx-auto px-6">
-        <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in-up">
+        <Reveal className="max-w-2xl mx-auto text-center mb-16">
           <span className="text-sm font-medium text-primary mb-4 block">{t('marketing.howItWorks.eyebrow')}</span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             {t('marketing.howItWorks.title')}
@@ -18,18 +19,14 @@ export function HowItWorksSection() {
           <p className="text-lg text-muted-foreground">
             {t('marketing.howItWorks.subtitle')}
           </p>
-        </div>
+        </Reveal>
 
         <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 md:gap-4">
+          <StaggerGroup stagger={0.1} className="grid md:grid-cols-3 gap-8 md:gap-4">
             {steps.map((step, index) => {
               const Icon = icons[index] || Link2;
               return (
-                <div
-                  key={index}
-                  className="relative animate-fade-in-up"
-                  style={{ animationDelay: `${(index + 1) * 150}ms` }}
-                >
+                <StaggerItem key={index} className="relative">
                   {index < steps.length - 1 && (
                     <div className="hidden md:block absolute top-12 left-full w-full h-px bg-gradient-to-r from-border to-transparent z-0" />
                   )}
@@ -46,10 +43,10 @@ export function HowItWorksSection() {
                     <h3 className="text-lg font-semibold text-foreground mb-3">{step.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{step.description}</p>
                   </div>
-                </div>
+                </StaggerItem>
               );
             })}
-          </div>
+          </StaggerGroup>
         </div>
       </div>
     </section>
