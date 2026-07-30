@@ -4,6 +4,7 @@ import { CTASection } from '@/components/landing/CTASection';
 import { SeoHead } from '@/components/SeoHead';
 import { Mail, BarChart3, FileText, Bot, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 
 const icons = [Mail, FileText, BarChart3, Bot];
 
