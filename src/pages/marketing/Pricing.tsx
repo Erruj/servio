@@ -1,3 +1,4 @@
+import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { FAQSection } from '@/components/landing/FAQSection';
@@ -216,7 +217,7 @@ export default function MarketingPricing() {
         <main>
           <section className="pt-32 pb-12 md:pt-44 md:pb-16">
             <div className="container mx-auto px-6">
-              <div className="max-w-3xl mx-auto text-center">
+              <Reveal className="max-w-3xl mx-auto text-center">
                 <span className="text-sm font-medium text-primary mb-4 block">Prijzen</span>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
                   Transparante prijzen,
@@ -266,22 +267,23 @@ export default function MarketingPricing() {
                     Bespaar 17%
                   </Badge>
                 </div>
-              </div>
+              </Reveal>
             </div>
           </section>
 
           {/* Pricing cards */}
           <section className="pb-20">
             <div className="container mx-auto px-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              <StaggerGroup className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 {PLANS.map((plan) => {
                   const isYearly = billing === 'yearly';
                   const displayMonthly = isYearly ? plan.yearlyMonthly : plan.monthly;
                   return (
-                    <article
+                    <StaggerItem
+                      as="article"
                       key={plan.tier}
                       className={cn(
-                        'relative rounded-2xl p-8 transition-all duration-300',
+                        'relative rounded-2xl p-8 transition-all duration-200 ease-out hover:-translate-y-1',
                         plan.popular
                           ? 'bg-foreground text-background border-2 border-foreground shadow-2xl md:scale-[1.03]'
                           : 'bg-card border border-border/40 hover:border-border hover:shadow-elevated'
@@ -346,10 +348,10 @@ export default function MarketingPricing() {
                         {plan.cta}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
-                    </article>
+                    </StaggerItem>
                   );
                 })}
-              </div>
+              </StaggerGroup>
             </div>
           </section>
 
@@ -357,12 +359,14 @@ export default function MarketingPricing() {
 
           <section className="py-16 md:py-20">
             <div className="container mx-auto px-6">
-              <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-3">
-                Wat zit er in elk plan?
-              </h2>
-              <p className="text-muted-foreground text-center mb-12">
-                Een volledige vergelijking van alle features per plan.
-              </p>
+              <Reveal>
+                <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-3">
+                  Wat zit er in elk plan?
+                </h2>
+                <p className="text-muted-foreground text-center mb-12">
+                  Een volledige vergelijking van alle features per plan.
+                </p>
+              </Reveal>
 
               <div className="max-w-5xl mx-auto overflow-x-auto rounded-2xl border border-border/40 bg-card">
                 <table className="w-full text-sm">
@@ -378,17 +382,17 @@ export default function MarketingPricing() {
                       <th className="p-4 md:p-5 font-semibold text-foreground text-center">Business</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <StaggerGroup as="tbody" stagger={0.04}>
                     {visibleFeatures.map((row, i) => (
-                      <tr key={i} className="border-b border-border/30 last:border-0">
+                      <StaggerItem as="tr" y={10} key={i} className="border-b border-border/30 last:border-0">
                         <td className="p-4 md:p-5 text-foreground">{row.feature}</td>
                         <td className="p-4 md:p-5 text-center">{renderCell(row.free)}</td>
                         <td className="p-4 md:p-5 text-center">{renderCell(row.starter)}</td>
                         <td className="p-4 md:p-5 text-center bg-[#2563eb]/5">{renderCell(row.pro)}</td>
                         <td className="p-4 md:p-5 text-center">{renderCell(row.business)}</td>
-                      </tr>
+                      </StaggerItem>
                     ))}
-                  </tbody>
+                  </StaggerGroup>
                 </table>
               </div>
 
@@ -411,7 +415,7 @@ export default function MarketingPricing() {
           {/* Enterprise contact */}
           <section className="pb-24">
             <div className="container mx-auto px-6">
-              <div className="mt-4 max-w-2xl mx-auto">
+              <Reveal className="mt-4 max-w-2xl mx-auto">
                 <div className="rounded-xl border border-border/40 bg-muted/30 p-8 text-center">
                   <h3 className="text-lg font-semibold text-foreground mb-2">
                     Iets groters nodig?
@@ -423,7 +427,7 @@ export default function MarketingPricing() {
                     Neem contact op
                   </Button>
                 </div>
-              </div>
+              </Reveal>
             </div>
           </section>
 

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
 import { useSubscription } from '@/hooks/useSubscription';
 import { toast } from 'sonner';
+import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 
 const tiers = ['starter', 'pro', 'business'] as const;
 
@@ -29,25 +30,24 @@ export function PricingSection() {
   return (
     <section className="py-24 md:py-32" id="pricing">
       <div className="container mx-auto px-6">
-        <div className="max-w-xl mx-auto text-center mb-16 animate-fade-in-up">
+        <Reveal className="max-w-xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
             {t('marketing.pricing.sectionTitle')}
           </h2>
           <p className="text-muted-foreground">
             {t('marketing.pricing.sectionSubtitle')}
           </p>
-        </div>
+        </Reveal>
 
-        <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        <StaggerGroup className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
           {plans.map((plan, index) => (
-            <div
+            <StaggerItem
               key={index}
-              className={`relative rounded-xl p-6 transition-all duration-300 animate-fade-in-up group ${
+              className={`relative rounded-xl p-6 transition-all duration-200 ease-out group hover:-translate-y-1 ${
                 plan.popular
-                  ? 'bg-foreground text-background border-2 border-foreground shadow-xl scale-[1.02]'
+                  ? 'bg-foreground text-background border-2 border-foreground shadow-xl md:scale-[1.02]'
                   : 'bg-card border border-border/40 hover:border-border hover:shadow-elevated'
               }`}
-              style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -102,9 +102,9 @@ export function PricingSection() {
               >
                 {t('marketing.pricing.startFree')}
               </Button>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   );
