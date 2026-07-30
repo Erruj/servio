@@ -43,12 +43,13 @@ export default function About() {
                   {t('marketing.about.subtitle')}
                 </p>
               </Reveal>
-
+            </div>
           </section>
+
 
           <section className="py-20 md:py-28 bg-muted/30">
             <div className="container mx-auto px-6">
-              <div className="max-w-3xl mx-auto">
+              <Reveal className="max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-8 text-center">
                   {t('marketing.about.missionTitle')}
                 </h2>
@@ -57,52 +58,55 @@ export default function About() {
                   <p dangerouslySetInnerHTML={{ __html: t('marketing.about.missionP2') }} />
                   <p>{t('marketing.about.missionP3')}</p>
                 </div>
-              </div>
+              </Reveal>
+
             </div>
           </section>
 
           <section className="py-20 md:py-28">
             <div className="container mx-auto px-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
+              <StaggerGroup className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
                 {stats.map((stat, i) => (
-                  <div key={i}>
+                  <StaggerItem key={i}>
                     <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
                     <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  </div>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerGroup>
+
             </div>
           </section>
 
           <section className="py-20 md:py-28 bg-muted/30">
             <div className="container mx-auto px-6">
-              <div className="max-w-xl mx-auto text-center mb-16">
+              <Reveal className="max-w-xl mx-auto text-center mb-16">
                 <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-foreground mb-4">
                   {t('marketing.about.valuesTitle')}
                 </h2>
                 <p className="text-muted-foreground">{t('marketing.about.valuesSubtitle')}</p>
-              </div>
+              </Reveal>
 
-              <div className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <StaggerGroup className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 {values.map((value, index) => {
                   const Icon = icons[index] || Target;
                   return (
-                    <article key={index} className="p-8 rounded-xl bg-card border border-border/40">
+                    <StaggerItem as="article" key={index} className="p-8 rounded-xl bg-card border border-border/40 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md hover:border-border">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
                         <Icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-3">{value.title}</h3>
                       <p className="text-muted-foreground leading-relaxed">{value.description}</p>
-                    </article>
+                    </StaggerItem>
                   );
                 })}
-              </div>
+              </StaggerGroup>
+
             </div>
           </section>
 
           <section className="py-20 md:py-28">
             <div className="container mx-auto px-6">
-              <div className="max-w-2xl mx-auto text-center">
+              <Reveal className="max-w-2xl mx-auto text-center">
                 <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-foreground mb-6">
                   {t('marketing.about.teamTitle')}
                 </h2>
@@ -110,7 +114,8 @@ export default function About() {
                   {t('marketing.about.teamP1')}
                 </p>
                 <p className="text-sm text-muted-foreground">{t('marketing.about.madeIn')}</p>
-              </div>
+              </Reveal>
+
             </div>
           </section>
 
