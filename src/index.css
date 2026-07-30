@@ -486,3 +486,10 @@ html, body { max-width: 100%; overflow-x: hidden; }
   color: hsl(var(--foreground));
 }
 .marketing-theme .marketing-mockup .text-primary { color: hsl(var(--primary)); }
+
+/* Legal-pagina's: dezelfde donkere basis, maar rustig en leesbaar */
+.marketing-theme .marketing-legal section {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.marketing-theme .marketing-legal { --radius: 0.75rem; }

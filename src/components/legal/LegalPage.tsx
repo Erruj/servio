@@ -36,7 +36,7 @@ export function LegalPage({ docKey, path, seoTitleNl, seoTitleEn, seoDescription
         description={isEn ? seoDescriptionEn : seoDescriptionNl}
       />
 
-      <div className="min-h-screen bg-background">
+      <div className="marketing-legal min-h-screen bg-background">
         <LandingHeader />
 
         <main className="pt-32 pb-20">
