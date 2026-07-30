@@ -7,54 +7,84 @@ import { Calendar, Clock, Sparkles, Calculator, TrendingUp, Package, ArrowRight 
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
+import blogAiImage from '@/assets/blog-ai.jpg';
+import blogBoekhoudingImage from '@/assets/blog-boekhouding.jpg';
+import blogOndernemenImage from '@/assets/blog-ondernemen.jpg';
+import blogProductImage from '@/assets/blog-product.jpg';
 
-/** Gedempte, merk-passende accentkleuren per categorie (HSL, thema-neutraal). */
-const CATEGORY_META: Record<BlogCategory, { color: string; icon: LucideIcon }> = {
-  'AI & Automatisering': { color: 'var(--primary)', icon: Sparkles },
-  Boekhouding: { color: '174 42% 42%', icon: Calculator },
-  Ondernemen: { color: '250 38% 55%', icon: TrendingUp },
-  Product: { color: '35 62% 50%', icon: Package },
+/** Gedempte, merk-passende accentkleuren + stockfoto per categorie. */
+const CATEGORY_META: Record<BlogCategory, { color: string; icon: LucideIcon; image: string; imageAlt: string }> = {
+  'AI & Automatisering': {
+    color: 'var(--primary)',
+    icon: Sparkles,
+    image: blogAiImage,
+    imageAlt: 'Laptop op een licht bureau met een dashboard vol data — AI en automatisering',
+  },
+  Boekhouding: {
+    color: '174 42% 42%',
+    icon: Calculator,
+    image: blogBoekhoudingImage,
+    imageAlt: 'Bureau met facturen, rekenmachine en laptop — boekhouding en administratie',
+  },
+  Ondernemen: {
+    color: '250 38% 55%',
+    icon: TrendingUp,
+    image: blogOndernemenImage,
+    imageAlt: 'Zelfstandig ondernemer werkt aan een laptop in een warm thuiskantoor',
+  },
+  Product: {
+    color: '35 62% 50%',
+    icon: Package,
+    image: blogProductImage,
+    imageAlt: 'Opgeruimde werkplek met een monitor die een modern software-dashboard toont',
+  },
 };
 
-function CategoryVisual({ category, className }: { category: BlogCategory; className?: string }) {
+function CategoryVisual({
+  category,
+  className,
+  alt,
+  priority = false,
+}: {
+  category: BlogCategory;
+  className?: string;
+  alt?: string;
+  priority?: boolean;
+}) {
   const meta = CATEGORY_META[category];
   const accent = `hsl(${meta.color})`;
   const Icon = meta.icon;
   return (
-    <div
-      className={`relative flex items-center justify-center overflow-hidden ${className ?? ''}`}
-      aria-hidden="true"
-    >
-      {/* basis-gradient */}
+    <div className={`relative overflow-hidden ${className ?? ''}`}>
+      <img
+        src={meta.image}
+        alt={alt ?? meta.imageAlt}
+        width={1200}
+        height={752}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+      />
+      {/* subtiele categorie-tint bovenop de foto */}
       <div
-        className="absolute inset-0 transition-opacity duration-300 ease-out group-hover:opacity-0"
+        aria-hidden="true"
+        className="absolute inset-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
         style={{
-          background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 18%, transparent), color-mix(in srgb, ${accent} 6%, transparent))`,
+          opacity: 0.85,
+          background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 14%, transparent), color-mix(in srgb, ${accent} 6%, transparent))`,
         }}
       />
-      {/* intensere gradient bij hover */}
-      <div
-        className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
-        style={{
-          background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 24%, transparent), color-mix(in srgb, ${accent} 10%, transparent))`,
-        }}
-      />
-      {/* zachte glow achter het icoon */}
-      <div
-        className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
-        style={{
-          background: `radial-gradient(closest-side, color-mix(in srgb, ${accent} 20%, transparent), transparent 70%)`,
-        }}
-      />
-      <Icon
-        className="relative transition-transform duration-[350ms] ease-out group-hover:scale-[1.15] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-        style={{ color: accent, opacity: 0.5 }}
-        strokeWidth={1.25}
-        size="35%"
-      />
+      {/* icoon als kleine badge in de hoek */}
+      <span
+        aria-hidden="true"
+        className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-background/85 backdrop-blur-sm shadow-sm transition-transform duration-300 ease-out group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+      >
+        <Icon className="h-4 w-4" style={{ color: accent }} strokeWidth={1.75} />
+      </span>
     </div>
   );
 }
+
 
 function CategoryBadge({ category }: { category: BlogCategory }) {
   const accent = `hsl(${CATEGORY_META[category].color})`;
@@ -114,7 +144,7 @@ export default function Blog() {
               to={`${prefix}/blog/${featured.slug}`}
               className="group grid lg:grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
             >
-              <CategoryVisual category={featured.category} className="min-h-[240px] lg:min-h-[380px]" />
+              <CategoryVisual category={featured.category} className="min-h-[240px] lg:min-h-[380px]" priority alt={`${featured.title} — ${CATEGORY_META[featured.category].imageAlt}`} />
               <div className="flex flex-col p-8 md:p-12">
                 <span
                   className="inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold mb-5"
@@ -157,7 +187,7 @@ export default function Blog() {
                   to={`${prefix}/blog/${post.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-md hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
                 >
-                  <CategoryVisual category={post.category} className="aspect-[16/10]" />
+                  <CategoryVisual category={post.category} className="aspect-[16/10]" alt={`${post.title} — ${CATEGORY_META[post.category].imageAlt}`} />
                   <div className="flex flex-1 flex-col p-6">
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
