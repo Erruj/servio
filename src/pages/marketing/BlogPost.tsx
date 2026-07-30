@@ -171,26 +171,29 @@ export default function BlogPost() {
 
 
           {/* CTA */}
-          <div className="mt-16 p-8 rounded-2xl bg-primary/5 border border-primary/20 text-center">
+          <Reveal className="mt-16 p-8 rounded-2xl bg-primary/5 border border-primary/20 text-center">
             <h2 className="text-2xl font-bold mb-2">Klaar om tijd te besparen?</h2>
             <p className="text-muted-foreground mb-6">Probeer Servio 14 dagen gratis. Geen creditcard nodig.</p>
             <Button asChild size="lg"><Link to="/signup">Start gratis proefperiode</Link></Button>
-          </div>
+          </Reveal>
 
           {/* Related */}
           {related.length > 0 && (
             <div className="mt-16">
-              <h2 className="text-xl font-bold mb-6">Gerelateerde artikelen</h2>
-              <div className="grid gap-4 md:grid-cols-2">
+              <Reveal as="h2" className="text-xl font-bold mb-6">Gerelateerde artikelen</Reveal>
+              <StaggerGroup className="grid gap-4 md:grid-cols-2">
                 {related.map(r => (
-                  <Link key={r.slug} to={`/blog/${r.slug}`} className="group block rounded-xl border border-border p-5 hover:shadow-md hover:border-primary/30 transition-all">
-                    <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors text-sm leading-snug">{r.title}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{r.excerpt}</p>
-                  </Link>
+                  <StaggerItem key={r.slug}>
+                    <Link to={`/blog/${r.slug}`} className="group block h-full rounded-xl border border-border p-5 hover:-translate-y-1 hover:shadow-md hover:border-primary/30 transition-all duration-200 ease-out motion-reduce:hover:translate-y-0">
+                      <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors text-sm leading-snug">{r.title}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{r.excerpt}</p>
+                    </Link>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerGroup>
             </div>
           )}
+
 
           <div className="mt-12">
             <Link to="/blog" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
