@@ -3,7 +3,7 @@ import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { SeoHead } from '@/components/SeoHead';
 import { blogPosts, type BlogCategory, type BlogPost } from '@/data/blogPosts';
-import { Calendar, Clock, Sparkles, Calculator, TrendingUp, Package } from 'lucide-react';
+import { Calendar, Clock, Sparkles, Calculator, TrendingUp, Package, ArrowRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
@@ -23,13 +23,31 @@ function CategoryVisual({ category, className }: { category: BlogCategory; class
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden ${className ?? ''}`}
-      style={{
-        background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 18%, transparent), color-mix(in srgb, ${accent} 6%, transparent))`,
-      }}
       aria-hidden="true"
     >
+      {/* basis-gradient */}
+      <div
+        className="absolute inset-0 transition-opacity duration-300 ease-out group-hover:opacity-0"
+        style={{
+          background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 18%, transparent), color-mix(in srgb, ${accent} 6%, transparent))`,
+        }}
+      />
+      {/* intensere gradient bij hover */}
+      <div
+        className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+        style={{
+          background: `linear-gradient(135deg, color-mix(in srgb, ${accent} 24%, transparent), color-mix(in srgb, ${accent} 10%, transparent))`,
+        }}
+      />
+      {/* zachte glow achter het icoon */}
+      <div
+        className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
+        style={{
+          background: `radial-gradient(closest-side, color-mix(in srgb, ${accent} 20%, transparent), transparent 70%)`,
+        }}
+      />
       <Icon
-        className="transition-transform duration-200 ease-out group-hover:scale-105"
+        className="relative transition-transform duration-[350ms] ease-out group-hover:scale-[1.15] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         style={{ color: accent, opacity: 0.5 }}
         strokeWidth={1.25}
         size="35%"
@@ -42,7 +60,7 @@ function CategoryBadge({ category }: { category: BlogCategory }) {
   const accent = `hsl(${CATEGORY_META[category].color})`;
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
+      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-300 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       style={{
         color: accent,
         backgroundColor: `color-mix(in srgb, ${accent} 12%, transparent)`,
@@ -52,6 +70,7 @@ function CategoryBadge({ category }: { category: BlogCategory }) {
     </span>
   );
 }
+
 
 export default function Blog() {
   const { t, i18n } = useTranslation();
@@ -93,7 +112,7 @@ export default function Blog() {
           <Reveal className="mb-16 md:mb-20">
             <Link
               to={`${prefix}/blog/${featured.slug}`}
-              className="group grid lg:grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
+              className="group grid lg:grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
             >
               <CategoryVisual category={featured.category} className="min-h-[240px] lg:min-h-[380px]" />
               <div className="flex flex-col p-8 md:p-12">
@@ -108,7 +127,12 @@ export default function Blog() {
                 </span>
                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight leading-tight mb-4 group-hover:text-primary transition-colors">
                   {featured.title}
+                  <ArrowRight
+                    className="ml-2 inline-block h-5 w-5 -translate-x-2 opacity-0 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-100 motion-reduce:transition-none"
+                    aria-hidden="true"
+                  />
                 </h2>
+
                 <p className="text-muted-foreground leading-relaxed">{featured.excerpt}</p>
                 <div className="mt-auto pt-8 flex flex-wrap items-center gap-x-4 gap-y-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1.5">
@@ -131,7 +155,7 @@ export default function Blog() {
               <StaggerItem key={post.slug}>
                 <Link
                   to={`${prefix}/blog/${post.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md hover:border-primary/30"
+                  className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-md hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
                 >
                   <CategoryVisual category={post.category} className="aspect-[16/10]" />
                   <div className="flex flex-1 flex-col p-6">
@@ -149,7 +173,12 @@ export default function Blog() {
                     </div>
                     <h2 className="text-lg font-semibold leading-snug mb-2 group-hover:text-primary transition-colors">
                       {post.title}
+                      <ArrowRight
+                        className="ml-1.5 inline-block h-4 w-4 -translate-x-1.5 opacity-0 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-100 motion-reduce:transition-none"
+                        aria-hidden="true"
+                      />
                     </h2>
+
                     <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
                     <div className="mt-auto pt-5 flex justify-end">
                       <CategoryBadge category={post.category} />
