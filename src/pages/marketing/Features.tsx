@@ -33,7 +33,7 @@ export default function Features() {
         <main>
           <section className="pt-32 pb-20 md:pt-44 md:pb-28">
             <div className="container mx-auto px-6">
-              <div className="max-w-3xl mx-auto text-center">
+              <Reveal className="max-w-3xl mx-auto text-center">
                 <span className="text-sm font-medium text-primary mb-4 block">{t('marketing.featuresPage.eyebrow')}</span>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
                   {t('marketing.featuresPage.h1Top')}
@@ -43,7 +43,8 @@ export default function Features() {
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
                   {t('marketing.featuresPage.subtitle')}
                 </p>
-              </div>
+              </Reveal>
+
             </div>
           </section>
 
