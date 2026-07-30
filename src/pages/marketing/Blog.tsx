@@ -112,7 +112,7 @@ export default function Blog() {
           <Reveal className="mb-16 md:mb-20">
             <Link
               to={`${prefix}/blog/${featured.slug}`}
-              className="group grid lg:grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
+              className="group grid lg:grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
             >
               <CategoryVisual category={featured.category} className="min-h-[240px] lg:min-h-[380px]" />
               <div className="flex flex-col p-8 md:p-12">
@@ -127,7 +127,12 @@ export default function Blog() {
                 </span>
                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight leading-tight mb-4 group-hover:text-primary transition-colors">
                   {featured.title}
+                  <ArrowRight
+                    className="ml-2 inline-block h-5 w-5 -translate-x-2 opacity-0 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-100 motion-reduce:transition-none"
+                    aria-hidden="true"
+                  />
                 </h2>
+
                 <p className="text-muted-foreground leading-relaxed">{featured.excerpt}</p>
                 <div className="mt-auto pt-8 flex flex-wrap items-center gap-x-4 gap-y-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1.5">
