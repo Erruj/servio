@@ -144,7 +144,7 @@ export default function Blog() {
               to={`${prefix}/blog/${featured.slug}`}
               className="group grid lg:grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
             >
-              <CategoryVisual category={featured.category} className="min-h-[240px] lg:min-h-[380px]" />
+              <CategoryVisual category={featured.category} className="min-h-[240px] lg:min-h-[380px]" priority alt={`${featured.title} — ${CATEGORY_META[featured.category].imageAlt}`} />
               <div className="flex flex-col p-8 md:p-12">
                 <span
                   className="inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold mb-5"
@@ -187,7 +187,7 @@ export default function Blog() {
                   to={`${prefix}/blog/${post.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-md hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
                 >
-                  <CategoryVisual category={post.category} className="aspect-[16/10]" />
+                  <CategoryVisual category={post.category} className="aspect-[16/10]" alt={`${post.title} — ${CATEGORY_META[post.category].imageAlt}`} />
                   <div className="flex flex-1 flex-col p-6">
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
