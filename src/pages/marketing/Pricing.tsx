@@ -138,7 +138,7 @@ export default function MarketingPricing() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
   const { user } = useAuth();
-  const { createCheckoutSession, checkSubscription } = useSubscription();
+  const { createCheckoutSession, checkSubscription, subscriptionStatus, openCustomerPortal } = useSubscription();
   const [billing, setBilling] = useState<BillingCycle>('monthly');
   const [showAllFeatures, setShowAllFeatures] = useState(false);
 
@@ -148,6 +148,18 @@ export default function MarketingPricing() {
       return;
     }
     if (tier === 'free') {
+      // Betalende klanten mogen niet stil worden gedowngraded: hun Stripe-abonnement
+      // loopt dan door terwijl ze features kwijtraken. Stuur ze naar het klantportaal.
+      const hasPaidPlan =
+        subscriptionStatus?.subscribed === true ||
+        subscriptionStatus?.subscription_status === 'active';
+      if (hasPaidPlan) {
+        toast.info(
+          'Je hebt een actief betaald abonnement. Zeg dit eerst op in het klantportaal — daarna kun je verder op het gratis plan.',
+        );
+        await openCustomerPortal();
+        return;
+      }
       try {
         const { error } = await supabase
           .from('user_settings')
@@ -166,6 +178,7 @@ export default function MarketingPricing() {
     toast.info('Checkout...');
     await createCheckoutSession(tier, billing);
   };
+
 
   const title = isEn
     ? 'Pricing | Servio AI Business Assistant'

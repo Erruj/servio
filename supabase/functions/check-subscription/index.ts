@@ -82,8 +82,49 @@ serve(async (req) => {
       });
     }
 
-    // Permanent free plan (no Stripe check needed, no expiration)
+    // Permanent free plan (no expiration). Safety: if the user still has a Stripe
+    // customer on record we verify there is no active paid subscription, so a paying
+    // customer can never end up locked into the free tier while being billed.
     if (settings?.subscription_status === 'free') {
+      if (settings?.stripe_customer_id) {
+        try {
+          const stripeCheck = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+            apiVersion: "2025-08-27.basil",
+          });
+          const activeSubs = await stripeCheck.subscriptions.list({
+            customer: settings.stripe_customer_id,
+            status: "active",
+            limit: 1,
+          });
+          if (activeSubs.data.length > 0) {
+            const sub = activeSubs.data[0];
+            const productId = sub.items.data[0].price.product as string;
+            const subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+            logStep("Free flag overridden by active Stripe subscription", { subId: sub.id });
+            await supabaseClient
+              .from('user_settings')
+              .update({
+                stripe_subscription_id: sub.id,
+                subscription_product_id: productId,
+                subscription_status: 'active',
+                subscription_current_period_end: subscriptionEnd,
+              })
+              .eq('user_id', user.id);
+            return new Response(JSON.stringify({
+              subscribed: true,
+              product_id: productId,
+              subscription_status: 'active',
+              trial_end_date: trialEndDate?.toISOString() ?? null,
+              subscription_end: subscriptionEnd,
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
+        } catch (e) {
+          logStep("Stripe check for free plan failed", { message: String(e) });
+        }
+      }
       logStep("Permanent free plan selected");
       return new Response(JSON.stringify({
         subscribed: false,
@@ -96,6 +137,7 @@ serve(async (req) => {
         status: 200,
       });
     }
+
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
