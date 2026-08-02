@@ -542,36 +542,63 @@ function parseMultipart(body: string, boundary: string): { text: string; html: s
   return { text, html, hasAttachments };
 }
 
+function normalizeCharset(charset?: string): string {
+  const c = (charset || "utf-8").trim().toLowerCase().replace(/^"|"$/g, "");
+  const aliases: Record<string, string> = {
+    "us-ascii": "windows-1252",
+    ascii: "windows-1252",
+    latin1: "iso-8859-1",
+  };
+  return aliases[c] || c || "utf-8";
+}
+
+function bytesToText(binaryString: string, charset?: string): string {
+  const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));
+  try {
+    return new TextDecoder(normalizeCharset(charset), { fatal: false }).decode(bytes);
+  } catch {
+    return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  }
+}
+
 function decodeContent(content: string, encoding: string, contentType?: string): string {
   encoding = encoding.toLowerCase().trim();
+  const charsetMatch = contentType?.match(/charset\s*=\s*"?([^;"\s]+)"?/i);
+  const charset = charsetMatch?.[1];
 
   let decoded = content;
   if (encoding === "base64") {
     try {
       const binary = atob(content.replace(/\s/g, ""));
-      // Check for UTF-8 BOM or assume UTF-8
-      decoded = binary;
+      decoded = bytesToText(binary, charset);
     } catch {
       decoded = content;
     }
   } else if (encoding === "quoted-printable") {
-    decoded = content
+    const hexDecodedBinary = content
       .replace(/=\r?\n/g, "")
       .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    decoded = bytesToText(hexDecodedBinary, charset);
   }
 
   return decoded;
 }
 
 function decodeRFC2047(str: string): string {
-  return str.replace(/=\?([^?]+)\?([BbQq])\?([^?]+)\?=/g, (_, _charset, encoding, text) => {
+  return str.replace(/=\?([^?]+)\?([BbQq])\?([^?]+)\?=/g, (_, charset, encoding, text) => {
     if (encoding.toUpperCase() === "B") {
-      try { return atob(text); } catch { return text; }
+      try {
+        const binary = atob(text);
+        return bytesToText(binary, charset);
+      } catch {
+        return text;
+      }
     }
     if (encoding.toUpperCase() === "Q") {
-      return text
+      const hexDecodedBinary = text
         .replace(/_/g, " ")
         .replace(/=([0-9A-Fa-f]{2})/g, (_m: string, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+      return bytesToText(hexDecodedBinary, charset);
     }
     return text;
   });
