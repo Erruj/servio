@@ -40,7 +40,7 @@ const Inbox = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { connections, hasConnections, syncEmails, isLoading: connectionsLoading } = useEmailConnections();
+  const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
   const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails } = useEmails();
 
   const mails: MailItem[] = emails.map(emailToMailItem);
