@@ -171,7 +171,7 @@ serve(async (req) => {
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const encryptedPw = await encryptPassword(password);
 
-    const { error: insertError } = await admin.from("email_connections").insert({
+    const { error: insertError } = await admin.from("email_connections").upsert({
       user_id: user.id,
       provider: "imap",
       email_address: email,
@@ -182,7 +182,8 @@ serve(async (req) => {
       use_ssl,
       encrypted_password: encryptedPw,
       is_active: true,
-    });
+      sync_error: null,
+    }, { onConflict: "user_id,provider,email_address" });
 
     if (insertError) throw new Error(`Opslaan mislukt: ${insertError.message}`);
 
