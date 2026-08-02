@@ -11,6 +11,8 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
 import { ImapConnectionModal } from '@/components/ImapConnectionModal';
+import { SyncErrorBanner } from '@/components/SyncErrorBanner';
+
 
 const MailboxSetup = () => {
   const navigate = useNavigate();
