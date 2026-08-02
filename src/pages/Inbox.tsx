@@ -122,6 +122,7 @@ const Inbox = () => {
         syncPromise.then(() => refetchEmails()).catch(() => {});
       }
     } catch (error) {
+      await refetchConnections();
       const msg = error instanceof Error ? error.message : "Onbekende fout";
       const isAuthError = msg.toLowerCase().includes('token') || msg.toLowerCase().includes('auth') || msg.toLowerCase().includes('ingelogd');
       const isConnectionError = msg.toLowerCase().includes('koppel') || msg.toLowerCase().includes('connecti');
