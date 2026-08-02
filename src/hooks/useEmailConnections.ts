@@ -103,9 +103,9 @@ export function useEmailConnections() {
 
   const disconnectProvider = async (connectionId: string) => {
     try {
-      const { error } = await supabase.from('email_connections').delete().eq('id', connectionId);
+      const { error } = await supabase.from('email_connections').update({ is_active: false }).eq('id', connectionId);
       if (error) throw error;
-      toast({ title: "Mailbox ontkoppeld" });
+      toast({ title: "Mailbox ontkoppeld", description: "Je e-mailhistorie blijft bewaard." });
       await fetchConnections();
     } catch (error) {
       console.error('Disconnect error:', error);
