@@ -8,6 +8,8 @@ import { Topbar } from '@/components/Topbar';
 import { MailList } from '@/components/MailList';
 import { ComposeEmail } from '@/components/ComposeEmail';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
+import { SyncErrorBanner } from '@/components/SyncErrorBanner';
+
 import { HelpTooltip } from '@/components/HelpTooltip';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -40,7 +42,7 @@ const Inbox = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { connections, hasConnections, syncEmails, isLoading: connectionsLoading } = useEmailConnections();
+  const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
   const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails } = useEmails();
 
   const mails: MailItem[] = emails.map(emailToMailItem);
@@ -93,11 +95,20 @@ const Inbox = () => {
   useEffect(() => {
     if (hasConnections) {
       syncIntervalRef.current = setInterval(async () => {
-        try { await syncEmails(); await refetchEmails(); } catch { /* silent */ }
+        try {
+          await syncEmails();
+          await refetchEmails();
+        } catch (error) {
+          // Fout niet stil weggooien: connecties opnieuw ophalen zodat sync_error
+          // uit de database zichtbaar wordt in de waarschuwingsbanner.
+          console.error('Automatische synchronisatie mislukt:', error);
+          await refetchConnections();
+        }
       }, AUTO_SYNC_INTERVAL);
     }
     return () => { if (syncIntervalRef.current) clearInterval(syncIntervalRef.current); };
-  }, [hasConnections, syncEmails, refetchEmails]);
+  }, [hasConnections, syncEmails, refetchEmails, refetchConnections]);
+
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -113,6 +124,7 @@ const Inbox = () => {
         syncPromise.then(() => refetchEmails()).catch(() => {});
       }
     } catch (error) {
+      await refetchConnections();
       const msg = error instanceof Error ? error.message : "Onbekende fout";
       const isAuthError = msg.toLowerCase().includes('token') || msg.toLowerCase().includes('auth') || msg.toLowerCase().includes('ingelogd');
       const isConnectionError = msg.toLowerCase().includes('koppel') || msg.toLowerCase().includes('connecti');
@@ -169,6 +181,8 @@ const Inbox = () => {
       </Helmet>
       <Header user={user} onLogout={signOut} />
       <RateLimitBanner />
+      <SyncErrorBanner connections={connections} />
+
       
       <div className="flex-1 flex">
         <Sidebar />

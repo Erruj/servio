@@ -11,6 +11,8 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
 import { ImapConnectionModal } from '@/components/ImapConnectionModal';
+import { SyncErrorBanner } from '@/components/SyncErrorBanner';
+
 
 const MailboxSetup = () => {
   const navigate = useNavigate();
@@ -70,6 +72,28 @@ const MailboxSetup = () => {
     }
   };
 
+  const handleReconnect = (provider: string) => {
+    if (provider === 'gmail') return handleConnectGmail();
+    if (provider === 'outlook') return handleConnectOutlook();
+    setImapModalOpen(true);
+  };
+
+  const handleManualSync = async () => {
+    try {
+      await syncEmails();
+      toast({ title: "📧 Emails bijgewerkt", description: "Je mailbox is gesynchroniseerd." });
+    } catch (error) {
+      toast({
+        title: "Synchronisatie mislukt",
+        description: error instanceof Error ? error.message : "Onbekende fout. Probeer het later opnieuw.",
+        variant: "destructive",
+      });
+    } finally {
+      await refetch();
+    }
+  };
+
+
   const getProviderIcon = (provider: string) => {
     switch (provider) {
       case 'gmail': return '📧';
@@ -113,14 +137,17 @@ const MailboxSetup = () => {
               </div>
 
               {connections.length > 0 && (
-                <Button onClick={syncEmails} variant="outline" size="sm">
+                <Button onClick={handleManualSync} variant="outline" size="sm">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Synchroniseer nu
                 </Button>
               )}
             </div>
 
+            <SyncErrorBanner connections={connections} className="rounded-2xl border" />
+
             {/* Connected Accounts */}
+
             {connections.length > 0 && (
               <Card className="border-success/50 shadow-elevated">
                 <CardHeader>
@@ -162,15 +189,28 @@ const MailboxSetup = () => {
                           )}
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => disconnectProvider(connection.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Ontkoppelen
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {(connection.sync_error || !connection.is_active) && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleReconnect(connection.provider)}
+                          >
+                            <Link2 className="h-4 w-4 mr-1" />
+                            Opnieuw koppelen
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => disconnectProvider(connection.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Ontkoppelen
+                        </Button>
+                      </div>
+
                     </div>
                   ))}
                 </CardContent>
