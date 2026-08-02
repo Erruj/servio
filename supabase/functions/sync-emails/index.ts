@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const GMAIL_PAGE_SIZE = 100;
@@ -808,54 +808,76 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+    const CRON_SECRET = Deno.env.get("CRON_SECRET");
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    const providedCronSecret = req.headers.get("x-cron-secret") || "";
+    const isCronRequest = Boolean(CRON_SECRET) && providedCronSecret === CRON_SECRET;
+
+    if (!isCronRequest && !authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization header" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userClient = createClient(SUPABASE_URL!, Deno.env.get("SUPABASE_ANON_KEY") || SUPABASE_SERVICE_ROLE_KEY!);
-    const { data: { user }, error: authError } = await userClient.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let userId: string | null = null;
+    if (!isCronRequest) {
+      const userClient = createClient(SUPABASE_URL!, Deno.env.get("SUPABASE_ANON_KEY") || SUPABASE_SERVICE_ROLE_KEY!);
+      const { data: { user }, error: authError } = await userClient.auth.getUser(authHeader!.replace("Bearer ", ""));
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = user.id;
     }
 
     const requestBody = await req.json().catch(() => ({}));
     const forceFullSync = Boolean(requestBody?.force_full_sync);
     const connectionId = typeof requestBody?.connection_id === "string" ? requestBody.connection_id : null;
 
-    const userId = user.id;
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    let connectionQuery = supabase.from("email_connections").select("*").eq("user_id", userId);
+    let connectionQuery = supabase.from("email_connections").select("*");
+    if (isCronRequest) {
+      // Background mode: alle actieve verbindingen, over alle gebruikers heen
+      connectionQuery = connectionQuery.eq("is_active", true);
+    } else {
+      connectionQuery = connectionQuery.eq("user_id", userId!);
+    }
     if (connectionId) connectionQuery = connectionQuery.eq("id", connectionId);
 
     const { data: connections, error: connError } = await connectionQuery;
     if (connError) throw new Error(`Failed to fetch connections: ${connError.message}`);
     if (!connections?.length) {
+      if (isCronRequest) {
+        return new Response(JSON.stringify({ success: true, results: [], message: "Geen actieve mailboxverbindingen." }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ error: "Geen mailboxverbinding gevonden." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log(`[sync-emails] Start sync for user ${userId}. Connections: ${connections.length}`);
+    console.log(`[sync-emails] Start sync (${isCronRequest ? "cron" : `user ${userId}`}). Connections: ${connections.length}`);
     const results: Array<Record<string, unknown>> = [];
 
-    // Load user setting for auto-processing attachments
-    const { data: settingsRow } = await supabase
+    // Load per-user setting for auto-processing attachments
+    const userIds = Array.from(new Set(connections.map((c: any) => c.user_id)));
+    const { data: settingsRows } = await supabase
       .from("user_settings")
-      .select("auto_process_invoice_attachments")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const autoProcessAttachments = Boolean((settingsRow as any)?.auto_process_invoice_attachments);
+      .select("user_id, auto_process_invoice_attachments")
+      .in("user_id", userIds);
+    const autoProcessMap = new Map<string, boolean>(
+      (settingsRows || []).map((r: any) => [r.user_id, Boolean(r.auto_process_invoice_attachments)])
+    );
 
     for (const connection of connections) {
+      const autoProcessAttachments = autoProcessMap.get(connection.user_id) ?? false;
       try {
         let messages: any[] = [];
         let gmailRawByExternalId: Map<string, any> | null = null;
