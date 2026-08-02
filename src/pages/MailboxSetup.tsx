@@ -25,6 +25,8 @@ const MailboxSetup = () => {
   const {
     connections,
     isLoading,
+    loadError,
+
     startGmailOAuth,
     startOutlookOAuth,
     disconnectProvider,
@@ -136,17 +138,48 @@ const MailboxSetup = () => {
                 </div>
               </div>
 
-              {connections.length > 0 && (
-                <Button onClick={handleManualSync} variant="outline" size="sm">
+              <div className="flex items-center gap-2">
+                <Button onClick={() => refetch()} variant="ghost" size="sm" title="Status vernieuwen">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Synchroniseer nu
+                  Status vernieuwen
                 </Button>
-              )}
+                {connections.length > 0 && (
+                  <Button onClick={handleManualSync} variant="outline" size="sm">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Synchroniseer nu
+                  </Button>
+                )}
+              </div>
             </div>
+
+            {loadError && (
+              <div role="alert" className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="mt-0.5 h-4 w-4 text-destructive" />
+                  <div>
+                    <p className="font-medium text-destructive">{loadError}</p>
+                    <p className="text-muted-foreground">
+                      Hierdoor kan het lijken alsof je geen mailbox gekoppeld hebt. Probeer de status te vernieuwen.
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+                  Opnieuw proberen
+                </Button>
+              </div>
+            )}
+
+            {!isLoading && !loadError && connections.length === 0 && (
+              <div className="rounded-2xl border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+                Er is momenteel geen mailbox gekoppeld aan je account. Eerder gesynchroniseerde e-mails blijven
+                zichtbaar in je inbox, maar er komt geen nieuwe mail binnen tot je opnieuw koppelt.
+              </div>
+            )}
 
             <SyncErrorBanner connections={connections} className="rounded-2xl border" />
 
             {/* Connected Accounts */}
+
 
             {connections.length > 0 && (
               <Card className="border-success/50 shadow-elevated">

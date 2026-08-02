@@ -44,6 +44,8 @@ export function useEmailConnections() {
   const { toast } = useToast();
   const [connections, setConnections] = useState<EmailConnection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
 
   const fetchConnections = useCallback(async () => {
     if (!user) return;
@@ -55,12 +57,21 @@ export function useEmailConnections() {
         .order('created_at', { ascending: false });
       if (error) throw error;
       setConnections((data as unknown as EmailConnection[]) || []);
+      setLoadError(null);
     } catch (error) {
       console.error('Error fetching email connections:', error);
+      const msg = error instanceof Error ? error.message : 'Onbekende fout';
+      setLoadError(`Kon je mailbox-koppelingen niet laden: ${msg}`);
+      toast({
+        title: 'Koppelingen niet geladen',
+        description: `Kon je mailbox-koppelingen niet ophalen: ${msg}. Vernieuw de pagina of probeer het opnieuw.`,
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, toast]);
+
 
   useEffect(() => { fetchConnections(); }, [fetchConnections]);
 
@@ -153,7 +164,7 @@ export function useEmailConnections() {
   const hasConnections = connections.length > 0;
   const activeConnections = connections.filter(c => c.is_active);
 
-  return { connections, isLoading, hasConnections, activeConnections, startGmailOAuth, startOutlookOAuth, disconnectProvider, syncEmails, refetch: fetchConnections };
+  return { connections, isLoading, loadError, hasConnections, activeConnections, startGmailOAuth, startOutlookOAuth, disconnectProvider, syncEmails, refetch: fetchConnections };
 }
 
 export interface EmailThread {
