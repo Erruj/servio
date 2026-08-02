@@ -417,7 +417,7 @@ export type Database = {
           body_text: string | null
           category_from_correction: boolean
           cc_emails: string[] | null
-          connection_id: string
+          connection_id: string | null
           created_at: string
           customer_sentiment: string | null
           external_id: string
@@ -447,7 +447,7 @@ export type Database = {
           body_text?: string | null
           category_from_correction?: boolean
           cc_emails?: string[] | null
-          connection_id: string
+          connection_id?: string | null
           created_at?: string
           customer_sentiment?: string | null
           external_id: string
@@ -477,7 +477,7 @@ export type Database = {
           body_text?: string | null
           category_from_correction?: boolean
           cc_emails?: string[] | null
-          connection_id?: string
+          connection_id?: string | null
           created_at?: string
           customer_sentiment?: string | null
           external_id?: string
