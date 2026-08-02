@@ -164,7 +164,7 @@ export function useEmailConnections() {
   const hasConnections = connections.length > 0;
   const activeConnections = connections.filter(c => c.is_active);
 
-  return { connections, isLoading, hasConnections, activeConnections, startGmailOAuth, startOutlookOAuth, disconnectProvider, syncEmails, refetch: fetchConnections };
+  return { connections, isLoading, loadError, hasConnections, activeConnections, startGmailOAuth, startOutlookOAuth, disconnectProvider, syncEmails, refetch: fetchConnections };
 }
 
 export interface EmailThread {
