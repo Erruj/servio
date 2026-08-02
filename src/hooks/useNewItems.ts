@@ -10,8 +10,10 @@ export function useNewItems(ids: string[], resetMs = 400): Set<string> {
   const [fresh, setFresh] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    // Eerste render: alles als "gezien" markeren, niets animeren.
+    // Data komt asynchroon binnen: pas bij de eerste NIET-lege lijst markeren we
+    // alles als "gezien". Zo animeert de initiële load nooit.
     if (seen.current === null) {
+      if (ids.length === 0) return;
       seen.current = new Set(ids);
       return;
     }
@@ -25,6 +27,7 @@ export function useNewItems(ids: string[], resetMs = 400): Set<string> {
     const timer = window.setTimeout(() => setFresh(new Set()), resetMs);
     return () => window.clearTimeout(timer);
   }, [ids.join('|'), resetMs]);
+
 
   return fresh;
 }
