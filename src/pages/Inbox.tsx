@@ -179,6 +179,8 @@ const Inbox = () => {
       </Helmet>
       <Header user={user} onLogout={signOut} />
       <RateLimitBanner />
+      <SyncErrorBanner connections={connections} />
+
       
       <div className="flex-1 flex">
         <Sidebar />
