@@ -55,12 +55,21 @@ export function useEmailConnections() {
         .order('created_at', { ascending: false });
       if (error) throw error;
       setConnections((data as unknown as EmailConnection[]) || []);
+      setLoadError(null);
     } catch (error) {
       console.error('Error fetching email connections:', error);
+      const msg = error instanceof Error ? error.message : 'Onbekende fout';
+      setLoadError(`Kon je mailbox-koppelingen niet laden: ${msg}`);
+      toast({
+        title: 'Koppelingen niet geladen',
+        description: `Kon je mailbox-koppelingen niet ophalen: ${msg}. Vernieuw de pagina of probeer het opnieuw.`,
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, toast]);
+
 
   useEffect(() => { fetchConnections(); }, [fetchConnections]);
 
