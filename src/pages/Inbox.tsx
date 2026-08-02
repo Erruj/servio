@@ -72,7 +72,7 @@ const Inbox = () => {
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query);
-    localStorage.setItem('servio_inbox_search', query);
+    
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => {
       if (query.trim().length >= 2) {
