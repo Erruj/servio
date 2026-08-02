@@ -162,15 +162,28 @@ const MailboxSetup = () => {
                           )}
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => disconnectProvider(connection.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Ontkoppelen
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {(connection.sync_error || !connection.is_active) && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleReconnect(connection.provider)}
+                          >
+                            <Link2 className="h-4 w-4 mr-1" />
+                            Opnieuw koppelen
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => disconnectProvider(connection.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Ontkoppelen
+                        </Button>
+                      </div>
+
                     </div>
                   ))}
                 </CardContent>
