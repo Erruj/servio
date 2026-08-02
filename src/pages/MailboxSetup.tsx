@@ -72,6 +72,28 @@ const MailboxSetup = () => {
     }
   };
 
+  const handleReconnect = (provider: string) => {
+    if (provider === 'gmail') return handleConnectGmail();
+    if (provider === 'outlook') return handleConnectOutlook();
+    setImapModalOpen(true);
+  };
+
+  const handleManualSync = async () => {
+    try {
+      await syncEmails();
+      toast({ title: "📧 Emails bijgewerkt", description: "Je mailbox is gesynchroniseerd." });
+    } catch (error) {
+      toast({
+        title: "Synchronisatie mislukt",
+        description: error instanceof Error ? error.message : "Onbekende fout. Probeer het later opnieuw.",
+        variant: "destructive",
+      });
+    } finally {
+      await refetch();
+    }
+  };
+
+
   const getProviderIcon = (provider: string) => {
     switch (provider) {
       case 'gmail': return '📧';
