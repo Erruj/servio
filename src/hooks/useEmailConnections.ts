@@ -44,6 +44,8 @@ export function useEmailConnections() {
   const { toast } = useToast();
   const [connections, setConnections] = useState<EmailConnection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
 
   const fetchConnections = useCallback(async () => {
     if (!user) return;
