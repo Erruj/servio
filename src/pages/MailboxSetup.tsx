@@ -113,14 +113,17 @@ const MailboxSetup = () => {
               </div>
 
               {connections.length > 0 && (
-                <Button onClick={syncEmails} variant="outline" size="sm">
+                <Button onClick={handleManualSync} variant="outline" size="sm">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Synchroniseer nu
                 </Button>
               )}
             </div>
 
+            <SyncErrorBanner connections={connections} className="rounded-2xl border" />
+
             {/* Connected Accounts */}
+
             {connections.length > 0 && (
               <Card className="border-success/50 shadow-elevated">
                 <CardHeader>
