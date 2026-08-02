@@ -93,11 +93,20 @@ const Inbox = () => {
   useEffect(() => {
     if (hasConnections) {
       syncIntervalRef.current = setInterval(async () => {
-        try { await syncEmails(); await refetchEmails(); } catch { /* silent */ }
+        try {
+          await syncEmails();
+          await refetchEmails();
+        } catch (error) {
+          // Fout niet stil weggooien: connecties opnieuw ophalen zodat sync_error
+          // uit de database zichtbaar wordt in de waarschuwingsbanner.
+          console.error('Automatische synchronisatie mislukt:', error);
+          await refetchConnections();
+        }
       }, AUTO_SYNC_INTERVAL);
     }
     return () => { if (syncIntervalRef.current) clearInterval(syncIntervalRef.current); };
-  }, [hasConnections, syncEmails, refetchEmails]);
+  }, [hasConnections, syncEmails, refetchEmails, refetchConnections]);
+
 
   const handleSync = async () => {
     setIsSyncing(true);
