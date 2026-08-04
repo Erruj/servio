@@ -25,9 +25,12 @@ interface TopbarProps {
   onSearchChange?: (query: string) => void;
   onFilterChange?: (filter: string) => void;
   className?: string;
+  connections?: { id: string; email_address: string; provider: string; is_active?: boolean }[];
+  selectedConnectionId?: string | null;
+  onConnectionChange?: (id: string | null) => void;
 }
 
-export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProps) {
+export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [displayName, setDisplayName] = useState('');
   const { user, signOut } = useAuth();
