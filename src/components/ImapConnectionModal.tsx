@@ -88,8 +88,29 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
       headers: { Authorization: `Bearer ${session.session.access_token}` },
     });
 
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
+    let payload: any = data;
+    if (error) {
+      // Bij een 403/4xx zit de body in error.context; probeer die uit te lezen
+      try {
+        payload = await (error as any).context?.json?.();
+      } catch { /* body niet leesbaar */ }
+      if (payload?.error === 'mailbox_limit_reached') {
+        const err: any = new Error(
+          `Je abonnement staat maximaal ${payload.limit} mailbox${payload.limit === 1 ? '' : 'en'} toe. Upgrade je plan om deze mailbox te koppelen.`
+        );
+        err.code = 'mailbox_limit_reached';
+        throw err;
+      }
+      throw new Error(payload?.error || error.message || 'Verbinding mislukt');
+    }
+    if (payload?.error === 'mailbox_limit_reached') {
+      const err: any = new Error(
+        `Je abonnement staat maximaal ${payload.limit} mailbox${payload.limit === 1 ? '' : 'en'} toe. Upgrade je plan om deze mailbox te koppelen.`
+      );
+      err.code = 'mailbox_limit_reached';
+      throw err;
+    }
+    if (payload?.error) throw new Error(payload.error);
     return true;
   };
 
