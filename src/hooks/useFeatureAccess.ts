@@ -7,6 +7,7 @@ export interface FeatureLimits {
   emailsPerMonth: number | null; // null = unlimited
   aiCallsPerMonth: number | null;
   maxUsers: number | null;
+  maxMailboxes: number | null; // null = onbeperkt
 }
 
 export interface FeatureAccess {
@@ -113,15 +114,15 @@ export function useFeatureAccess(): FeatureAccess {
   const limits = useMemo<FeatureLimits>(() => {
     switch (effectiveTier) {
       case 'free':
-        return { emailsPerMonth: 20, aiCallsPerMonth: 10, maxUsers: 1 };
+        return { emailsPerMonth: 20, aiCallsPerMonth: 10, maxUsers: 1, maxMailboxes: 1 };
       case 'starter':
-        return { emailsPerMonth: 100, aiCallsPerMonth: 50, maxUsers: 1 };
+        return { emailsPerMonth: 100, aiCallsPerMonth: 50, maxUsers: 1, maxMailboxes: 2 };
       case 'pro':
-        return { emailsPerMonth: null, aiCallsPerMonth: null, maxUsers: 3 };
+        return { emailsPerMonth: null, aiCallsPerMonth: null, maxUsers: 3, maxMailboxes: 5 };
       case 'business':
-        return { emailsPerMonth: null, aiCallsPerMonth: null, maxUsers: null };
+        return { emailsPerMonth: null, aiCallsPerMonth: null, maxUsers: null, maxMailboxes: null };
       default:
-        return { emailsPerMonth: 20, aiCallsPerMonth: 10, maxUsers: 1 };
+        return { emailsPerMonth: 20, aiCallsPerMonth: 10, maxUsers: 1, maxMailboxes: 1 };
     }
   }, [effectiveTier]);
 
