@@ -59,13 +59,23 @@ export function MailList({
     }
   }, [searchQuery, toast]);
 
-  const filteredMails = useMemo(() => {
-    let filtered = mails;
-    const hasLabel = (mail: MailItem, label: string) => mail.labels.some(l => l.toUpperCase() === label);
+  const hasLabel = (mail: MailItem, label: string) => mail.labels.some(l => l.toUpperCase() === label);
+
+  // Welke mails in de lijst horen wordt alleen herberekend bij filter-/zoekwijziging of wanneer
+  // de set aan bestaande mail-ids verandert (nieuwe mail binnen, mail weg) — niet bij een
+  // read/unread-toggle van een mail die al in de lijst stond.
+  const mailIdsFingerprint = mails.map((m) => m.id).sort().join(',');
+  const mailsRef = useRef(mails);
+  mailsRef.current = mails;
+
+  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    let filtered = mailsRef.current;
 
     if (safeSearchQuery) {
       const query = safeSearchQuery.toLowerCase();
-      filtered = filtered.filter(mail => 
+      filtered = filtered.filter(mail =>
         mail.subject.toLowerCase().includes(query) ||
         mail.from.toLowerCase().includes(query) ||
         mail.snippet.toLowerCase().includes(query) ||
@@ -93,8 +103,16 @@ export function MailList({
       filtered = filtered.filter(m => !blockedSenders.includes(m.from));
     }
 
-    return filtered;
-  }, [mails, safeSearchQuery, filter]);
+    setPinnedIds(filtered.map(m => m.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, safeSearchQuery, mailIdsFingerprint, blockedSenders]);
+
+  // De gepinde ids met actuele mail-data, zodat leesstatus en AI-labels live blijven meebewegen
+  // binnen een bevroren lijst-samenstelling.
+  const filteredMails = useMemo(() => {
+    const mailById = new Map(mails.map(m => [m.id, m]));
+    return pinnedIds.map(id => mailById.get(id)).filter((m): m is MailItem => Boolean(m));
+  }, [pinnedIds, mails]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
