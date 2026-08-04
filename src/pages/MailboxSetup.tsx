@@ -6,7 +6,7 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mail, CheckCircle, Loader2, RefreshCw, Trash2, AlertCircle, Link2 } from 'lucide-react';
+import { ArrowLeft, Mail, CheckCircle, Loader2, RefreshCw, Trash2, AlertCircle, Link2, Clock } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
@@ -279,12 +279,15 @@ const MailboxSetup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Gmail */}
-                <Card className="shadow-card hover:shadow-elevated transition-all duration-200">
+                <Card className="shadow-card hover:shadow-elevated transition-all duration-200 opacity-70">
                   <CardHeader>
                     <div className="flex items-center space-x-3">
                       <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">📧</div>
                       <div>
-                        <CardTitle>Gmail</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                          Gmail
+                          <Badge variant="secondary" className="text-xs">Binnenkort beschikbaar</Badge>
+                        </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">Google Gmail koppelen</p>
                       </div>
                     </div>
@@ -296,17 +299,13 @@ const MailboxSetup = () => {
                           <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
                         ))}
                       </div>
-                      <Button
-                        className="w-full"
-                        onClick={handleConnectGmail}
-                        disabled={connectingProvider === 'gmail' || isLoading}
-                      >
-                        {connectingProvider === 'gmail' ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verbinden...</>
-                        ) : (
-                          <><Mail className="h-4 w-4 mr-2" />Koppel Gmail</>
-                        )}
+                      <Button className="w-full" variant="outline" disabled>
+                        <Clock className="h-4 w-4 mr-2" />
+                        Binnenkort beschikbaar
                       </Button>
+                      <p className="text-xs text-muted-foreground text-center">
+                        We ronden momenteel Google's verificatieproces af. Gebruik ondertussen IMAP of Outlook.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
