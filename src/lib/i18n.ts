@@ -4,11 +4,13 @@ import { initReactI18next } from 'react-i18next';
 /**
  * Detect the user's preferred language from:
  * 1. Explicit URL prefix (/en/...)
- * 2. localStorage (servio-language)
- * 3. navigator.language (en-* → 'en', else → 'nl')
+ * 2. localStorage (servio-language) — accepts nl/en/de/fr/es
+ * 3. navigator.language (en-*, nl-*, de-*, fr-*, es-* worden herkend)
  * 4. Fallback: 'nl'
  */
-function detectInitialLanguage(): 'nl' | 'en' {
+type SupportedLanguage = 'nl' | 'en' | 'de' | 'fr' | 'es';
+
+function detectInitialLanguage(): SupportedLanguage {
   if (typeof window === 'undefined') return 'nl';
 
   // 1. URL prefix
@@ -19,10 +21,9 @@ function detectInitialLanguage(): 'nl' | 'en' {
   // 2. Saved preference
   try {
     const saved = localStorage.getItem('servio-language');
-    if (saved === 'nl' || saved === 'en') return saved;
-    // Map other previously stored languages to closest match
-    if (saved && saved !== 'nl' && saved !== 'en') {
-      return saved.startsWith('en') ? 'en' : 'nl';
+    const supported: SupportedLanguage[] = ['nl', 'en', 'de', 'fr', 'es'];
+    if (saved && supported.includes(saved as SupportedLanguage)) {
+      return saved as SupportedLanguage;
     }
   } catch {
     // ignore
@@ -30,8 +31,12 @@ function detectInitialLanguage(): 'nl' | 'en' {
 
   // 3. Browser language
   const nav = navigator.language || (navigator.languages && navigator.languages[0]) || 'nl';
-  if (nav.toLowerCase().startsWith('en')) return 'en';
-  if (nav.toLowerCase().startsWith('nl')) return 'nl';
+  const navLower = nav.toLowerCase();
+  if (navLower.startsWith('en')) return 'en';
+  if (navLower.startsWith('nl')) return 'nl';
+  if (navLower.startsWith('de')) return 'de';
+  if (navLower.startsWith('fr')) return 'fr';
+  if (navLower.startsWith('es')) return 'es';
 
   // 4. Default
   return 'nl';
