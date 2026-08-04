@@ -37,6 +37,7 @@ const PLANS = [
     isFree: true,
     features: [
       '20 e-mails per maand',
+      '1 gekoppelde mailbox',
       '10 AI-calls per maand',
       '1 gebruiker',
       'AI antwoordsuggesties',
@@ -56,6 +57,7 @@ const PLANS = [
     popular: false,
     features: [
       '100 e-mails per maand',
+      '2 gekoppelde mailboxen',
       '50 AI-calls per maand',
       '1 gebruiker',
       'AI antwoordsuggesties',
@@ -75,6 +77,7 @@ const PLANS = [
     popular: true,
     features: [
       'Onbeperkt e-mails',
+      '5 gekoppelde mailboxen',
       'Onbeperkt AI-calls',
       '3 gebruikers',
       'AI Boekhoudassistent',
@@ -95,6 +98,7 @@ const PLANS = [
     cta: 'Start gratis',
     popular: false,
     features: [
+      'Onbeperkt gekoppelde mailboxen',
       'Onbeperkte gebruikers',
       'API toegang',
       'Dedicated accountmanager',
@@ -111,6 +115,7 @@ const COMPARISON: { feature: string; free: Cell; starter: Cell; pro: Cell; busin
   { feature: 'E-mails per maand', free: '20', starter: '100', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
   { feature: 'AI-calls per maand', free: '10', starter: '50', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
   { feature: 'Gebruikers', free: '1', starter: '1', pro: '3', business: 'Onbeperkt', key: true },
+  { feature: 'Gekoppelde mailboxen', free: '1', starter: '2', pro: '5', business: 'Onbeperkt', key: true },
   { feature: 'AI antwoordsuggesties', free: true, starter: true, pro: true, business: true, key: true },
   { feature: 'Inbox automatisering', free: 'Basis', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
   { feature: 'Factuurverwerking', free: false, starter: true, pro: true, business: true, key: true },
