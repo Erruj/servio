@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkMailboxLimit } from "../_shared/mailbox-limit.ts";
 
 async function hmacSign(data: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -113,6 +114,13 @@ serve(async (req) => {
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Abonnementslimiet op aantal mailboxen afdwingen (server-side)
+    const limitCheck = await checkMailboxLimit(supabase, userId, "outlook", emailAddress);
+    if (!limitCheck.allowed) {
+      console.log(`[outlook-callback] Mailbox limit reached for ${userId} (tier=${limitCheck.tier}, limit=${limitCheck.limit})`);
+      return Response.redirect(`${frontendUrl}/mailbox-setup?error=mailbox_limit_reached`);
+    }
 
     const { error: dbError } = await supabase
       .from("email_connections")
