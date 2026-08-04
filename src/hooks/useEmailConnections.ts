@@ -188,7 +188,7 @@ export function useEmails() {
     try {
       const { data, error } = await supabase
         .from('emails')
-        .select('*')
+        .select('*, email_connections_safe(email_address, provider)')
         .eq('user_id', user.id)
         .order('received_at', { ascending: false })
         .limit(200);
@@ -255,7 +255,7 @@ export function useEmails() {
       const q = `%${query}%`;
       const { data, error } = await supabase
         .from('emails')
-        .select('*')
+        .select('*, email_connections_safe(email_address, provider)')
         .eq('user_id', user.id)
         .or(`subject.ilike.${q},from_email.ilike.${q},from_name.ilike.${q},snippet.ilike.${q}`)
         .order('received_at', { ascending: false })
