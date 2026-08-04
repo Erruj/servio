@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { MailItem, Category, Urgency, Sentiment } from '@/types';
 import { Badge } from '@/components/ui/badge';
