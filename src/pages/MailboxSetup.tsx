@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
 import { ImapConnectionModal } from '@/components/ImapConnectionModal';
 import { SyncErrorBanner } from '@/components/SyncErrorBanner';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { Crown } from 'lucide-react';
 
 
 const MailboxSetup = () => {
@@ -35,6 +37,15 @@ const MailboxSetup = () => {
     refetch,
   } = useEmailConnections();
 
+  const { limits, tierLabel } = useFeatureAccess();
+  const maxMailboxes = limits.maxMailboxes;
+  const mailboxLimitReached =
+    maxMailboxes !== null && activeConnections.length >= maxMailboxes;
+  const limitMessage =
+    maxMailboxes !== null
+      ? `Je hebt het maximum van ${maxMailboxes} mailbox${maxMailboxes === 1 ? '' : 'en'} bereikt voor je ${tierLabel}-plan. Upgrade om meer mailboxen te koppelen.`
+      : '';
+
   useEffect(() => {
     const connected = searchParams.get('connected');
     const error = searchParams.get('error');
@@ -48,11 +59,19 @@ const MailboxSetup = () => {
     }
 
     if (error) {
-      toast({
-        title: "❌ Koppeling mislukt",
-        description: `Er is een fout opgetreden: ${error}`,
-        variant: "destructive",
-      });
+      if (error === 'mailbox_limit_reached') {
+        toast({
+          title: "Mailboxlimiet bereikt",
+          description: "Je abonnement staat geen extra mailbox toe. Upgrade je plan om meer mailboxen te koppelen.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "❌ Koppeling mislukt",
+          description: `Er is een fout opgetreden: ${error}`,
+          variant: "destructive",
+        });
+      }
       navigate('/mailbox-setup', { replace: true });
     }
   }, [searchParams, toast, navigate]);
@@ -277,6 +296,26 @@ const MailboxSetup = () => {
                 Kies een provider om je emails te synchroniseren
               </p>
 
+              {mailboxLimitReached && (
+                <div
+                  role="alert"
+                  className="mb-6 rounded-2xl border border-primary/30 bg-primary/5 p-5"
+                >
+                  <div className="flex items-start gap-3">
+                    <Crown className="mt-0.5 h-5 w-5 text-primary" />
+                    <div className="space-y-3">
+                      <div>
+                        <p className="font-medium text-foreground">Mailboxlimiet bereikt</p>
+                        <p className="text-sm text-muted-foreground">{limitMessage}</p>
+                      </div>
+                      <Button size="sm" onClick={() => navigate('/pricing')}>
+                        Bekijk abonnementen
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Gmail */}
                 <Card className="shadow-card hover:shadow-elevated transition-all duration-200 opacity-70">
@@ -331,12 +370,17 @@ const MailboxSetup = () => {
                           <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
                         ))}
                       </div>
-                      <Button className="w-full" onClick={() => setImapModalOpen(true)}>
+                      <Button
+                        className="w-full"
+                        onClick={() => setImapModalOpen(true)}
+                        disabled={mailboxLimitReached}
+                        title={mailboxLimitReached ? limitMessage : undefined}
+                      >
                         <Link2 className="h-4 w-4 mr-2" />
                         Koppel via IMAP
                       </Button>
                       <p className="text-xs text-muted-foreground text-center">
-                        Werkt met Namecheap, Zoho, Yahoo en meer
+                        {mailboxLimitReached ? limitMessage : 'Werkt met Namecheap, Zoho, Yahoo en meer'}
                       </p>
                     </div>
                   </CardContent>
@@ -363,7 +407,8 @@ const MailboxSetup = () => {
                       <Button
                         className="w-full"
                         onClick={handleConnectOutlook}
-                        disabled={connectingProvider === 'outlook' || isLoading}
+                        disabled={connectingProvider === 'outlook' || isLoading || mailboxLimitReached}
+                        title={mailboxLimitReached ? limitMessage : undefined}
                       >
                         {connectingProvider === 'outlook' ? (
                           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verbinden...</>
@@ -371,6 +416,9 @@ const MailboxSetup = () => {
                           <><Mail className="h-4 w-4 mr-2" />Koppel Outlook</>
                         )}
                       </Button>
+                      {mailboxLimitReached && (
+                        <p className="text-xs text-muted-foreground text-center">{limitMessage}</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

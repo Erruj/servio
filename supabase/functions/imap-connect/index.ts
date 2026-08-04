@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkMailboxLimit } from "../_shared/mailbox-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -169,6 +170,17 @@ serve(async (req) => {
 
     // Save connection
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    // Abonnementslimiet op aantal mailboxen afdwingen (server-side)
+    const limitCheck = await checkMailboxLimit(admin, user.id, "imap", email);
+    if (!limitCheck.allowed) {
+      console.log(`[imap-connect] Mailbox limit reached for ${user.id} (tier=${limitCheck.tier}, limit=${limitCheck.limit})`);
+      return new Response(
+        JSON.stringify({ error: "mailbox_limit_reached", limit: limitCheck.limit }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const encryptedPw = await encryptPassword(password);
 
     const { error: insertError } = await admin.from("email_connections").upsert({
