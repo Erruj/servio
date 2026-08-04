@@ -14,7 +14,9 @@ interface SyncErrorBannerProps {
  */
 export function SyncErrorBanner({ connections, className }: SyncErrorBannerProps) {
   const navigate = useNavigate();
-  const broken = connections.filter((c) => c.sync_error || !c.is_active);
+  // Alleen actieve koppelingen met een echte sync-fout zijn "kapot".
+  // Bewust ontkoppelde mailboxen (is_active = false) zijn geen storing.
+  const broken = connections.filter((c) => c.is_active && c.sync_error);
 
   if (broken.length === 0) return null;
 
