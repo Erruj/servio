@@ -103,6 +103,29 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
             <SelectItem value="blocked">Geblokkeerd</SelectItem>
           </SelectContent>
         </Select>
+        {connections.filter(c => c.is_active !== false).length >= 2 && (
+          <Select
+            value={selectedConnectionId ?? 'all'}
+            onValueChange={(v) => onConnectionChange?.(v === 'all' ? null : v)}
+          >
+            <SelectTrigger className="w-44">
+              <Mail className="h-4 w-4 mr-2 shrink-0" />
+              <SelectValue placeholder="Alle mailboxen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle mailboxen</SelectItem>
+              {connections.filter(c => c.is_active !== false).map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  <span className="flex items-center gap-2">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="truncate max-w-[160px]">{c.email_address}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
 
         {searchQuery && (
           <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground text-xs">
