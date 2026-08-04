@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Crown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +42,8 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
   const [isTesting, setIsTesting] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+  const [limitError, setLimitError] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [testError, setTestError] = useState('');
 
   const resetForm = () => {
@@ -134,6 +138,7 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
 
   const handleConnect = async () => {
     setIsConnecting(true);
+    setLimitError(null);
     try {
       await callImapConnect('connect');
       toast({ title: '✅ E-mail gekoppeld!', description: `${email} is succesvol gekoppeld. Emails worden gesynchroniseerd...` });
@@ -164,7 +169,12 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
         // Silent fail - user can manually sync
       }
     } catch (err: any) {
-      toast({ title: 'Koppelen mislukt', description: err.message, variant: 'destructive' });
+      if (err?.code === 'mailbox_limit_reached') setLimitError(err.message);
+      toast({
+        title: err?.code === 'mailbox_limit_reached' ? 'Mailboxlimiet bereikt' : 'Koppelen mislukt',
+        description: err.message,
+        variant: 'destructive',
+      });
     } finally {
       setIsConnecting(false);
     }
@@ -179,6 +189,23 @@ export function ImapConnectionModal({ open, onOpenChange, onConnected }: ImapCon
             Koppel elk e-mailadres via IMAP/SMTP. Werkt met alle providers.
           </DialogDescription>
         </DialogHeader>
+
+        {limitError && (
+          <div role="alert" className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+            <div className="flex items-start gap-3">
+              <Crown className="mt-0.5 h-5 w-5 text-primary" />
+              <div className="space-y-3">
+                <div>
+                  <p className="font-medium text-foreground">Mailboxlimiet bereikt</p>
+                  <p className="text-sm text-muted-foreground">{limitError}</p>
+                </div>
+                <Button size="sm" onClick={() => { onOpenChange(false); navigate('/pricing'); }}>
+                  Bekijk abonnementen
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-4 mt-2">
           {/* Quick presets */}
