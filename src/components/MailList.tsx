@@ -74,7 +74,11 @@ export function MailList({
     }
 
     switch (filter) {
-      case 'inbox': filtered = filtered.filter(m => hasLabel(m, 'INBOX')); break;
+      case 'inbox':
+        filtered = filtered.filter(m =>
+          !hasLabel(m, 'SPAM') && !hasLabel(m, 'SENT') && !hasLabel(m, 'TRASH')
+        );
+        break;
       case 'unread': filtered = filtered.filter(m => m.unread || hasLabel(m, 'UNREAD')); break;
       case 'starred': filtered = filtered.filter(m => hasLabel(m, 'STARRED')); break;
       case 'important': filtered = filtered.filter(m => hasLabel(m, 'IMPORTANT')); break;
