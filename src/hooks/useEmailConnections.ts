@@ -161,8 +161,8 @@ export function useEmailConnections() {
     };
   };
 
-  const hasConnections = connections.length > 0;
   const activeConnections = connections.filter(c => c.is_active);
+  const hasConnections = activeConnections.length > 0;
 
   return { connections, isLoading, loadError, hasConnections, activeConnections, startGmailOAuth, startOutlookOAuth, disconnectProvider, syncEmails, refetch: fetchConnections };
 }

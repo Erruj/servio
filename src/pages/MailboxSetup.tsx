@@ -24,6 +24,7 @@ const MailboxSetup = () => {
 
   const {
     connections,
+    activeConnections,
     isLoading,
     loadError,
 
@@ -143,7 +144,7 @@ const MailboxSetup = () => {
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Status vernieuwen
                 </Button>
-                {connections.length > 0 && (
+                {activeConnections.length > 0 && (
                   <Button onClick={handleManualSync} variant="outline" size="sm">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Synchroniseer nu
@@ -169,7 +170,7 @@ const MailboxSetup = () => {
               </div>
             )}
 
-            {!isLoading && !loadError && connections.length === 0 && (
+            {!isLoading && !loadError && activeConnections.length === 0 && (
               <div className="rounded-2xl border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
                 Er is momenteel geen mailbox gekoppeld aan je account. Eerder gesynchroniseerde e-mails blijven
                 zichtbaar in je inbox, maar er komt geen nieuwe mail binnen tot je opnieuw koppelt.
@@ -206,7 +207,7 @@ const MailboxSetup = () => {
                             {connection.is_active ? (
                               <span className="text-success">● Actief</span>
                             ) : (
-                              <span className="text-destructive">● Inactief</span>
+                              <span className="text-muted-foreground">● Ontkoppeld</span>
                             )}
                             {connection.last_sync_at && (
                               <span>
@@ -214,16 +215,21 @@ const MailboxSetup = () => {
                               </span>
                             )}
                           </div>
-                          {connection.sync_error && (
+                          {connection.is_active && connection.sync_error && (
                             <div className="flex items-center mt-1 text-sm text-destructive">
                               <AlertCircle className="h-3 w-3 mr-1" />
                               {connection.sync_error}
                             </div>
                           )}
+                          {!connection.is_active && (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              Deze mailbox is ontkoppeld. Je e-mailhistorie blijft bewaard.
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {(connection.sync_error || !connection.is_active) && (
+                        {connection.is_active && connection.sync_error && (
                           <Button
                             variant="default"
                             size="sm"
@@ -233,15 +239,27 @@ const MailboxSetup = () => {
                             Opnieuw koppelen
                           </Button>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => disconnectProvider(connection.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Ontkoppelen
-                        </Button>
+                        {!connection.is_active && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleReconnect(connection.provider)}
+                          >
+                            <Link2 className="h-4 w-4 mr-1" />
+                            Opnieuw verbinden
+                          </Button>
+                        )}
+                        {connection.is_active && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => disconnectProvider(connection.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Ontkoppelen
+                          </Button>
+                        )}
                       </div>
 
                     </div>
@@ -253,7 +271,7 @@ const MailboxSetup = () => {
             {/* Provider Selection */}
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                {connections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je mailbox'}
+                {activeConnections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je mailbox'}
               </h2>
               <p className="text-muted-foreground mb-6">
                 Kies een provider om je emails te synchroniseren
