@@ -45,7 +45,12 @@ const Inbox = () => {
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
   const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails } = useEmails();
 
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+
   const mails: MailItem[] = emails.map(emailToMailItem);
+  const visibleMails: MailItem[] = selectedConnectionId
+    ? mails.filter(m => m.connectionId === selectedConnectionId)
+    : mails;
 
   // Request notification permission on mount
   useEffect(() => { requestNotificationPermission(); }, []);
@@ -200,7 +205,13 @@ const Inbox = () => {
               )}
             </div>
             <div className="flex-1">
-              <Topbar onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
+              <Topbar
+                onSearchChange={handleSearchChange}
+                onFilterChange={handleFilterChange}
+                connections={connections}
+                selectedConnectionId={selectedConnectionId}
+                onConnectionChange={setSelectedConnectionId}
+              />
             </div>
             {hasConnections && (
               <div className="pr-4 flex items-center gap-1">
@@ -278,7 +289,7 @@ const Inbox = () => {
                 <div className="w-[340px] min-w-[340px] flex flex-col">
                   {/* Priority Inbox - top 3 urgent unread */}
                   {(() => {
-                    const priority = mails
+                    const priority = visibleMails
                       .filter(m => m.unread && (m.aiUrgency === 'Hoog' || m.customerSentiment === 'unhappy'))
                       .slice(0, 3);
                     if (priority.length === 0) return null;
@@ -308,7 +319,7 @@ const Inbox = () => {
                     );
                   })()}
                   <div className="flex-1 overflow-hidden">
-                    <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
+                    <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
                       onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
                   </div>
                 </div>
@@ -345,7 +356,7 @@ const Inbox = () => {
                         </Button>
                       </div>
                     )}
-                    <MailList mails={mails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
+                    <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
                       onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
                   </>
                 )}

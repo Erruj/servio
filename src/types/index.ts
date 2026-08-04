@@ -22,6 +22,9 @@ export interface MailItem {
   aiUrgency?: string;
   customerSentiment?: string;
   threadId?: string | null;
+  connectionId?: string | null;
+  connectionEmail?: string;
+  connectionProvider?: string;
 }
 
 export interface AnalysisResult {

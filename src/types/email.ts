@@ -35,9 +35,14 @@ export interface Email {
   customer_sentiment?: string | null;
   thread_summary?: string | null;
   thread_summary_updated_at?: string | null;
+  email_connections_safe?: { email_address: string | null; provider: string | null } | { email_address: string | null; provider: string | null }[] | null;
 }
 
 export function emailToMailItem(email: Email): MailItem {
+  const rel = Array.isArray(email.email_connections_safe)
+    ? email.email_connections_safe[0]
+    : email.email_connections_safe;
+
   return {
     id: email.id,
     from: email.from_name || email.from_email,
@@ -56,5 +61,8 @@ export function emailToMailItem(email: Email): MailItem {
     aiUrgency: email.ai_urgency || undefined,
     customerSentiment: email.customer_sentiment || undefined,
     threadId: email.thread_id,
+    connectionId: email.connection_id ?? null,
+    connectionEmail: rel?.email_address || undefined,
+    connectionProvider: rel?.provider || undefined,
   };
 }

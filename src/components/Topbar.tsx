@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, User, HelpCircle } from 'lucide-react';
+import { Search, Filter, User, HelpCircle, Mail } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/AuthProvider';
@@ -25,9 +25,12 @@ interface TopbarProps {
   onSearchChange?: (query: string) => void;
   onFilterChange?: (filter: string) => void;
   className?: string;
+  connections?: { id: string; email_address: string; provider: string; is_active?: boolean }[];
+  selectedConnectionId?: string | null;
+  onConnectionChange?: (id: string | null) => void;
 }
 
-export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProps) {
+export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [displayName, setDisplayName] = useState('');
   const { user, signOut } = useAuth();
@@ -100,6 +103,29 @@ export function Topbar({ onSearchChange, onFilterChange, className }: TopbarProp
             <SelectItem value="blocked">Geblokkeerd</SelectItem>
           </SelectContent>
         </Select>
+        {connections.filter(c => c.is_active !== false).length >= 2 && (
+          <Select
+            value={selectedConnectionId ?? 'all'}
+            onValueChange={(v) => onConnectionChange?.(v === 'all' ? null : v)}
+          >
+            <SelectTrigger className="w-44">
+              <Mail className="h-4 w-4 mr-2 shrink-0" />
+              <SelectValue placeholder="Alle mailboxen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle mailboxen</SelectItem>
+              {connections.filter(c => c.is_active !== false).map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  <span className="flex items-center gap-2">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="truncate max-w-[160px]">{c.email_address}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
 
         {searchQuery && (
           <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground text-xs">
