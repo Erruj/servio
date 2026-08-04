@@ -151,7 +151,6 @@ const Inbox = () => {
 
   const handleFilterChange = (f: string) => {
     setFilter(f);
-    localStorage.setItem('servio_inbox_filter', f);
   };
 
   const hasAutoSelectedRef = useRef(false);
