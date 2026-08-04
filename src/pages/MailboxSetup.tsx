@@ -24,6 +24,7 @@ const MailboxSetup = () => {
 
   const {
     connections,
+    activeConnections,
     isLoading,
     loadError,
 
@@ -143,7 +144,7 @@ const MailboxSetup = () => {
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Status vernieuwen
                 </Button>
-                {connections.length > 0 && (
+                {activeConnections.length > 0 && (
                   <Button onClick={handleManualSync} variant="outline" size="sm">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Synchroniseer nu
@@ -169,7 +170,7 @@ const MailboxSetup = () => {
               </div>
             )}
 
-            {!isLoading && !loadError && connections.length === 0 && (
+            {!isLoading && !loadError && activeConnections.length === 0 && (
               <div className="rounded-2xl border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
                 Er is momenteel geen mailbox gekoppeld aan je account. Eerder gesynchroniseerde e-mails blijven
                 zichtbaar in je inbox, maar er komt geen nieuwe mail binnen tot je opnieuw koppelt.
@@ -270,7 +271,7 @@ const MailboxSetup = () => {
             {/* Provider Selection */}
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                {connections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je mailbox'}
+                {activeConnections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je mailbox'}
               </h2>
               <p className="text-muted-foreground mb-6">
                 Kies een provider om je emails te synchroniseren
