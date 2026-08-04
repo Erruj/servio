@@ -208,6 +208,11 @@ const MailboxSetup = () => {
                     <CheckCircle className="h-6 w-6 mr-3 text-success" />
                     Gekoppelde accounts
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {maxMailboxes === null
+                      ? `${activeConnections.length} mailbox${activeConnections.length === 1 ? '' : 'en'} gekoppeld (onbeperkt met je ${tierLabel}-plan)`
+                      : `${activeConnections.length} van de ${maxMailboxes} mailbox${maxMailboxes === 1 ? '' : 'en'} gekoppeld (${tierLabel}-plan)`}
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {connections.map((connection) => (
