@@ -174,7 +174,7 @@ const Inbox = () => {
   const isLoading = connectionsLoading || emailsLoading;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <Helmet>
         <title>Inbox – Servio</title>
         <meta name="description" content="Je AI-gestuurde Servio inbox: e-mails categoriseren, beantwoorden en prioriteren." />
@@ -188,10 +188,10 @@ const Inbox = () => {
       <SyncErrorBanner connections={connections} />
 
       
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-h-0">
         <Sidebar />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center border-b border-border">
             <div className="pl-4 flex items-center gap-2">
               <Button onClick={() => setComposeOpen(true)} size="sm" className="gap-2">
