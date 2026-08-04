@@ -37,6 +37,7 @@ export interface Email {
   customer_sentiment?: string | null;
   thread_summary?: string | null;
   thread_summary_updated_at?: string | null;
+  email_connections_safe?: { email_address: string | null; provider: string | null } | { email_address: string | null; provider: string | null }[] | null;
 }
 
 export function useEmailConnections() {
