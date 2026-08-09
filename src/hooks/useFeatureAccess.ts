@@ -94,17 +94,20 @@ export function useFeatureAccess(): FeatureAccess {
     // Active trial → Pro features
     if (isOnTrial) return 'trial';
 
-    // Trial expired, no sub → Starter (locked down)
-    if (isTrialExpired()) return 'starter';
+    // Trial verlopen of geen bekende status → gratis laag (spiegelt server-side
+    // afdwinging in supabase/functions/_shared/mailbox-limit.ts, waar elke
+    // status behalve 'active'/'trial' als 'free' geldt)
+    if (isTrialExpired()) return 'free';
 
     return 'none';
   }, [isLoading, isOnTrial, hasActiveSubscription, subscriptionStatus, isTrialExpired]);
 
   const effectiveTier = useMemo(() => {
     if (tier === 'trial') return 'pro';
-    if (tier === 'none') return 'starter';
+    if (tier === 'none') return 'free';
     return tier;
   }, [tier]);
+
 
   const isAtLeast = (required: SubscriptionTier): boolean => {
     const order: SubscriptionTier[] = ['free', 'starter', 'pro', 'business'];
