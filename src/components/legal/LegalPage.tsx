@@ -50,36 +50,44 @@ export function LegalPage({ docKey, path, seoTitleNl, seoTitleEn, seoDescription
         <main className="pt-32 pb-20">
           <div className="container mx-auto px-6">
             <div className="max-w-3xl mx-auto">
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground mb-8">{title}</h1>
+              <Reveal>
+                <h1 className="text-4xl font-semibold tracking-tight text-foreground mb-8">{title}</h1>
+              </Reveal>
 
               <div className="prose prose-neutral dark:prose-invert max-w-none">
-                <p className="text-lg text-muted-foreground mb-8">
-                  {lastUpdated} {new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
-                </p>
+                <Reveal delay={0.05}>
+                  <p className="text-lg text-muted-foreground mb-8">
+                    {lastUpdated} {LAST_REVISED.toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </Reveal>
 
-                {sections.map((section, i) => (
-                  <section key={i} className="mb-8">
-                    <h2 className="text-2xl font-semibold text-foreground mb-4">{section.h}</h2>
-                    {section.p && (
-                      <p
-                        className="text-muted-foreground leading-relaxed mb-4"
-                        dangerouslySetInnerHTML={{
-                          __html: section.p.replace(
-                            /info@getservio\.co/g,
-                            '<a href="mailto:info@getservio.co" class="text-primary hover:underline">info@getservio.co</a>'
-                          ),
-                        }}
-                      />
-                    )}
-                    {section.list && (
-                      <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                        {section.list.map((item, j) => (
-                          <li key={j}>{item}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </section>
-                ))}
+                <StaggerGroup>
+                  {sections.map((section, i) => (
+                    <StaggerItem key={i}>
+                      <section className="mb-8">
+                        <h2 className="text-2xl font-semibold text-foreground mb-4">{section.h}</h2>
+                        {section.p && (
+                          <p
+                            className="text-muted-foreground leading-relaxed mb-4"
+                            dangerouslySetInnerHTML={{
+                              __html: section.p.replace(
+                                /info@getservio\.co/g,
+                                '<a href="mailto:info@getservio.co" class="text-primary hover:underline">info@getservio.co</a>'
+                              ),
+                            }}
+                          />
+                        )}
+                        {section.list && (
+                          <ul className="list-disc list-inside text-muted-foreground space-y-2">
+                            {section.list.map((item, j) => (
+                              <li key={j}>{item}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </section>
+                    </StaggerItem>
+                  ))}
+                </StaggerGroup>
               </div>
             </div>
           </div>
