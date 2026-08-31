@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { timingSafeEqual } from "../_shared/security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,7 +22,7 @@ Deno.serve(async (req) => {
   // and writes data across all users using the service role.
   const CRON_SECRET = Deno.env.get("CRON_SECRET");
   const cronHeader = req.headers.get("x-cron-secret");
-  if (!CRON_SECRET || cronHeader !== CRON_SECRET) {
+  if (!CRON_SECRET || !cronHeader || !timingSafeEqual(cronHeader, CRON_SECRET)) {
     return new Response(JSON.stringify({ error: "Niet geautoriseerd" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -39,4 +39,13 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = false
   [functions.mcp]
     verify_jwt = false
-
+  [functions.analyze-document]
+    verify_jwt = true
+  [functions.analyze-invoice]
+    verify_jwt = true
+  [functions.extract-document-data]
+    verify_jwt = true
+  [functions.proactive-insights]
+    verify_jwt = false
+  [functions.send-review-requests]
+    verify_jwt = false

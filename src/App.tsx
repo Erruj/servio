@@ -26,7 +26,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Statistics = lazy(() => import("./pages/Statistics"));
 const Templates = lazy(() => import("./pages/Templates"));
 const Settings = lazy(() => import("./pages/Settings"));
-const Pricing = lazy(() => import("./pages/Pricing"));
+
 const Signup = lazy(() => import("./pages/Signup"));
 const MailboxSetup = lazy(() => import("./pages/MailboxSetup"));
 const Analytics = lazy(() => import("./pages/Analytics"));
@@ -292,7 +292,7 @@ const App = () => (
               <ErrorBoundary>
                 <Toaster />
                 <Sonner />
-                <BrowserRouter>
+                <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                   <AppRoutes />
                   <MobileBottomNav />
                   <DebugDrawer />

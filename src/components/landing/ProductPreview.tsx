@@ -286,8 +286,8 @@ function DashboardScene() {
           <div className="text-[14px] font-semibold">Financieel overzicht</div>
           <div className="text-[11px] text-muted-foreground">November 2026</div>
         </div>
-        <div className="text-[10px] px-2 py-1 rounded-md bg-success/10 text-success font-medium">
-          Live data
+        <div className="text-[10px] px-2 py-1 rounded-md bg-muted text-muted-foreground font-medium">
+          Voorbeelddata
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkMailboxLimit } from "../_shared/mailbox-limit.ts";
+import { safeLogBody } from "../_shared/security.ts";
 
 async function hmacSign(data: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -94,7 +95,7 @@ serve(async (req) => {
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
-      console.error("Token exchange failed:", errorText);
+      console.error("Token exchange failed:", safeLogBody(errorText));
       return Response.redirect(`${frontendUrl}/mailbox-setup?error=token_exchange_failed`);
     }
 
