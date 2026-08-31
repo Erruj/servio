@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { timingSafeEqual } from "../_shared/security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +25,7 @@ serve(async (req) => {
     req.headers.get("x-cron-secret") ||
     (req.headers.get("Authorization") || "").replace("Bearer ", "");
 
-  if (!CRON_SECRET || provided !== CRON_SECRET) {
+  if (!CRON_SECRET || !timingSafeEqual(provided, CRON_SECRET)) {
     return new Response(JSON.stringify({ error: "Niet geautoriseerd." }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

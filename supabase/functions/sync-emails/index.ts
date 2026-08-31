@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { safeLogBody, timingSafeEqual } from "../_shared/security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,7 +27,7 @@ async function refreshGoogleToken(refreshToken: string): Promise<{ access_token:
     }),
   });
   if (!response.ok) {
-    console.error("[sync-emails] Failed to refresh Google token:", await response.text());
+    console.error("[sync-emails] Failed to refresh Google token:", safeLogBody(await response.text()));
     return null;
   }
   return response.json();
@@ -44,7 +45,7 @@ async function refreshMicrosoftToken(refreshToken: string): Promise<{ access_tok
     }),
   });
   if (!response.ok) {
-    console.error("[sync-emails] Failed to refresh Microsoft token:", await response.text());
+    console.error("[sync-emails] Failed to refresh Microsoft token:", safeLogBody(await response.text()));
     return null;
   }
   return response.json();
@@ -92,7 +93,7 @@ async function fetchGmailMessages(accessToken: string, options: GmailFetchOption
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         if (!msgResponse.ok) {
-          console.error(`[sync-emails] Failed to fetch Gmail message ${msg.id}:`, await msgResponse.text());
+          console.error(`[sync-emails] Failed to fetch Gmail message ${msg.id}:`, safeLogBody(await msgResponse.text()));
           return null;
         }
         return msgResponse.json();
@@ -838,7 +839,7 @@ serve(async (req) => {
     const CRON_SECRET = Deno.env.get("CRON_SECRET");
     const authHeader = req.headers.get("Authorization");
     const providedCronSecret = req.headers.get("x-cron-secret") || "";
-    const isCronRequest = Boolean(CRON_SECRET) && providedCronSecret === CRON_SECRET;
+    const isCronRequest = Boolean(CRON_SECRET) && Boolean(providedCronSecret) && timingSafeEqual(providedCronSecret!, CRON_SECRET!);
 
     if (!isCronRequest && !authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization header" }), {

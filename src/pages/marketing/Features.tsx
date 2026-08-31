@@ -21,8 +21,8 @@ export default function Features() {
     ? 'Features | Servio AI Business Assistant'
     : 'Features | Servio AI Bedrijfsassistent';
   const description = isEn
-    ? 'Discover all Servio features: AI inbox that handles 80% of your emails, automatic invoice processing, and a real-time financial dashboard for freelancers & SMBs.'
-    : 'Ontdek alle features van Servio: AI-gestuurde inbox die 80% van je mails beantwoordt, automatische factuurverwerking, en realtime financieel dashboard voor ZZP & MKB.';
+    ? 'Discover all Servio features: AI inbox that drafts replies for you, automatic invoice processing, and a real-time financial dashboard for freelancers & SMBs.'
+    : 'Ontdek alle features van Servio: AI-gestuurde inbox die je antwoorden voorbereidt, automatische factuurverwerking, en realtime financieel dashboard voor ZZP & MKB.';
 
   return (
     <>

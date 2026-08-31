@@ -4,6 +4,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import JSZip from 'npm:jszip@3.10.1';
+import { timingSafeEqual } from "../_shared/security.ts";
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -66,7 +67,7 @@ Deno.serve(async (req: Request) => {
     // AuthZ: either a valid cron secret (server-to-server) OR an authenticated user
     // (who can only export their own data)
     let callerUserId: string | null = null;
-    const isCron = !!CRON_SECRET && cronHeader === CRON_SECRET;
+    const isCron = !!CRON_SECRET && !!cronHeader && timingSafeEqual(cronHeader, CRON_SECRET);
 
     if (!isCron) {
       if (!authHeader) {

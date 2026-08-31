@@ -20,8 +20,11 @@ const PRODUCT_TIER_MAP: Record<string, string> = {
   prod_TUHkdkFCR6tlSm: "pro",
 };
 
+// Bij een ACTIEF abonnement zonder (bekend) product-ID valt de gebruiker terug op
+// "pro" — identiek aan de fallback in check-subscription/index.ts, zodat client en
+// server nooit een andere limiet beloven.
 function tierFromProductId(productId?: string | null): string {
-  return productId ? (PRODUCT_TIER_MAP[productId] || "free") : "free";
+  return productId ? (PRODUCT_TIER_MAP[productId] || "pro") : "pro";
 }
 
 export interface MailboxLimitResult {
