@@ -1,7 +1,15 @@
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
+import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 import { SeoHead } from '@/components/SeoHead';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * Datum van de laatste inhoudelijke wijziging van de juridische documenten.
+ * Bewust een vaste datum: eerder werd hier new Date() gebruikt, waardoor de
+ * pagina elke dag "vandaag" toonde als laatste wijziging.
+ */
+const LAST_REVISED = new Date('2026-01-15T00:00:00Z');
 
 interface Section {
   h: string;
