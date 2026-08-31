@@ -1322,7 +1322,7 @@ const resources = {
         legal: {
           lastUpdated: 'Laatst bijgewerkt:',
           privacy: {
-            title: 'Privacy Policy',
+            title: 'Privacyverklaring',
             sections: [
               { h: '1. Inleiding', p: 'Servio ("wij", "ons", "onze") respecteert de privacy van alle gebruikers van onze diensten. Deze privacyverklaring legt uit welke gegevens wij verzamelen, hoe wij deze gebruiken, en welke rechten u heeft met betrekking tot uw persoonsgegevens.' },
               { h: '2. Gegevens die wij verzamelen', p: 'Wij verzamelen de volgende categorieën persoonsgegevens:', list: ['Accountgegevens: naam, e-mailadres, bedrijfsnaam', 'Gebruiksgegevens: hoe u onze diensten gebruikt', 'Communicatiegegevens: e-mails die via ons platform worden verwerkt', 'Financiële gegevens: facturen en bonnetjes die u uploadt'] },
