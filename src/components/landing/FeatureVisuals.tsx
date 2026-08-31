@@ -27,6 +27,7 @@ function Frame({ children, label }: { children: React.ReactNode; label?: string 
         {label && (
           <span className="ml-2 text-[10px] text-muted-foreground font-medium">{label}</span>
         )}
+        <span className="ml-auto text-[9px] text-muted-foreground/70 font-medium">Voorbeelddata</span>
       </div>
       <div className="relative h-[calc(100%-1.75rem)]">{children}</div>
     </div>
