@@ -216,8 +216,9 @@ serve(async (req) => {
     } else {
       logStep("No active subscription found");
       
-      // Update status if trial expired
-      if (trialExpired) {
+      // Update status if trial expired. In TEST-mode nooit downgraden: live
+      // klanten mogen niet geraakt worden terwijl we met testsleutels werken.
+      if (trialExpired && stripeMode() === 'live') {
         await supabaseClient
           .from('user_settings')
           .update({ subscription_status: 'expired' })
