@@ -30,6 +30,10 @@ export interface EmailLayoutProps {
   buttonUrl?: string
   code?: string
   note?: string
+  subNote?: string
+  warning?: string
+  signature?: string
+  icon?: string
   footnote?: string
 }
 
@@ -41,6 +45,10 @@ export const EmailLayout = ({
   buttonUrl,
   code,
   note,
+  subNote,
+  warning,
+  signature,
+  icon,
   footnote,
 }: EmailLayoutProps) => (
   <Html lang="nl" dir="ltr">
@@ -62,7 +70,10 @@ export const EmailLayout = ({
 
           <Hr style={styles.divider} />
 
+          {icon ? <Text style={styles.icon}>{icon}</Text> : null}
+
           <Heading style={styles.h1}>{heading}</Heading>
+
 
           {paragraphs.map((paragraph, index) => (
             <Text key={index} style={styles.text}>
@@ -81,6 +92,13 @@ export const EmailLayout = ({
           ) : null}
 
           {note ? <Text style={styles.note}>{note}</Text> : null}
+
+          {subNote ? <Text style={styles.subNote}>{subNote}</Text> : null}
+
+          {warning ? <Text style={styles.warning}>{warning}</Text> : null}
+
+          {signature ? <Text style={styles.signature}>{signature}</Text> : null}
+
 
           {footnote ? (
             <>

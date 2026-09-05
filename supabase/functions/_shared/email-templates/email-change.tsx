@@ -35,7 +35,8 @@ export const EmailChangeEmail = ({
       buttonLabel={t.button}
       buttonUrl={confirmationUrl}
       note={t.note}
-      footnote={t.footnote}
+      warning={t.warning}
+      signature={t.signature}
     />
   )
 }

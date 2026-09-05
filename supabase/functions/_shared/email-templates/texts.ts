@@ -14,45 +14,50 @@
 export const emailTexts = {
   // ── 1. Registratie: welkomst-/bevestigingsmail ──────────────────────────
   signup: {
-    subject: 'Bevestig je e-mailadres voor Servio',
-    preview: 'Nog één klik en je account is actief',
-    heading: 'Welkom bij Servio',
+    subject: 'Welkom bij Servio! Nog één ding...',
+    preview: 'Bevestig je e-mailadres en we zijn klaar om te starten.',
+    icon: '🎉',
+    heading: 'Welkom bij Servio!',
     paragraphs: [
-      'Leuk dat je erbij bent. Servio neemt je mailbox en administratie uit handen, zodat jij je op je werk kunt richten.',
-      'Bevestig hieronder je e-mailadres ({email}) om je account te activeren.',
+      'Fijn dat je er bent. Nog één stapje voor je aan de slag kan: bevestig je e-mailadres, dan weten we zeker dat we jou (en niemand anders) in je mailbox mogen laten kijken.',
     ],
     button: 'E-mailadres bevestigen',
     note: 'Deze link is 24 uur geldig.',
+    subNote: 'Daarna regelt Servio de rest — jij focust weer op waar je goed in bent.',
+    signature: 'Veel succes (en plezier),\nHet Servio-team 👋',
     footnote: 'Heb je geen account aangemaakt? Dan kun je deze e-mail negeren.',
   },
 
   // ── 2. Wachtwoord vergeten ──────────────────────────────────────────────
   recovery: {
-    subject: 'Wachtwoord opnieuw instellen – Servio',
-    preview: 'Stel binnen 24 uur een nieuw wachtwoord in',
-    heading: 'Wachtwoord opnieuw instellen',
+    subject: 'Zullen we dat wachtwoord even resetten?',
+    preview: 'Één klik en je kunt weer aan de slag.',
+    icon: '🔑',
+    heading: 'Wachtwoord vergeten? Overkomt de besten.',
     paragraphs: [
-      'Je hebt gevraagd om je wachtwoord te resetten. Klik op de knop hieronder om een nieuw wachtwoord in te stellen.',
+      'Geen paniek — het gebeurt de beste ondernemers. Klik op de knop hieronder om een nieuw wachtwoord in te stellen, dan kun je zo weer verder met je zaken.',
     ],
     button: 'Nieuw wachtwoord instellen',
-    note: 'Deze link is 24 uur geldig en kan één keer worden gebruikt.',
+    note: 'Deze link is 24 uur geldig en werkt maar één keer — daarna verloopt-ie vanzelf.',
+    signature: 'Tot snel,\nHet Servio-team 👋',
     footnote:
-      'Heb je dit niet zelf aangevraagd? Dan kun je deze e-mail negeren; je wachtwoord blijft ongewijzigd.',
+      'Niks aangevraagd? Dan hoef je niks te doen — je wachtwoord blijft gewoon zoals het was. Iemand anders typte waarschijnlijk het verkeerde e-mailadres.',
   },
 
   // ── 3. E-mailadres wijzigen ─────────────────────────────────────────────
   emailChange: {
-    subject: 'Bevestig je nieuwe e-mailadres – Servio',
-    preview: 'Bevestig de wijziging van je e-mailadres',
-    heading: 'Nieuw e-mailadres bevestigen',
+    subject: 'Je e-mailadres is gewijzigd',
+    preview: 'Je e-mailadres is gewijzigd',
+    heading: 'Je e-mailadres is aangepast',
     paragraphs: [
-      'Je hebt gevraagd om het e-mailadres van je Servio-account te wijzigen van {email} naar {nieuwEmail}.',
-      'Bevestig de wijziging hieronder. Daarna log je in met je nieuwe e-mailadres.',
+      'We laten het je even weten: het e-mailadres van je Servio-account is zojuist gewijzigd naar dit adres. Was jij dat? Dan hoef je niks te doen.',
+      'Bevestig de wijziging hieronder om het adres definitief te activeren.',
     ],
     button: 'Wijziging bevestigen',
+    warning:
+      'Heb je dit niet zelf gedaan? Neem dan meteen contact met ons op via info@getservio.co, dan kijken we samen wat er aan de hand is.',
     note: 'Deze link is 24 uur geldig.',
-    footnote:
-      'Heb je dit niet zelf aangevraagd? Neem dan contact met ons op via info@getservio.co.',
+    signature: 'Groetjes,\nHet Servio-team 👋',
   },
 
   // ── 4. Inloglink (magic link) ───────────────────────────────────────────
