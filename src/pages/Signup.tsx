@@ -56,7 +56,7 @@ const Signup = () => {
     
     try {
       const validated = signUpSchema.parse(formData);
-      const { error } = await signUp(validated.email, validated.password, validated.fullName);
+      const { error, needsEmailConfirmation } = await signUp(validated.email, validated.password, validated.fullName);
       
       if (error) {
         if (error.message.includes('already registered')) {
@@ -66,12 +66,14 @@ const Signup = () => {
         } else {
           setErrors({ form: 'Er is een fout opgetreden. Probeer het opnieuw.' });
         }
+      } else if (needsEmailConfirmation) {
+        navigate('/verify-email', { state: { email: validated.email } });
       } else {
         toast({
           title: "Account aangemaakt!",
-          description: "Controleer je e-mail om je account te verifiëren."
+          description: "Je bent direct ingelogd."
         });
-        navigate('/login');
+        navigate('/dashboard');
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

@@ -33,6 +33,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const Profile = lazy(() => import("./pages/Profile"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
@@ -131,6 +132,7 @@ function AppRoutes() {
       <Route path="/login" element={<Auth />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* OAuth consent for MCP clients */}
       <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
