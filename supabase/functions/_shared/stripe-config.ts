@@ -26,7 +26,7 @@ export function stripeMode(): StripeMode {
 export function stripeSecretKey(): string {
   const mode = stripeMode();
   const key = mode === "test"
-    ? Deno.env.get("STRIPE_SECRET_KEY_TEST")
+    ? (Deno.env.get("STRIPE_SECRET_KEY_TEST") || Deno.env.get("STRIPE_TEST_API_KEY"))
     : (Deno.env.get("STRIPE_SECRET_KEY_LIVE") || Deno.env.get("STRIPE_SECRET_KEY"));
   if (!key) {
     throw new Error(
