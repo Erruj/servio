@@ -10,6 +10,14 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+const periodEndIso = (subscription: any): string | null => {
+  // Vanaf 2025-08-27.basil staat current_period_end op de subscription items.
+  const raw = subscription?.current_period_end ?? subscription?.items?.data?.[0]?.current_period_end ?? null;
+  if (!raw) return null;
+  const d = new Date(raw * 1000);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+};
+
 serve(async (req) => {
   const corsHeaders = buildCorsHeaders(req, CORS_ALLOW_HEADERS);
   if (req.method === "OPTIONS") {
@@ -98,7 +106,7 @@ serve(async (req) => {
           if (activeSubs.data.length > 0) {
             const sub = activeSubs.data[0];
             const productId = sub.items.data[0].price.product as string;
-            const subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+            const subscriptionEnd = periodEndIso(sub);
             logStep("Free flag overridden by active Stripe subscription", { subId: sub.id });
             await supabaseClient
               .from('user_settings')
@@ -176,7 +184,7 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      subscriptionEnd = periodEndIso(subscription);
       productId = subscription.items.data[0].price.product as string;
       subscriptionStatus = 'active';
       
