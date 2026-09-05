@@ -115,10 +115,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (roleError || !roleData) {
               console.warn('Role not found, inserting owner role as fallback');
               // Fallback: manually insert owner role
-              await supabase.from('user_roles').insert({
+              await supabase.from('user_roles').insert([{
                 user_id: data.user!.id,
-                role: 'owner'
-              });
+                role: 'owner',
+                organization_id: data.user!.id,
+              }]);
             }
           } catch (e) {
             console.error('Failed to verify/insert role:', e);
