@@ -93,7 +93,9 @@ const Settings = () => {
     try {
       const { data, error } = await supabase
         .from('user_settings')
-        .select('*')
+        // Never select('*') here: clients have no SELECT privilege on the
+        // stripe_* / subscription_product_id columns (403).
+        .select('language, theme, ai_tone, auto_reply_enabled, auto_categorize, auto_vat_calculation, monthly_summary, auto_export_enabled, auto_process_invoice_attachments, tag_suggestions')
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
