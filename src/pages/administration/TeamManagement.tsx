@@ -14,7 +14,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useAuth } from '@/components/AuthProvider';
-import { Loader2, Mail, Trash2, UserPlus, Users } from 'lucide-react';
+import { AlertCircle, Loader2, Mail, Trash2, UserPlus, Users } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 interface TeamMember {
