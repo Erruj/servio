@@ -23,8 +23,6 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = false
   [functions.send-subscription-email]
     verify_jwt = false
-  [functions.mailtest-sub]
-    verify_jwt = false
   [functions.sync-emails]
     verify_jwt = false
   [functions.sync-all-connections]
