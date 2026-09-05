@@ -49,5 +49,3 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = false
   [functions.send-review-requests]
     verify_jwt = false
-  [functions.e2e-stripe-test]
-    verify_jwt = false
