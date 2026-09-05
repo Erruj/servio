@@ -1049,6 +1049,7 @@ export type Database = {
           subscription_current_period_end: string | null
           subscription_product_id: string | null
           subscription_status: string | null
+          subscription_tier: string | null
           tag_suggestions: boolean | null
           theme: string | null
           trial_end_date: string | null
@@ -1083,6 +1084,7 @@ export type Database = {
           subscription_current_period_end?: string | null
           subscription_product_id?: string | null
           subscription_status?: string | null
+          subscription_tier?: string | null
           tag_suggestions?: boolean | null
           theme?: string | null
           trial_end_date?: string | null
@@ -1117,6 +1119,7 @@ export type Database = {
           subscription_current_period_end?: string | null
           subscription_product_id?: string | null
           subscription_status?: string | null
+          subscription_tier?: string | null
           tag_suggestions?: boolean | null
           theme?: string | null
           trial_end_date?: string | null
