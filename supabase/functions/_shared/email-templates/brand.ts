@@ -86,6 +86,25 @@ export const styles = {
     padding: '14px 16px',
     margin: '20px 0 0',
   },
+  detailsBox: {
+    backgroundColor: brand.pageBackground,
+    borderRadius: '12px',
+    padding: '18px 20px',
+    margin: '0 0 4px',
+  },
+  detailRow: {
+    fontSize: '14px',
+    color: brand.bodyText,
+    lineHeight: '1.6',
+    margin: '0 0 6px',
+  },
+  detailLabel: {
+    color: brand.mutedText,
+  },
+  detailValue: {
+    color: brand.heading,
+    fontWeight: '600' as const,
+  },
   signature: {
     fontSize: '15px',
     color: brand.bodyText,
