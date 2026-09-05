@@ -27,21 +27,26 @@ export function OnboardingChecklist() {
 
   useEffect(() => {
     if (!user || dismissed) return;
+    let cancelled = false;
     (async () => {
-      const [conn, sentEmails, invoices, profile] = await Promise.all([
-        supabase.from('email_connections').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', true),
-        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('profiles').select('company_name').eq('id', user.id).maybeSingle(),
-      ]);
+      // Eén gebundelde RPC in plaats van losse count-requests per tabel
+      const { data, error } = await supabase.rpc('get_onboarding_status');
+      if (cancelled || error || !data) return;
+      const status = data as {
+        connections?: number;
+        read_emails?: number;
+        invoices?: number;
+        has_company?: boolean;
+      };
       setItems([
         { key: 'account', label: 'Account aangemaakt', done: true },
-        { key: 'mailbox', label: 'Mailbox gekoppeld', done: (conn.count || 0) > 0, href: '/mailbox-setup' },
-        { key: 'reply', label: 'Eerste email beantwoord', done: (sentEmails.count || 0) > 0, href: '/app' },
-        { key: 'invoice', label: 'Eerste factuur geüpload', done: (invoices.count || 0) > 0, href: '/administration/invoices' },
-        { key: 'profile', label: 'Profiel ingevuld', done: !!profile.data?.company_name, href: '/profile' },
+        { key: 'mailbox', label: 'Mailbox gekoppeld', done: (status.connections || 0) > 0, href: '/mailbox-setup' },
+        { key: 'reply', label: 'Eerste email beantwoord', done: (status.read_emails || 0) > 0, href: '/app' },
+        { key: 'invoice', label: 'Eerste factuur geüpload', done: (status.invoices || 0) > 0, href: '/administration/invoices' },
+        { key: 'profile', label: 'Profiel ingevuld', done: !!status.has_company, href: '/profile' },
       ]);
     })();
+    return () => { cancelled = true; };
   }, [user, dismissed]);
 
   if (dismissed || items.length === 0) return null;

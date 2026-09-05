@@ -1175,6 +1175,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_onboarding_status: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
