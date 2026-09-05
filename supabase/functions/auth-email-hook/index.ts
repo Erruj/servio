@@ -23,8 +23,11 @@ const json = (body: unknown, status = 200) =>
 // ─── Configuratie ────────────────────────────────────────────────────────────
 const SITE_NAME = 'Servio'
 const ROOT_DOMAIN = 'getservio.co'
-const FROM_ADDRESS = `Servio <noreply@${ROOT_DOMAIN}>`
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+// Verzenddomein dat in Resend is geverifieerd
+const SENDER_DOMAIN = 'notify.getservio.co'
+const FROM_ADDRESS = `Servio <noreply@${SENDER_DOMAIN}>`
+const REPLY_TO = `info@${ROOT_DOMAIN}`
+const RESEND_API_URL = 'https://api.resend.com/emails'
 
 // Onderwerpregels staan in ../_shared/email-templates/texts.ts
 const EMAIL_SUBJECTS: Record<string, string> = {
@@ -100,21 +103,25 @@ async function verifySignature(req: Request, rawBody: string, secret: string): P
     .some((sig) => sig.length > 0 && timingSafeEqual(sig, expected))
 }
 
-// ─── Versturen via Resend (Lovable connector gateway) ────────────────────────
+// ─── Versturen via de Resend API (eigen API-key) ─────────────────────────────
 async function sendViaResend(to: string, subject: string, html: string, text: string) {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
-  if (!lovableApiKey) throw new Error('LOVABLE_API_KEY is niet geconfigureerd')
   if (!resendApiKey) throw new Error('RESEND_API_KEY is niet geconfigureerd')
 
-  const response = await fetch(`${GATEWAY_URL}/emails`, {
+  const response = await fetch(RESEND_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${lovableApiKey}`,
-      'X-Connection-Api-Key': resendApiKey,
+      Authorization: `Bearer ${resendApiKey}`,
     },
-    body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html, text }),
+    body: JSON.stringify({
+      from: FROM_ADDRESS,
+      to: [to],
+      reply_to: REPLY_TO,
+      subject,
+      html,
+      text,
+    }),
   })
 
   const body = await response.text()
