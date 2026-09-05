@@ -240,16 +240,20 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-3">
-                {(quickActions as any[]).map((a: any, i: number) => (
-                  <Button key={i} variant="outline" className="h-auto p-3 flex items-center justify-start gap-3" onClick={() => navigate(a.href)}>
-                    <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0"><Zap className="h-4 w-4 text-primary" /></div>
-                    <div className="text-left flex-1">
-                      <h3 className="font-semibold text-foreground text-sm">{a.label}</h3>
-                      <p className="text-xs text-muted-foreground">{a.desc || ''}</p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                ))}
+                {(quickActions as any[]).map((a: any, i: number) => {
+                  const isInbox = a.label === 'Inbox' || a.href === '/app';
+                  const desc = isInbox ? `${stats.unreadEmails} ongelezen` : (a.desc || '');
+                  return (
+                    <Button key={i} variant="outline" className="h-auto p-3 flex items-center justify-start gap-3" onClick={() => navigate(a.href)}>
+                      <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0"><Zap className="h-4 w-4 text-primary" /></div>
+                      <div className="text-left flex-1">
+                        <h3 className="font-semibold text-foreground text-sm">{a.label}</h3>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
