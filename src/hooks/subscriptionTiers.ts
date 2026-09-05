@@ -35,7 +35,7 @@ export const SUBSCRIPTION_TIERS = {
   },
   business: {
     product_id: 'prod_U9FHgm6gn3Iq50',
-    price_id: 'price_1TAwnFDME8sDkzM9EHWmKOfm'.replace('1TAwnFDME8sDkzM9EHWmKOfm', '1TAwnFDME8sDkzM9TdEvv5zC'),
+    price_id: 'price_1TAwnFDME8sDkzM9TdEvv5zC',
     name: 'Business',
     price: 79.99,
     features: [

@@ -46,6 +46,8 @@ const LEGACY_PRODUCT_TIER_MAP: Record<string, SubscriptionTier> = {
   prod_TUHktvw98PDTTn: 'starter',
   prod_TUHkdkFCR6tlSm: 'pro',
   prod_TUHl8Gz4fh6OIL: 'business',
+  prod_U9FEn3lMyxZ6xR: 'starter',
+  prod_U9FHgm6gn3Iq50: 'business',
 };
 
 // Map product IDs to tier names

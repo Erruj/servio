@@ -13,11 +13,14 @@ const MAILBOX_LIMITS: Record<string, number | null> = {
 };
 
 const PRODUCT_TIER_MAP: Record<string, string> = {
-  prod_TUHktvw98PDTTn: "starter",
+  // actuele live product-ID's (Stripe → Producten)
+  prod_U9FEn3lMyxZ6xR: "starter",
   prod_U9FG9hWuBCWWMc: "pro",
-  prod_TUHl8Gz4fh6OIL: "business",
+  prod_U9FHgm6gn3Iq50: "business",
   // legacy product-ID's (backward compatibility)
+  prod_TUHktvw98PDTTn: "starter",
   prod_TUHkdkFCR6tlSm: "pro",
+  prod_TUHl8Gz4fh6OIL: "business",
 };
 
 // Bij een ACTIEF abonnement zonder (bekend) product-ID valt de gebruiker terug op
