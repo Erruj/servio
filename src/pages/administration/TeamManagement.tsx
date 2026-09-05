@@ -14,7 +14,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useAuth } from '@/components/AuthProvider';
-import { Loader2, Mail, Trash2, UserPlus, Users } from 'lucide-react';
+import { AlertCircle, Loader2, Mail, Trash2, UserPlus, Users } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 interface TeamMember {
@@ -33,6 +33,7 @@ export default function TeamManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<string>('agent');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     loadTeamMembers();
@@ -43,25 +44,28 @@ export default function TeamManagement() {
 
     try {
       setLoading(true);
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('*, profiles(email, full_name)')
-        .order('created_at', { ascending: false });
+      setLoadError(false);
 
-      if (rolesError) throw rolesError;
+      // Scoped via de SECURITY DEFINER functie: geeft alleen teamleden van de
+      // organisatie van de ingelogde gebruiker terug.
+      const { data, error } = await supabase.rpc('get_team_members');
 
-      const members = (roles || []).map((r: any) => ({
+      if (error) throw error;
+
+      const members = (data || []).map((r) => ({
         id: r.id,
         user_id: r.user_id,
         role: r.role,
-        email: r.profiles?.email,
-        full_name: r.profiles?.full_name,
+        email: r.email ?? undefined,
+        full_name: r.full_name ?? undefined,
       }));
 
       setTeamMembers(members);
     } catch (error) {
       console.error('Error loading team members:', error);
-      toast.error(t('error'));
+      setLoadError(true);
+      setTeamMembers([]);
+      toast.error('Kon teamleden niet laden. Probeer het opnieuw.');
     } finally {
       setLoading(false);
     }
@@ -222,6 +226,19 @@ export default function TeamManagement() {
           {loading && teamMembers.length === 0 ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : loadError ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+              <div>
+                <p className="font-medium">Kon teamleden niet laden</p>
+                <p className="text-sm text-muted-foreground">
+                  Er ging iets mis bij het ophalen van je team. Probeer het opnieuw.
+                </p>
+              </div>
+              <Button variant="outline" onClick={loadTeamMembers} disabled={loading}>
+                Opnieuw proberen
+              </Button>
             </div>
           ) : teamMembers.length === 0 ? (
             <EmptyState
