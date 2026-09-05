@@ -88,6 +88,10 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getCurrentTier = () => {
+    const fromServer = subscriptionStatus?.tier;
+    if (fromServer && fromServer in SUBSCRIPTION_TIERS) {
+      return fromServer as keyof typeof SUBSCRIPTION_TIERS;
+    }
     if (!subscriptionStatus?.product_id) return null;
     return (
       (Object.entries(SUBSCRIPTION_TIERS).find(

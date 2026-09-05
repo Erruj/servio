@@ -50,12 +50,14 @@ export async function checkMailboxLimit(
 ): Promise<MailboxLimitResult> {
   const { data: settings } = await admin
     .from("user_settings")
-    .select("subscription_status, subscription_product_id")
+    .select("subscription_status, subscription_product_id, subscription_tier")
     .eq("user_id", userId)
     .maybeSingle();
 
+  // subscription_tier is de betrouwbaarste bron (werkt in test én live mode);
+  // het product-ID is de fallback voor oudere rijen.
   const tier = settings?.subscription_status === "active"
-    ? tierFromProductId(settings.subscription_product_id)
+    ? (settings.subscription_tier || tierFromProductId(settings.subscription_product_id))
     : settings?.subscription_status === "trial"
       ? "pro"
       : "free";
