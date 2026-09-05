@@ -33,6 +33,7 @@ export default function TeamManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<string>('agent');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     loadTeamMembers();
@@ -43,25 +44,28 @@ export default function TeamManagement() {
 
     try {
       setLoading(true);
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('*, profiles(email, full_name)')
-        .order('created_at', { ascending: false });
+      setLoadError(false);
 
-      if (rolesError) throw rolesError;
+      // Scoped via de SECURITY DEFINER functie: geeft alleen teamleden van de
+      // organisatie van de ingelogde gebruiker terug.
+      const { data, error } = await supabase.rpc('get_team_members');
 
-      const members = (roles || []).map((r: any) => ({
+      if (error) throw error;
+
+      const members = (data || []).map((r) => ({
         id: r.id,
         user_id: r.user_id,
         role: r.role,
-        email: r.profiles?.email,
-        full_name: r.profiles?.full_name,
+        email: r.email ?? undefined,
+        full_name: r.full_name ?? undefined,
       }));
 
       setTeamMembers(members);
     } catch (error) {
       console.error('Error loading team members:', error);
-      toast.error(t('error'));
+      setLoadError(true);
+      setTeamMembers([]);
+      toast.error('Kon teamleden niet laden. Probeer het opnieuw.');
     } finally {
       setLoading(false);
     }
