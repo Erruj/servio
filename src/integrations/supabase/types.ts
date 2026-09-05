@@ -811,6 +811,7 @@ export type Database = {
           expires_at: string
           id: string
           inviter_id: string
+          organization_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           token: string
         }
@@ -821,6 +822,7 @@ export type Database = {
           expires_at: string
           id?: string
           inviter_id: string
+          organization_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           token: string
         }
@@ -831,6 +833,7 @@ export type Database = {
           expires_at?: string
           id?: string
           inviter_id?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           token?: string
         }
@@ -998,18 +1001,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          organization_id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          organization_id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          organization_id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -1175,7 +1181,18 @@ export type Database = {
       }
     }
     Functions: {
+      current_organization_id: { Args: never; Returns: string }
       get_onboarding_status: { Args: never; Returns: Json }
+      get_team_members: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
