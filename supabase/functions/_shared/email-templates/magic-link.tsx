@@ -1,54 +1,33 @@
 /// <reference types="npm:@types/react@18.3.1" />
 
+// ── INLOGLINK (magic link) ─────────────────────────────────────────────────
+// Tekst aanpassen? Zie texts.ts → emailTexts.magicLink
+
 import * as React from 'npm:react@18.3.1'
-
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Text,
-} from 'npm:@react-email/components@0.0.22'
-
-const LOGO_URL = 'https://getservio.co/favicon.png'
+import { EmailLayout } from './EmailLayout.tsx'
+import { emailTexts, fill } from './texts.ts'
 
 interface MagicLinkEmailProps {
-  siteName: string
+  siteName?: string
+  email?: string
   confirmationUrl: string
 }
 
-export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
-  <Html lang="nl" dir="ltr">
-    <Head />
-    <Preview>Je inloglink voor {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Img src={LOGO_URL} alt="Servio" width="40" height="40" style={logo} />
-        <Heading style={h1}>Je inloglink</Heading>
-        <Text style={text}>
-          Klik op onderstaande knop om in te loggen bij {siteName}. Deze link verloopt binnenkort.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Inloggen
-        </Button>
-        <Text style={footer}>
-          Als je deze link niet hebt aangevraagd, kun je deze e-mail veilig negeren.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-)
+export const MagicLinkEmail = ({ siteName, email, confirmationUrl }: MagicLinkEmailProps) => {
+  const t = emailTexts.magicLink
+  const values = { naamSite: siteName || 'Servio', email: email || '' }
+
+  return (
+    <EmailLayout
+      preview={t.preview}
+      heading={t.heading}
+      paragraphs={t.paragraphs.map((p) => fill(p, values))}
+      buttonLabel={t.button}
+      buttonUrl={confirmationUrl}
+      note={t.note}
+      footnote={t.footnote}
+    />
+  )
+}
 
 export default MagicLinkEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
-const container = { padding: '40px 25px' }
-const logo = { marginBottom: '20px' }
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#1e293b', margin: '0 0 20px' }
-const text = { fontSize: '15px', color: '#64748b', lineHeight: '1.6', margin: '0 0 25px' }
-const button = { backgroundColor: '#3b82f6', color: '#ffffff', fontSize: '15px', borderRadius: '8px', padding: '12px 24px', textDecoration: 'none', fontWeight: '600' as const }
-const footer = { fontSize: '12px', color: '#94a3b8', margin: '30px 0 0' }
