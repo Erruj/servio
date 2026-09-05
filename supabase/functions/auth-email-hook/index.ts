@@ -25,15 +25,17 @@ const ROOT_DOMAIN = 'getservio.co'
 const FROM_ADDRESS = `Servio <noreply@${ROOT_DOMAIN}>`
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
 
+// Onderwerpregels staan in ../_shared/email-templates/texts.ts
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Bevestig je e-mailadres voor Servio',
-  invite: 'Je bent uitgenodigd voor Servio',
-  magiclink: 'Je inloglink voor Servio',
-  recovery: 'Wachtwoord opnieuw instellen – Servio',
-  email_change: 'Bevestig je nieuwe e-mailadres – Servio',
-  email_change_new: 'Bevestig je nieuwe e-mailadres – Servio',
-  reauthentication: 'Je verificatiecode – Servio',
+  signup: emailTexts.signup.subject,
+  invite: emailTexts.invite.subject,
+  magiclink: emailTexts.magicLink.subject,
+  recovery: emailTexts.recovery.subject,
+  email_change: emailTexts.emailChange.subject,
+  email_change_new: emailTexts.emailChange.subject,
+  reauthentication: emailTexts.reauthentication.subject,
 }
+
 
 const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   signup: SignupEmail,
