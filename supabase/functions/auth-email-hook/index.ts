@@ -103,21 +103,25 @@ async function verifySignature(req: Request, rawBody: string, secret: string): P
     .some((sig) => sig.length > 0 && timingSafeEqual(sig, expected))
 }
 
-// ─── Versturen via Resend (Lovable connector gateway) ────────────────────────
+// ─── Versturen via de Resend API (eigen API-key) ─────────────────────────────
 async function sendViaResend(to: string, subject: string, html: string, text: string) {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
   const resendApiKey = Deno.env.get('RESEND_API_KEY')
-  if (!lovableApiKey) throw new Error('LOVABLE_API_KEY is niet geconfigureerd')
   if (!resendApiKey) throw new Error('RESEND_API_KEY is niet geconfigureerd')
 
-  const response = await fetch(`${GATEWAY_URL}/emails`, {
+  const response = await fetch(RESEND_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${lovableApiKey}`,
-      'X-Connection-Api-Key': resendApiKey,
+      Authorization: `Bearer ${resendApiKey}`,
     },
-    body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html, text }),
+    body: JSON.stringify({
+      from: FROM_ADDRESS,
+      to: [to],
+      reply_to: REPLY_TO,
+      subject,
+      html,
+      text,
+    }),
   })
 
   const body = await response.text()
