@@ -86,6 +86,11 @@ export function useFeatureAccess(): FeatureAccess {
 
     // Active subscription → check product (paid plans win)
     if (hasActiveSubscription) {
+      // tier komt uit check-subscription en is mode-onafhankelijk (test/live)
+      const fromServer = subscriptionStatus?.tier;
+      if (fromServer && ['starter', 'pro', 'business'].includes(fromServer)) {
+        return fromServer as SubscriptionTier;
+      }
       const mapped = getTierFromProductId(subscriptionStatus?.product_id);
       return mapped === 'none' ? 'pro' : mapped;
     }

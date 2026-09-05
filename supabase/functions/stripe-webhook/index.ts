@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { getStripe, stripeMode, stripeWebhookSecret, tierFromSubscription } from "../_shared/stripe-config.ts";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -61,13 +62,9 @@ serve(async (req) => {
   try {
     logStep("Webhook received");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    if (!stripeKey || !webhookSecret) {
-      throw new Error("Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET");
-    }
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const webhookSecret = stripeWebhookSecret();
+    const stripe = getStripe();
+    logStep("Stripe mode", { mode: stripeMode() });
 
     // Get raw body and signature for verification
     const body = await req.text();
@@ -123,18 +120,20 @@ serve(async (req) => {
     async function syncSubscription(userId: string, customerId: string, subscription: any) {
       const productId = subscription.items?.data?.[0]?.price?.product as string | undefined;
       const status = mapStatus(subscription.status);
+      const tier = tierFromSubscription(subscription);
       const { error } = await supabaseClient
         .from('user_settings')
         .update({
           stripe_customer_id: customerId,
           stripe_subscription_id: subscription.id,
           subscription_product_id: productId ?? null,
+          subscription_tier: tier,
           subscription_status: status,
           subscription_current_period_end: periodEndIso(subscription),
         })
         .eq('user_id', userId);
       if (error) throw error;
-      logStep("Subscription synced", { userId, status, productId, stripeStatus: subscription.status });
+      logStep("Subscription synced", { userId, status, tier, productId, stripeStatus: subscription.status });
     }
 
     switch (event.type) {
@@ -194,6 +193,7 @@ serve(async (req) => {
           .update({
             subscription_status: 'canceled',
             subscription_product_id: null,
+            subscription_tier: null,
             stripe_subscription_id: null,
             subscription_current_period_end: null,
           })

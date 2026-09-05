@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { buildCorsHeaders } from "../_shared/security.ts";
+import { getStripe, resolvePriceId, stripeMode, type BillingCycle, type Tier } from "../_shared/stripe-config.ts";
 
 const CORS_ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version";
 
@@ -38,32 +38,19 @@ serve(async (req) => {
 
     const { tier, billing_cycle } = await req.json();
     if (!tier) throw new Error("Tier is required");
-    logStep("Tier received", { tier, billing_cycle });
+    if (!["starter", "pro", "business"].includes(tier)) {
+      throw new Error(`Onbekend abonnement: ${tier}`);
+    }
+    logStep("Tier received", { tier, billing_cycle, mode: stripeMode() });
 
-    // Map tier to price ID — yearly IDs are hardcoded, monthly from env vars
-    const yearlyPriceIdMap: Record<string, string> = {
-      starter: "price_1Td9yCDME8sDkzM9SMtJR6aP",
-      pro: "price_1TdA0ZDME8sDkzM9ePwqBEIG",
-      business: "price_1TdA1TDME8sDkzM9f24n5ANg",
-    };
+    const cycle: BillingCycle = billing_cycle === "yearly" ? "yearly" : "monthly";
 
-    // Maandelijkse prijs-ID's staan vast in code, uit dezelfde bron als
-    // Pricing.tsx en subscriptionTiers.ts (Stripe live prijzen).
-    const priceIdMap: Record<string, string> = {
-      starter: "price_1TAwkPDME8sDkzM9evpM3A6l",
-      pro: "price_1TAwm4DME8sDkzM9EHWmKOfm",
-      business: "price_1TAwnFDME8sDkzM9TdEvv5zC",
-    };
+    const stripe = getStripe();
 
-
-    const isYearly = billing_cycle === 'yearly';
-    const priceId = isYearly ? yearlyPriceIdMap[tier] : priceIdMap[tier];
-    if (!priceId) throw new Error(`No price ID configured for tier: ${tier} (${isYearly ? 'yearly' : 'monthly'})`);
-    logStep("Price ID resolved", { tier, isYearly, priceId });
-
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
-    });
+    // In live mode staan de prijs-ID's vast in _shared/stripe-config.ts; in test
+    // mode worden producten/prijzen automatisch aangemaakt via lookup keys.
+    const priceId = await resolvePriceId(stripe, tier as Tier, cycle);
+    logStep("Price ID resolved", { tier, cycle, priceId, mode: stripeMode() });
 
     // Check for existing customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });

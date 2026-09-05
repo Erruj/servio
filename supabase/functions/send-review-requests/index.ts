@@ -4,7 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import { getStripe } from "../_shared/stripe-config.ts";
 import { timingSafeEqual } from "../_shared/security.ts";
 
 const corsHeaders = {
@@ -16,7 +16,7 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CRON_SECRET = Deno.env.get("CRON_SECRET")!;
-const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY")!;
+
 const TRUSTPILOT_REVIEW_URL =
   Deno.env.get("TRUSTPILOT_REVIEW_URL") ||
   "https://www.trustpilot.com/evaluate/getservio.co";
@@ -232,7 +232,7 @@ serve(async (req) => {
   }
 
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-  const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
+  const stripe = getStripe();
 
   const cutoff = new Date(Date.now() - DAYS_BEFORE_REQUEST * 24 * 60 * 60 * 1000).toISOString();
 

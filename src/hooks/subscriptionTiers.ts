@@ -1,6 +1,8 @@
 export interface SubscriptionStatus {
   subscribed: boolean;
   product_id: string | null;
+  /** Door check-subscription bepaald pakket — werkt in Stripe test- én live-mode. */
+  tier?: 'free' | 'trial' | 'starter' | 'pro' | 'business' | null;
   subscription_status: 'trial' | 'active' | 'expired' | 'canceled' | 'free';
   trial_end_date: string | null;
   subscription_end: string | null;

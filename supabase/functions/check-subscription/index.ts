@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { buildCorsHeaders } from "../_shared/security.ts";
+import { getStripe, stripeMode, tierFromSubscription, PRODUCT_TIER_MAP } from "../_shared/stripe-config.ts";
 
 const CORS_ALLOW_HEADERS = "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version";
 
@@ -80,6 +80,9 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         subscribed: true,
         product_id: settings.subscription_product_id || 'prod_U9FG9hWuBCWWMc',
+        tier: settings.subscription_tier
+          || PRODUCT_TIER_MAP[settings.subscription_product_id ?? '']
+          || 'pro',
         subscription_status: 'active',
         trial_end_date: trialEndDate?.toISOString() ?? null,
         subscription_end: settings.subscription_current_period_end ?? null,
@@ -95,9 +98,7 @@ serve(async (req) => {
     if (settings?.subscription_status === 'free') {
       if (settings?.stripe_customer_id) {
         try {
-          const stripeCheck = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-            apiVersion: "2025-08-27.basil",
-          });
+          const stripeCheck = getStripe();
           const activeSubs = await stripeCheck.subscriptions.list({
             customer: settings.stripe_customer_id,
             status: "active",
@@ -106,6 +107,7 @@ serve(async (req) => {
           if (activeSubs.data.length > 0) {
             const sub = activeSubs.data[0];
             const productId = sub.items.data[0].price.product as string;
+            const subTier = tierFromSubscription(sub) ?? 'pro';
             const subscriptionEnd = periodEndIso(sub);
             logStep("Free flag overridden by active Stripe subscription", { subId: sub.id });
             await supabaseClient
@@ -113,6 +115,7 @@ serve(async (req) => {
               .update({
                 stripe_subscription_id: sub.id,
                 subscription_product_id: productId,
+                subscription_tier: subTier,
                 subscription_status: 'active',
                 subscription_current_period_end: subscriptionEnd,
               })
@@ -120,6 +123,7 @@ serve(async (req) => {
             return new Response(JSON.stringify({
               subscribed: true,
               product_id: productId,
+              tier: subTier,
               subscription_status: 'active',
               trial_end_date: trialEndDate?.toISOString() ?? null,
               subscription_end: subscriptionEnd,
@@ -136,6 +140,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         subscribed: false,
         product_id: null,
+        tier: 'free',
         subscription_status: 'free',
         trial_end_date: trialEndDate?.toISOString() ?? null,
         subscription_end: null,
@@ -146,9 +151,8 @@ serve(async (req) => {
     }
 
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
-    });
+    const stripe = getStripe();
+    logStep("Stripe mode", { mode: stripeMode() });
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
@@ -159,6 +163,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
+        tier: trialExpired ? 'free' : 'trial',
         subscription_status: trialExpired ? 'expired' : 'trial',
         trial_end_date: trialEndDate?.toISOString(),
         subscription_end: null
@@ -181,12 +186,14 @@ serve(async (req) => {
     let productId = null;
     let subscriptionEnd = null;
     let subscriptionStatus = trialExpired ? 'expired' : 'trial';
+    let resolvedTier: string | null = trialExpired ? 'free' : 'trial';
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = periodEndIso(subscription);
       productId = subscription.items.data[0].price.product as string;
       subscriptionStatus = 'active';
+      resolvedTier = tierFromSubscription(subscription) ?? 'pro';
       
       logStep("Active subscription found", { 
         subscriptionId: subscription.id, 
@@ -201,6 +208,7 @@ serve(async (req) => {
           stripe_customer_id: customerId,
           stripe_subscription_id: subscription.id,
           subscription_product_id: productId,
+          subscription_tier: resolvedTier,
           subscription_status: 'active',
           subscription_current_period_end: subscriptionEnd,
         })
@@ -208,8 +216,9 @@ serve(async (req) => {
     } else {
       logStep("No active subscription found");
       
-      // Update status if trial expired
-      if (trialExpired) {
+      // Update status if trial expired. In TEST-mode nooit downgraden: live
+      // klanten mogen niet geraakt worden terwijl we met testsleutels werken.
+      if (trialExpired && stripeMode() === 'live') {
         await supabaseClient
           .from('user_settings')
           .update({ subscription_status: 'expired' })
@@ -220,6 +229,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
+      tier: resolvedTier,
       subscription_status: subscriptionStatus,
       trial_end_date: trialEndDate?.toISOString(),
       subscription_end: subscriptionEnd
