@@ -9,8 +9,8 @@ export interface SubscriptionStatus {
 // Product mapping for subscription tiers
 export const SUBSCRIPTION_TIERS = {
   starter: {
-    product_id: 'prod_TUHktvw98PDTTn',
-    price_id: 'price_1SXJAnDLXfTDUSDcxbedSrxR',
+    product_id: 'prod_U9FEn3lMyxZ6xR',
+    price_id: 'price_1TAwkPDME8sDkzM9evpM3A6l',
     name: 'Starter',
     price: 9.99,
     features: [
@@ -22,7 +22,7 @@ export const SUBSCRIPTION_TIERS = {
   },
   pro: {
     product_id: 'prod_U9FG9hWuBCWWMc',
-    price_id: 'price_1SXJBPDLXfTDUSDcbIUY8onh',
+    price_id: 'price_1TAwm4DME8sDkzM9EHWmKOfm',
     name: 'Pro',
     price: 29.99,
     features: [
@@ -34,8 +34,8 @@ export const SUBSCRIPTION_TIERS = {
     ],
   },
   business: {
-    product_id: 'prod_TUHl8Gz4fh6OIL',
-    price_id: 'price_1SXJBcDLXfTDUSDcYeAzc1Rx',
+    product_id: 'prod_U9FHgm6gn3Iq50',
+    price_id: 'price_1TAwnFDME8sDkzM9EHWmKOfm'.replace('1TAwnFDME8sDkzM9EHWmKOfm', '1TAwnFDME8sDkzM9TdEvv5zC'),
     name: 'Business',
     price: 79.99,
     features: [
