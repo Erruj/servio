@@ -47,19 +47,14 @@ serve(async (req) => {
       business: "price_1TdA1TDME8sDkzM9f24n5ANg",
     };
 
-    // Maandelijkse prijs-ID's staan vast in code (zelfde bron als Pricing.tsx en
-    // subscriptionTiers.ts); een env-variabele mag ze desgewenst overschrijven.
-    const monthlyPriceIdMap: Record<string, string> = {
+    // Maandelijkse prijs-ID's staan vast in code, uit dezelfde bron als
+    // Pricing.tsx en subscriptionTiers.ts (Stripe live prijzen).
+    const priceIdMap: Record<string, string> = {
       starter: "price_1TAwkPDME8sDkzM9evpM3A6l",
       pro: "price_1TAwm4DME8sDkzM9EHWmKOfm",
       business: "price_1TAwnFDME8sDkzM9TdEvv5zC",
     };
 
-    const priceIdMap: Record<string, string | undefined> = {
-      starter: Deno.env.get("STRIPE_STARTER_PRICE_ID") || monthlyPriceIdMap.starter,
-      pro: Deno.env.get("STRIPE_PRO_PRICE_ID") || monthlyPriceIdMap.pro,
-      business: Deno.env.get("STRIPE_BUSINESS_PRICE_ID") || monthlyPriceIdMap.business,
-    };
 
     const isYearly = billing_cycle === 'yearly';
     const priceId = isYearly ? yearlyPriceIdMap[tier] : priceIdMap[tier];
