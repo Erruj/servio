@@ -7,6 +7,46 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Vanaf API-versie 2025-08-27.basil staat current_period_end op de subscription
+// ITEMS, niet meer op de subscription zelf. Deze helper werkt met beide vormen.
+function periodEndIso(subscription: any): string | null {
+  const raw =
+    subscription?.current_period_end ??
+    subscription?.items?.data?.[0]?.current_period_end ??
+    null;
+  if (!raw) return null;
+  const d = new Date(raw * 1000);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+// In Basil verhuisde invoice.subscription naar invoice.parent.subscription_details.
+function subscriptionIdFromInvoice(invoice: any): string | null {
+  return (
+    (typeof invoice?.subscription === 'string' ? invoice.subscription : null) ??
+    invoice?.parent?.subscription_details?.subscription ??
+    invoice?.lines?.data?.[0]?.parent?.subscription_item_details?.subscription ??
+    null
+  );
+}
+
+// Stripe-status → interne status. Bij past_due/unpaid houden we de toegang
+// bewust actief zolang Stripe nog betaalpogingen doet; pas bij canceled of
+// incomplete_expired verliest de gebruiker zijn betaalde tier.
+function mapStatus(stripeStatus: string): string {
+  switch (stripeStatus) {
+    case 'active':
+    case 'trialing':
+    case 'past_due':
+    case 'unpaid':
+      return 'active';
+    case 'canceled':
+    case 'incomplete_expired':
+      return 'canceled';
+    default:
+      return stripeStatus;
+  }
+}
+
 serve(async (req) => {
   // Webhooks only come as POST
   if (req.method === "OPTIONS") {
@@ -54,80 +94,100 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // Zoekt de gebruiker: eerst op stripe_customer_id, dan op e-mailadres.
+    async function findUserId(customerId: string): Promise<string | null> {
+      const { data: bySettings } = await supabaseClient
+        .from('user_settings')
+        .select('user_id')
+        .eq('stripe_customer_id', customerId)
+        .maybeSingle();
+      if (bySettings?.user_id) return bySettings.user_id;
+
+      const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+      if (!customer.email) {
+        logStep("Customer has no email, cannot match user", { customerId });
+        return null;
+      }
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('id')
+        .eq('email', customer.email)
+        .maybeSingle();
+      if (!profile) {
+        logStep("No profile found for email", { email: customer.email });
+        return null;
+      }
+      return profile.id as string;
+    }
+
+    async function syncSubscription(userId: string, customerId: string, subscription: any) {
+      const productId = subscription.items?.data?.[0]?.price?.product as string | undefined;
+      const status = mapStatus(subscription.status);
+      const { error } = await supabaseClient
+        .from('user_settings')
+        .update({
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id,
+          subscription_product_id: productId ?? null,
+          subscription_status: status,
+          subscription_current_period_end: periodEndIso(subscription),
+        })
+        .eq('user_id', userId);
+      if (error) throw error;
+      logStep("Subscription synced", { userId, status, productId, stripeStatus: subscription.status });
+    }
+
     switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customerId = session.customer as string;
+        const subscriptionId = session.subscription as string | null;
+        if (!subscriptionId) {
+          logStep("Checkout without subscription, skipping", { sessionId: session.id });
+          break;
+        }
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const userId = (session.metadata?.user_id as string | undefined) ||
+          (customerId ? await findUserId(customerId) : null);
+        if (!userId) break;
+        await syncSubscription(userId, customerId, subscription);
+        break;
+      }
+
       case "invoice.payment_succeeded": {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
         const customerId = invoice.customer as string;
-        const subscriptionId = invoice.subscription as string;
+        const subscriptionId = subscriptionIdFromInvoice(invoice);
 
         if (!subscriptionId) {
           logStep("No subscription on invoice, skipping");
           break;
         }
 
-        // Get the full subscription to find product info
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const productId = subscription.items.data[0]?.price?.product as string;
-        const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        const userId = await findUserId(customerId);
+        if (!userId) break;
+        await syncSubscription(userId, customerId, subscription);
+        break;
+      }
 
-        logStep("Payment succeeded", { customerId, subscriptionId, productId, periodEnd });
-
-        // Find user by Stripe customer email
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
-        if (!customer.email) {
-          logStep("Customer has no email, cannot match user");
-          break;
-        }
-
-        // Look up user by email in profiles
-        const { data: profile, error: profileError } = await supabaseClient
-          .from('profiles')
-          .select('id')
-          .eq('email', customer.email)
-          .single();
-
-        if (profileError || !profile) {
-          logStep("No profile found for email", { email: customer.email, error: profileError?.message });
-          break;
-        }
-
-        logStep("Found user", { userId: profile.id });
-
-        // Update user_settings with subscription info
-        const { error: updateError } = await supabaseClient
-          .from('user_settings')
-          .update({
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            subscription_product_id: productId,
-            subscription_status: 'active',
-            subscription_current_period_end: periodEnd,
-          })
-          .eq('user_id', profile.id);
-
-        if (updateError) {
-          logStep("Failed to update user_settings", { error: updateError.message });
-          throw updateError;
-        }
-
-        logStep("User subscription updated successfully", { userId: profile.id, productId });
+      case "invoice.payment_failed": {
+        // Stripe mailt de klant zelf (dashboard-instelling). Wij laten de toegang
+        // staan: Stripe blijft het opnieuw proberen en stuurt bij definitief
+        // falen customer.subscription.updated/deleted.
+        const invoice = event.data.object as any;
+        logStep("Payment failed (toegang blijft, Stripe hertest)", {
+          customerId: invoice.customer,
+          attempt: invoice.attempt_count,
+        });
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
-
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
-        if (!customer.email) break;
-
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('id')
-          .eq('email', customer.email)
-          .single();
-
-        if (!profile) break;
+        const userId = await findUserId(customerId);
+        if (!userId) break;
 
         await supabaseClient
           .from('user_settings')
@@ -137,42 +197,19 @@ serve(async (req) => {
             stripe_subscription_id: null,
             subscription_current_period_end: null,
           })
-          .eq('user_id', profile.id);
+          .eq('user_id', userId);
 
-        logStep("Subscription canceled", { userId: profile.id });
+        logStep("Subscription canceled", { userId });
         break;
       }
 
+      case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
-        const productId = subscription.items.data[0]?.price?.product as string;
-        const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
-        const status = subscription.status === 'active' ? 'active' : subscription.status;
-
-        const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer;
-        if (!customer.email) break;
-
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('id')
-          .eq('email', customer.email)
-          .single();
-
-        if (!profile) break;
-
-        await supabaseClient
-          .from('user_settings')
-          .update({
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscription.id,
-            subscription_product_id: productId,
-            subscription_status: status,
-            subscription_current_period_end: periodEnd,
-          })
-          .eq('user_id', profile.id);
-
-        logStep("Subscription updated", { userId: profile.id, status, productId });
+        const userId = await findUserId(customerId);
+        if (!userId) break;
+        await syncSubscription(userId, customerId, subscription);
         break;
       }
 
