@@ -1,6 +1,7 @@
 // TIJDELIJKE testfunctie — wordt na de end-to-end Stripe-test verwijderd.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { getStripe, stripeMode } from "../_shared/stripe-config.ts";
+import { checkMailboxLimit } from "../_shared/mailbox-limit.ts";
 
 const TEST_EMAIL = "e2e-stripe-test@getservio.co";
 
