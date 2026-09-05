@@ -23,8 +23,11 @@ const json = (body: unknown, status = 200) =>
 // ─── Configuratie ────────────────────────────────────────────────────────────
 const SITE_NAME = 'Servio'
 const ROOT_DOMAIN = 'getservio.co'
-const FROM_ADDRESS = `Servio <noreply@${ROOT_DOMAIN}>`
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+// Verzenddomein dat in Resend is geverifieerd
+const SENDER_DOMAIN = 'notify.getservio.co'
+const FROM_ADDRESS = `Servio <noreply@${SENDER_DOMAIN}>`
+const REPLY_TO = `info@${ROOT_DOMAIN}`
+const RESEND_API_URL = 'https://api.resend.com/emails'
 
 // Onderwerpregels staan in ../_shared/email-templates/texts.ts
 const EMAIL_SUBJECTS: Record<string, string> = {
