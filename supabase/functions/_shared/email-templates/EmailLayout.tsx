@@ -35,6 +35,8 @@ export interface EmailLayoutProps {
   signature?: string
   icon?: string
   footnote?: string
+  /** Optioneel detailblokje, bv. Pakket / Prijs / Volgende factuurdatum */
+  details?: Array<{ label: string; value: string }>
 }
 
 export const EmailLayout = ({
@@ -50,6 +52,7 @@ export const EmailLayout = ({
   signature,
   icon,
   footnote,
+  details,
 }: EmailLayoutProps) => (
   <Html lang="nl" dir="ltr">
     <Head />
@@ -82,6 +85,17 @@ export const EmailLayout = ({
           ))}
 
           {code ? <Text style={styles.code}>{code}</Text> : null}
+
+          {details && details.length > 0 ? (
+            <Section style={styles.detailsBox}>
+              {details.map((detail) => (
+                <Text key={detail.label} style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{detail.label}: </span>
+                  <span style={styles.detailValue}>{detail.value}</span>
+                </Text>
+              ))}
+            </Section>
+          ) : null}
 
           {buttonLabel && buttonUrl ? (
             <Section style={styles.buttonContainer}>

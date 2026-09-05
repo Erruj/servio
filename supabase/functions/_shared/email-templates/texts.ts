@@ -94,6 +94,26 @@ export const emailTexts = {
     footnote: 'Heb je dit niet zelf aangevraagd? Wijzig dan direct je wachtwoord.',
   },
 
+  // ── 7. Abonnement afgesloten (bedankmail na betaling) ───────────────────
+  //  Invulvelden: {pakket} (Starter/Pro/Business), {mailboxen}, {prijs}, {datum}
+  subscriptionWelcome: {
+    subject: 'Bedankt! Je Servio-abonnement is geregeld 🎉',
+    preview: 'Welkom bij {pakket} — hier is wat je nu kan.',
+    icon: '🎉',
+    heading: 'Welkom bij Servio {pakket}!',
+    paragraphs: [
+      'Bedankt voor je vertrouwen — je {pakket}-abonnement staat live. Je kunt nu {mailboxen} koppelen en gebruikmaken van alles wat bij dit pakket hoort. Wij gaan door met administratie automatiseren, jij focust weer op ondernemen.',
+    ],
+    button: 'Naar je dashboard',
+    note: 'Wil je je abonnement aanpassen of opzeggen? Dat kan altijd via Instellingen → Abonnement.',
+    signature: 'Veel plezier (en succes),\nHet Servio-team 👋',
+    labels: {
+      pakket: 'Pakket',
+      prijs: 'Prijs',
+      volgendeFactuur: 'Volgende factuurdatum',
+    },
+  },
+
   // ── Voettekst onderaan iedere e-mail ────────────────────────────────────
   footer: 'Servio · getservio.co · Je ontvangt deze e-mail omdat je een account hebt bij Servio.',
 }

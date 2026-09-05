@@ -117,10 +117,59 @@ serve(async (req) => {
       return profile.id as string;
     }
 
+    // Verstuurt de bedankmail via de send-subscription-email functie (Resend).
+    async function sendWelcomeEmail(userId: string, subscription: any, tier: string | null) {
+      if (!tier || !["starter", "pro", "business"].includes(tier)) {
+        logStep("Geen bekend pakket, bedankmail overgeslagen", { tier });
+        return;
+      }
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .maybeSingle();
+      if (!profile?.email) {
+        logStep("Geen e-mailadres bekend, bedankmail overgeslagen", { userId });
+        return;
+      }
+      const price = subscription.items?.data?.[0]?.price;
+      try {
+        const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-subscription-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({
+            to: profile.email,
+            tier,
+            amount_cents: price?.unit_amount ?? 0,
+            interval: price?.recurring?.interval ?? 'month',
+            period_end: periodEndIso(subscription),
+          }),
+        });
+        if (!res.ok) {
+          logStep("Bedankmail mislukt", { status: res.status, body: await res.text() });
+        } else {
+          logStep("Bedankmail verstuurd", { userId, tier });
+        }
+      } catch (err) {
+        logStep("Bedankmail gaf een fout", { error: err instanceof Error ? err.message : String(err) });
+      }
+    }
+
     async function syncSubscription(userId: string, customerId: string, subscription: any) {
       const productId = subscription.items?.data?.[0]?.price?.product as string | undefined;
       const status = mapStatus(subscription.status);
       const tier = tierFromSubscription(subscription);
+
+      // Vorige stand ophalen zodat de bedankmail exact één keer verstuurd wordt.
+      const { data: previous } = await supabaseClient
+        .from('user_settings')
+        .select('stripe_subscription_id, subscription_status')
+        .eq('user_id', userId)
+        .maybeSingle();
+
       const { error } = await supabaseClient
         .from('user_settings')
         .update({
@@ -134,6 +183,13 @@ serve(async (req) => {
         .eq('user_id', userId);
       if (error) throw error;
       logStep("Subscription synced", { userId, status, tier, productId, stripeStatus: subscription.status });
+
+      const isNewPaidSubscription =
+        status === 'active' &&
+        previous?.stripe_subscription_id !== subscription.id;
+      if (isNewPaidSubscription) {
+        await sendWelcomeEmail(userId, subscription, tier);
+      }
     }
 
     switch (event.type) {
