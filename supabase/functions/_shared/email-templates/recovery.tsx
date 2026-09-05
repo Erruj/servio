@@ -24,7 +24,9 @@ export const RecoveryEmail = ({ siteName, email, confirmationUrl }: RecoveryEmai
       paragraphs={t.paragraphs.map((p) => fill(p, values))}
       buttonLabel={t.button}
       buttonUrl={confirmationUrl}
+      icon={t.icon}
       note={t.note}
+      signature={t.signature}
       footnote={t.footnote}
     />
   )

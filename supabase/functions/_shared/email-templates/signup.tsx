@@ -25,7 +25,10 @@ export const SignupEmail = ({ siteName, recipient, confirmationUrl }: SignupEmai
       paragraphs={t.paragraphs.map((p) => fill(p, values))}
       buttonLabel={t.button}
       buttonUrl={confirmationUrl}
+      icon={t.icon}
       note={t.note}
+      subNote={t.subNote}
+      signature={t.signature}
       footnote={t.footnote}
     />
   )
