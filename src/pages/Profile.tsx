@@ -126,7 +126,7 @@ export default function Profile() {
       const [profileRes, emailsRes, settingsRes, invoicesRes, receiptsRes, documentsRes, transactionsRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id),
         supabase.from('emails').select('*').eq('user_id', user.id),
-        supabase.from('user_settings').select('*').eq('user_id', user.id),
+        supabase.from('user_settings').select('language, theme, ai_tone, auto_reply_enabled, auto_categorize, auto_vat_calculation, monthly_summary, auto_export_enabled, auto_process_invoice_attachments, tag_suggestions, ai_personality, ai_custom_personality, email_signature, accent_color, compact_layout, sidebar_order, sidebar_favorites, dashboard_widgets, quick_actions, subscription_status, trial_start_date, trial_end_date, subscription_current_period_end, created_at, updated_at').eq('user_id', user.id),
         supabase.from('invoices').select('*').eq('user_id', user.id),
         supabase.from('receipts').select('*').eq('user_id', user.id),
         supabase.from('documents').select('*').eq('user_id', user.id),
