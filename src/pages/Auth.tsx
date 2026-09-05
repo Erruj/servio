@@ -93,6 +93,9 @@ export default function Auth() {
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           setErrors({ form: t('invalidCredentials') });
+        } else if (error.message.toLowerCase().includes('email not confirmed')) {
+          setErrors({ form: 'Je e-mailadres is nog niet bevestigd. Klik op de link in de bevestigingsmail die we je hebben gestuurd.' });
+          navigate('/verify-email', { state: { email: validated.email } });
         } else {
           setErrors({ form: error.message });
         }
@@ -115,13 +118,15 @@ export default function Auth() {
     setErrors({});
     try {
       const validated = signUpSchema.parse(signUpData);
-      const { error } = await signUp(validated.email, validated.password, validated.fullName);
+      const { error, needsEmailConfirmation } = await signUp(validated.email, validated.password, validated.fullName);
       if (error) {
         if (error.message.includes('already registered')) {
           setErrors({ form: t('emailAlreadyRegistered') });
         } else {
           setErrors({ form: error.message });
         }
+      } else if (needsEmailConfirmation) {
+        navigate('/verify-email', { state: { email: validated.email } });
       } else {
         toast({ title: t('accountCreated'), description: t('verifyEmailDescription') });
         setActiveTab('signin');
