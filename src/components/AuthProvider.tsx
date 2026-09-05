@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   userRole: string | null;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null; needsEmailConfirmation?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: new Error('Te veel registratie pogingen. Probeer over 5 minuten opnieuw.') };
       }
 
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -92,6 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) return { error };
+
+      // Supabase geeft bij een bestaand account een user zonder identities terug
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        return { error: new Error('Dit e-mailadres is al geregistreerd. Probeer in te loggen.') };
+      }
+
+      // Geen sessie = "Confirm email" staat aan; gebruiker moet eerst bevestigen
+      const needsEmailConfirmation = !data.session;
 
       // Owner role is automatically assigned via database trigger (handle_new_user)
       // Verify role assignment after a brief delay and add fallback
@@ -118,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }, 1500);
       }
       
-      return { error: null };
+      return { error: null, needsEmailConfirmation };
     } catch (error) {
       return { error: error as Error };
     }
