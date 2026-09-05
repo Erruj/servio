@@ -75,6 +75,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "mailbox-limit") {
+      const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      const user = list?.users?.find((u) => u.email === TEST_EMAIL);
+      const result = await checkMailboxLimit(admin, user!.id, "imap", "box3@example.com");
+      const reconnect = await checkMailboxLimit(admin, user!.id, "imap", "box1@example.com");
+      return Response.json({ nieuweMailbox: result, hervebinden: reconnect });
+    }
+
     if (action === "cancel") {
       const stripe = getStripe();
       const customers = await stripe.customers.list({ email: TEST_EMAIL, limit: 1 });
