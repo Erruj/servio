@@ -227,6 +227,19 @@ export default function TeamManagement() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : loadError ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+              <div>
+                <p className="font-medium">Kon teamleden niet laden</p>
+                <p className="text-sm text-muted-foreground">
+                  Er ging iets mis bij het ophalen van je team. Probeer het opnieuw.
+                </p>
+              </div>
+              <Button variant="outline" onClick={loadTeamMembers} disabled={loading}>
+                Opnieuw proberen
+              </Button>
+            </div>
           ) : teamMembers.length === 0 ? (
             <EmptyState
               icon={Users}
