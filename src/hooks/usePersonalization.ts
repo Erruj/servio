@@ -168,7 +168,7 @@ export function usePersonalization() {
         id: 'personalization-save-error',
         description: e?.message || 'Probeer het opnieuw.',
       });
-      queryClient.invalidateQueries({ queryKey: PERSONALIZATION_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: personalizationKey(user.id) });
     }
   }, [user, settings, queryClient]);
 
