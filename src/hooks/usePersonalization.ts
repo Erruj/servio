@@ -62,7 +62,8 @@ function writeStoredAccent(color: string) {
   } catch { /* ignore */ }
 }
 
-const PERSONALIZATION_QUERY_KEY = ['personalization'] as const;
+const PERSONALIZATION_QUERY_KEY = 'personalization' as const;
+const personalizationKey = (userId: string) => [PERSONALIZATION_QUERY_KEY, userId] as const;
 
 async function fetchPersonalization(userId: string): Promise<PersonalizationSettings> {
   const { data, error } = await supabase
