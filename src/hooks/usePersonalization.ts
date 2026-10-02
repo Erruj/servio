@@ -62,7 +62,8 @@ function writeStoredAccent(color: string) {
   } catch { /* ignore */ }
 }
 
-const PERSONALIZATION_QUERY_KEY = ['personalization'] as const;
+const PERSONALIZATION_QUERY_KEY = 'personalization' as const;
+const personalizationKey = (userId: string) => [PERSONALIZATION_QUERY_KEY, userId] as const;
 
 async function fetchPersonalization(userId: string): Promise<PersonalizationSettings> {
   const { data, error } = await supabase
@@ -98,7 +99,7 @@ export function usePersonalization() {
   // Single shared query — one fetch per session regardless of how many
   // components call this hook.
   const { data, isLoading, error } = useQuery({
-    queryKey: PERSONALIZATION_QUERY_KEY,
+    queryKey: personalizationKey(user?.id ?? 'anonymous'),
     queryFn: () => fetchPersonalization(user!.id),
     enabled: !!user,
     staleTime: 5 * 60_000,
@@ -139,7 +140,7 @@ export function usePersonalization() {
     if ('accentColor' in updates && updates.accentColor) writeStoredAccent(updates.accentColor);
 
     // Optimistic update of the shared cache
-    queryClient.setQueryData<PersonalizationSettings>(PERSONALIZATION_QUERY_KEY, (prev) => ({
+    queryClient.setQueryData<PersonalizationSettings>(personalizationKey(user.id), (prev) => ({
       ...(prev ?? settings),
       ...updates,
     }));
@@ -167,7 +168,7 @@ export function usePersonalization() {
         id: 'personalization-save-error',
         description: e?.message || 'Probeer het opnieuw.',
       });
-      queryClient.invalidateQueries({ queryKey: PERSONALIZATION_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: personalizationKey(user.id) });
     }
   }, [user, settings, queryClient]);
 
