@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { useFeatureAccess } from './useFeatureAccess';
@@ -20,51 +21,42 @@ export interface UsageData {
 export function useUsageTracking() {
   const { user } = useAuth();
   const { limits } = useFeatureAccess();
-  const [usage, setUsage] = useState<UsageData>({
-    emailCount: 0,
-    aiCallCount: 0,
-    emailLimit: null,
-    aiCallLimit: null,
-    isEmailLimitReached: false,
-    isAiLimitReached: false,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
+  const queryClient = useQueryClient();
   const monthYear = getCurrentMonthYear();
+  const queryKey = ['usage-tracking', user?.id, monthYear];
 
-  const fetchUsage = useCallback(async () => {
-    if (!user) return;
-    try {
+  // Gedeelde query: alle componenten op een pagina delen één request.
+  const { data, isLoading: queryLoading } = useQuery({
+    queryKey,
+    enabled: !!user,
+    staleTime: 60 * 1000,
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('usage_tracking')
         .select('email_count, ai_call_count')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .eq('month_year', monthYear)
         .maybeSingle();
-
       if (error) throw error;
+      return { emailCount: data?.email_count || 0, aiCallCount: data?.ai_call_count || 0 };
+    },
+  });
 
-      const emailCount = data?.email_count || 0;
-      const aiCallCount = data?.ai_call_count || 0;
+  const emailCount = data?.emailCount ?? 0;
+  const aiCallCount = data?.aiCallCount ?? 0;
+  const usage: UsageData = useMemo(() => ({
+    emailCount,
+    aiCallCount,
+    emailLimit: limits.emailsPerMonth,
+    aiCallLimit: limits.aiCallsPerMonth,
+    isEmailLimitReached: limits.emailsPerMonth !== null && emailCount >= limits.emailsPerMonth,
+    isAiLimitReached: limits.aiCallsPerMonth !== null && aiCallCount >= limits.aiCallsPerMonth,
+  }), [emailCount, aiCallCount, limits]);
+  const isLoading = !!user && queryLoading;
 
-      setUsage({
-        emailCount,
-        aiCallCount,
-        emailLimit: limits.emailsPerMonth,
-        aiCallLimit: limits.aiCallsPerMonth,
-        isEmailLimitReached: limits.emailsPerMonth !== null && emailCount >= limits.emailsPerMonth,
-        isAiLimitReached: limits.aiCallsPerMonth !== null && aiCallCount >= limits.aiCallsPerMonth,
-      });
-    } catch (err) {
-      console.error('Error fetching usage:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, monthYear, limits]);
-
-  useEffect(() => {
-    fetchUsage();
-  }, [fetchUsage]);
+  const fetchUsage = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['usage-tracking', user?.id] });
+  }, [queryClient, user?.id]);
 
   const incrementEmail = useCallback(async () => {
     if (!user) return false;
