@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildCorsHeaders } from "../_shared/security.ts";
+import { consumeUsageOrReject } from "../_shared/usage.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -230,6 +231,9 @@ serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error("Unauthorized");
+
+    const usageBlock = await consumeUsageOrReject(user.id, 'email', corsHeaders);
+    if (usageBlock) return usageBlock;
 
     // Find active connection (optionally by ID)
     let connQuery = supabase
