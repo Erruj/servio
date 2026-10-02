@@ -318,7 +318,7 @@ export default function MarketingPricing() {
                           <span className={cn('text-4xl font-semibold transition-all', plan.popular ? 'text-background' : 'text-foreground')}>
                             €{displayMonthly.toFixed(2).replace('.', ',')}
                           </span>
-                          <span className={cn('text-sm', plan.popular ? 'text-background/70' : 'text-muted-foreground')}>/maand</span>
+                          <span className={cn('text-sm', plan.popular ? 'text-background/70' : 'text-muted-foreground')}>/maand incl. btw</span>
                         </div>
                         {isYearly && (
                           <p className={cn('text-xs mt-2', plan.popular ? 'text-background/70' : 'text-muted-foreground')}>
