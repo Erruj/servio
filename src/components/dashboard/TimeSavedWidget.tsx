@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { Clock, TrendingUp, TrendingDown, PartyPopper } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,53 +19,27 @@ function formatHours(minutes: number): string {
 export function TimeSavedWidget() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [thisMonthMin, setThisMonthMin] = useState(0);
-  const [lastMonthMin, setLastMonthMin] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { data: s, isLoading: loading } = useDashboardStats();
+  const thisMonthMin = s ? s.read_emails_this_month * MIN_PER_EMAIL + s.invoices_this_month * MIN_PER_INVOICE + s.ai_this_month * MIN_PER_AI_REPLY : 0;
+  const lastMonthMin = s ? s.read_emails_last_month * MIN_PER_EMAIL + s.invoices_last_month * MIN_PER_INVOICE + s.ai_last_month * MIN_PER_AI_REPLY : 0;
 
   useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
-      const queryRange = async (from: string, to?: string) => {
-        const baseEmail = supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', true).gte('updated_at', from);
-        const baseInv = supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', from);
-        const baseAi = supabase.from('ai_corrections').select('id', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', from);
-
-        const [e, i, a] = await Promise.all([
-          to ? baseEmail.lt('updated_at', to) : baseEmail,
-          to ? baseInv.lt('created_at', to) : baseInv,
-          to ? baseAi.lt('created_at', to) : baseAi,
-        ]);
-        return (e.count || 0) * MIN_PER_EMAIL + (i.count || 0) * MIN_PER_INVOICE + (a.count || 0) * MIN_PER_AI_REPLY;
-      };
-
-      const [curr, prev] = await Promise.all([queryRange(monthStart), queryRange(lastMonthStart, lastMonthEnd)]);
-      setThisMonthMin(curr);
-      setLastMonthMin(prev);
-      setLoading(false);
-
-      // Milestone toast
-      try {
-        const hours = curr / 60;
-        const seenKey = `servio_milestone_${user.id}`;
-        const seen = JSON.parse(localStorage.getItem(seenKey) || '[]') as number[];
-        const reached = MILESTONES.filter(m => hours >= m && !seen.includes(m));
-        if (reached.length > 0) {
-          const top = Math.max(...reached);
-          toast({
-            title: '🎉 Mijlpaal bereikt!',
-            description: `Je hebt je eerste ${top} uur bespaard met Servio!`,
-          });
-          localStorage.setItem(seenKey, JSON.stringify([...seen, ...reached]));
-        }
-      } catch { /* ignore */ }
-    })();
-  }, [user, toast]);
+    if (!user || !s) return;
+    try {
+      const hours = thisMonthMin / 60;
+      const seenKey = `servio_milestone_${user.id}`;
+      const seen = JSON.parse(localStorage.getItem(seenKey) || '[]') as number[];
+      const reached = MILESTONES.filter(m => hours >= m && !seen.includes(m));
+      if (reached.length > 0) {
+        const top = Math.max(...reached);
+        toast({
+          title: '🎉 Mijlpaal bereikt!',
+          description: `Je hebt je eerste ${top} uur bespaard met Servio!`,
+        });
+        localStorage.setItem(seenKey, JSON.stringify([...seen, ...reached]));
+      }
+    } catch { /* ignore */ }
+  }, [user, s, thisMonthMin, toast]);
 
   if (loading) return null;
   if (thisMonthMin === 0 && lastMonthMin === 0) return null;
