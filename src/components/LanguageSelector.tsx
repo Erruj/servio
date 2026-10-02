@@ -1,5 +1,6 @@
 import { Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Select,
   SelectContent,
@@ -22,6 +23,12 @@ export function LanguageSelector() {
   const handleLanguageChange = (languageCode: string) => {
     i18n.changeLanguage(languageCode);
     localStorage.setItem('servio-language', languageCode);
+    // Ook in het profiel opslaan, zodat de keuze op andere apparaten blijft staan
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        supabase.from('user_settings').update({ language: languageCode }).eq('user_id', data.user.id).then(() => {});
+      }
+    });
   };
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
