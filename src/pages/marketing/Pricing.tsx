@@ -167,10 +167,7 @@ export default function MarketingPricing() {
         return;
       }
       try {
-        const { error } = await supabase
-          .from('user_settings')
-          .update({ subscription_status: 'free' })
-          .eq('user_id', user.id);
+        const { error } = await (supabase.rpc as any)('choose_free_plan');
         if (error) throw error;
         await checkSubscription();
         toast.success('Je bent nu op het gratis plan.');
