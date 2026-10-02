@@ -125,8 +125,8 @@ const Settings = () => {
       }
     } catch (error: any) {
       console.error('Error loading settings:', error);
-      toast.error('Kon instellingen niet laden', {
-        description: error?.message || 'Er ging iets mis bij het ophalen van je voorkeuren. Probeer de pagina te vernieuwen.',
+      toast.error(t('settingsLoadFailed'), {
+        description: error?.message || t('settingsLoadFailedDesc'),
       });
     }
   };
@@ -436,15 +436,14 @@ const Settings = () => {
 };
 
 // Quick Actions Editor sub-component
-const DEFAULT_QUICK_ACTIONS = [
-  { label: 'Inbox', href: '/app', icon: 'Mail' },
-  { label: 'Nieuwe factuur', href: '/administration/invoices', icon: 'Receipt' },
-  { label: 'AI Antwoord', href: '/app', icon: 'Sparkles' },
-];
-
 function QuickActionsEditor({ actions, onSave }: { actions: any[] | null; onSave: (a: any[]) => void }) {
   const { t } = useTranslation();
-  const [items, setItems] = useState(actions || DEFAULT_QUICK_ACTIONS);
+  const defaultQuickActions = [
+    { label: t('inbox'), href: '/app', icon: 'Mail' },
+    { label: t('newInvoice'), href: '/administration/invoices', icon: 'Receipt' },
+    { label: t('aiReply'), href: '/app', icon: 'Sparkles' },
+  ];
+  const [items, setItems] = useState(actions || defaultQuickActions);
   const [editing, setEditing] = useState(false);
 
   const updateItem = (index: number, field: string, value: string) => {
@@ -472,7 +471,7 @@ function QuickActionsEditor({ actions, onSave }: { actions: any[] | null; onSave
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {items.map((item, i) => (
-            <div key={i} className="px-3 py-2 bg-muted rounded-lg text-sm font-medium">{item.label || 'Unnamed'}</div>
+            <div key={i} className="px-3 py-2 bg-muted rounded-lg text-sm font-medium">{item.label || t('unnamed')}</div>
           ))}
         </div>
         <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('ui.customize')}</Button>
@@ -505,7 +504,7 @@ function QuickActionsEditor({ actions, onSave }: { actions: any[] | null; onSave
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={addItem} disabled={items.length >= 6}>+ {t('add')}</Button>
         <Button size="sm" onClick={save}>{t('save')}</Button>
-        <Button variant="ghost" size="sm" onClick={() => { setItems(actions || DEFAULT_QUICK_ACTIONS); setEditing(false); }}>{t('cancel')}</Button>
+        <Button variant="ghost" size="sm" onClick={() => { setItems(actions || defaultQuickActions); setEditing(false); }}>{t('cancel')}</Button>
       </div>
     </div>
   );

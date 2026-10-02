@@ -108,7 +108,7 @@ const MailboxSetup = () => {
       toast({ title: t('emailsUpdated'), description: t('mailboxSynced') });
     } catch (error) {
       toast({
-        title: t('syncFailed'),
+        title: t('mailboxSyncFailed'),
         description: error instanceof Error ? error.message : t('unknownErrorRetry'),
         variant: "destructive",
       });
