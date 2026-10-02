@@ -140,7 +140,7 @@ export function usePersonalization() {
     if ('accentColor' in updates && updates.accentColor) writeStoredAccent(updates.accentColor);
 
     // Optimistic update of the shared cache
-    queryClient.setQueryData<PersonalizationSettings>(PERSONALIZATION_QUERY_KEY, (prev) => ({
+    queryClient.setQueryData<PersonalizationSettings>(personalizationKey(user.id), (prev) => ({
       ...(prev ?? settings),
       ...updates,
     }));
