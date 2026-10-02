@@ -132,6 +132,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Niet ingelogd" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const body = await req.json();
     const { action, email, password, imap_host, imap_port = 993, smtp_host, smtp_port = 587, use_ssl = true } = body;
 
@@ -144,10 +148,6 @@ serve(async (req) => {
       throw new Error("Veld te lang");
     }
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Niet ingelogd" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
