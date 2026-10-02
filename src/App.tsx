@@ -1,3 +1,4 @@
+import { useAppPageTitle } from '@/hooks/useAppPageTitle';
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -85,6 +86,7 @@ function AppRoutes() {
   const { user, isLoading } = useAuth();
   useLanguagePersistence();
   useUrlLanguageSync();
+  useAppPageTitle();
 
   if (isLoading) {
     return (
