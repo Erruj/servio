@@ -187,8 +187,8 @@ export default function MarketingPricing() {
     ? 'Pricing | Servio AI Business Assistant'
     : 'Prijzen | Servio AI Bedrijfsassistent';
   const description = isEn
-    ? 'Transparent pricing for every entrepreneur. From €9.99/month. 14-day free trial, no credit card required.'
-    : 'Transparante prijzen voor elke ondernemer. Vanaf €9,99/maand. 14 dagen gratis proberen, geen creditcard nodig.';
+    ? 'Transparent pricing for every entrepreneur. From €9.99/month. Every new account gets 14 days of all features free, no credit card.'
+    : 'Transparante prijzen voor elke ondernemer. Vanaf €9,99/maand. Elk nieuw account krijgt 14 dagen alle functies gratis, zonder creditcard.';
 
   const visibleFeatures = showAllFeatures ? COMPARISON : COMPARISON.filter(c => c.key);
 
@@ -227,11 +227,11 @@ export default function MarketingPricing() {
                   <span className="text-primary">geen verrassingen</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
-                  Kies het plan dat bij je past. {billing === 'monthly' ? '14 dagen gratis proberen' : 'Inclusief 14 dagen gratis proberen'}, geen creditcard nodig.
+                  Elk nieuw account krijgt 14 dagen alle functies gratis, zonder creditcard. Daarna kies je een plan of ga je door op Gratis.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-sm mb-10">
-                  {[billing === 'monthly' ? '14 dagen gratis proberen' : 'Inclusief 14 dagen gratis proberen', 'Geen creditcard nodig', 'Op elk moment opzegbaar'].map((item, i) => (
+                  {['14 dagen alle functies gratis bij aanmelden', 'Geen creditcard nodig voor je proefperiode', 'Betaalde plannen maandelijks opzegbaar'].map((item, i) => (
                     <span key={i} className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-success" />
                       {item}
@@ -326,7 +326,7 @@ export default function MarketingPricing() {
                           </p>
                         )}
                         <p className={cn('text-xs mt-1.5 font-medium', plan.popular ? 'text-background/70' : 'text-success')}>
-                          {plan.isFree ? 'Permanent gratis — geen creditcard' : (isYearly ? 'Inclusief 14 dagen gratis proberen' : '14 dagen gratis proberen')}
+                          {plan.isFree ? 'Permanent gratis — geen creditcard' : 'Direct actief na betaling'}
                         </p>
                       </div>
 
