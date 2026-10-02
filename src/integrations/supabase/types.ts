@@ -1184,6 +1184,7 @@ export type Database = {
       }
     }
     Functions: {
+      choose_free_plan: { Args: never; Returns: undefined }
       consume_usage: {
         Args: { _kind: string; _limit: number; _user_id: string }
         Returns: boolean
