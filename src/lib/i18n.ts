@@ -3259,7 +3259,6 @@ const resources = {
       mailboxConnectedDesc: 'Tu {{provider}} está conectado. Los correos se están sincronizando...',
       emailsSynced: '📧 Correos actualizados',
       inboxSynced: 'Tu bandeja de entrada está sincronizada.',
-     ,
       backgroundSyncing: '📧 Sincronizando correos en segundo plano',
       backgroundSyncingDesc: 'Esto puede tardar un momento. Tu bandeja de entrada se actualizará automáticamente.',
 
