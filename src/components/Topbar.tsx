@@ -75,10 +75,10 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
   };
 
   return (
-    <div className={`bg-background border-b border-border h-14 px-6 flex items-center justify-between ${className}`}>
+    <div className={`bg-background border-b border-border min-h-14 px-2 sm:px-6 flex items-center justify-between gap-2 min-w-0 w-full ${className}`}>
       {/* Search and filters */}
-      <div className="flex items-center space-x-4 flex-1 max-w-2xl">
-        <div className="relative flex-1">
+      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0 max-w-2xl">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('ui.searchPlaceholder')}
@@ -89,8 +89,8 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
         </div>
         
         <Select defaultValue="all" onValueChange={onFilterChange}>
-          <SelectTrigger className="w-32">
-            <Filter className="h-4 w-4 mr-2" />
+          <SelectTrigger className="w-[4.5rem] sm:w-32 shrink-0 px-2 sm:px-3">
+            <Filter className="h-4 w-4 mr-1 sm:mr-2 hidden sm:block" />
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent>
@@ -110,7 +110,7 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
             value={selectedConnectionId ?? 'all'}
             onValueChange={(v) => onConnectionChange?.(v === 'all' ? null : v)}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="hidden sm:flex w-44">
               <Mail className="h-4 w-4 mr-2 shrink-0" />
               <SelectValue placeholder={t('ui.allMailboxes')} />
             </SelectTrigger>
@@ -137,11 +137,11 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
       </div>
 
       {/* Status and user menu */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-1 sm:gap-4 shrink-0">
         <Button 
           variant="ghost" 
           size="sm"
-          className="text-muted-foreground"
+          className="text-muted-foreground hidden sm:inline-flex"
           title="Sneltoetsen (druk op ?)"
         >
           <HelpCircle className="h-4 w-4" />
@@ -153,11 +153,11 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+            <Button variant="ghost" size="sm" className="flex items-center gap-2 px-1 sm:px-3">
+              <div className="w-8 h-8 shrink-0 bg-primary rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-sm max-w-[150px] truncate">{displayName}</span>
+              <span className="text-sm max-w-[150px] truncate hidden md:inline">{displayName}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

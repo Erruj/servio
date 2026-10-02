@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Mail, CheckCircle, Loader2, RefreshCw, Trash2, AlertCircle, Link2, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
@@ -18,6 +19,7 @@ import { Crown } from 'lucide-react';
 
 const MailboxSetup = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const { toast } = useToast();

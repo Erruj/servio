@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +30,7 @@ function getNextVatDeadline(now = new Date()) {
 export const VatReminderWidget = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [vatBalance, setVatBalance] = useState<{ collected: number; paid: number } | null>(null);
 
   const { deadline, quarter, year } = useMemo(() => getNextVatDeadline(), []);
@@ -66,7 +68,7 @@ export const VatReminderWidget = () => {
             BTW Kwartaal {quarter} – {year}
           </span>
           <Badge variant={urgent ? 'destructive' : 'secondary'}>
-            {daysLeft > 0 ? `Nog ${daysLeft} dagen` : 'Vandaag!'}
+            {daysLeft > 0 ? t('ui.daysLeft',{count:daysLeft}) : t('ui.todayExcl')}
           </Badge>
         </CardTitle>
       </CardHeader>
