@@ -145,14 +145,18 @@ serve(async (req) => {
     }
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Niet ingelogd");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Niet ingelogd" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (authError || !user) throw new Error("Niet ingelogd");
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Niet ingelogd" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     console.log(`[imap-connect] Testing IMAP ${imap_host}:${imap_port} for ${email}`);
     await testImap(imap_host, imap_port, email, password, use_ssl);

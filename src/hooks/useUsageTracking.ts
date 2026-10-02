@@ -58,64 +58,10 @@ export function useUsageTracking() {
     await queryClient.invalidateQueries({ queryKey: ['usage-tracking', user?.id] });
   }, [queryClient, user?.id]);
 
-  const incrementEmail = useCallback(async () => {
-    if (!user) return false;
-    try {
-      // Upsert: insert or increment
-      const { data: existing } = await supabase
-        .from('usage_tracking')
-        .select('id, email_count')
-        .eq('user_id', user.id)
-        .eq('month_year', monthYear)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from('usage_tracking')
-          .update({ email_count: existing.email_count + 1, updated_at: new Date().toISOString() })
-          .eq('id', existing.id);
-      } else {
-        await supabase
-          .from('usage_tracking')
-          .insert({ user_id: user.id, month_year: monthYear, email_count: 1, ai_call_count: 0 });
-      }
-
-      await fetchUsage();
-      return true;
-    } catch (err) {
-      console.error('Error incrementing email count:', err);
-      return false;
-    }
-  }, [user, monthYear, fetchUsage]);
-
-  const incrementAiCall = useCallback(async () => {
-    if (!user) return false;
-    try {
-      const { data: existing } = await supabase
-        .from('usage_tracking')
-        .select('id, ai_call_count')
-        .eq('user_id', user.id)
-        .eq('month_year', monthYear)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from('usage_tracking')
-          .update({ ai_call_count: existing.ai_call_count + 1, updated_at: new Date().toISOString() })
-          .eq('id', existing.id);
-      } else {
-        await supabase
-          .from('usage_tracking')
-          .insert({ user_id: user.id, month_year: monthYear, email_count: 0, ai_call_count: 1 });
-      }
-
-      await fetchUsage();
-      return true;
-    } catch (err) {
-      console.error('Error incrementing AI call count:', err);
-      return false;
-    }
-  }, [user, monthYear, fetchUsage]);
+  // Tellers worden server-side opgehoogd door de edge functions (send-email,
+  // generate-reply, ai-assistant, summarize-thread). Hier alleen verversen.
+  const incrementEmail = useCallback(async () => { await fetchUsage(); return true; }, [fetchUsage]);
+  const incrementAiCall = useCallback(async () => { await fetchUsage(); return true; }, [fetchUsage]);
 
   return {
     usage,

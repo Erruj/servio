@@ -112,10 +112,10 @@ export default function TeamManagement() {
     try {
       setLoading(true);
       
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ role: newRole as Database['public']['Enums']['app_role'] })
-        .eq('id', memberId);
+      const { error } = await (supabase.rpc as any)('update_team_member_role', {
+        _role_id: memberId,
+        _role: newRole as Database['public']['Enums']['app_role'],
+      });
 
       if (error) throw error;
 

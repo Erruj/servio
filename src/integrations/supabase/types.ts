@@ -1184,6 +1184,10 @@ export type Database = {
       }
     }
     Functions: {
+      consume_usage: {
+        Args: { _kind: string; _limit: number; _user_id: string }
+        Returns: boolean
+      }
       current_organization_id: { Args: never; Returns: string }
       get_dashboard_stats: { Args: never; Returns: Json }
       get_onboarding_status: { Args: never; Returns: Json }
@@ -1213,6 +1217,13 @@ export type Database = {
           _user_agent?: string
         }
         Returns: string
+      }
+      update_team_member_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _role_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

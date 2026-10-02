@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { consumeUsageOrReject } from "../_shared/usage.ts";
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -171,6 +172,9 @@ Inhoud:
 ${emailContent.substring(0, 3000)}`;
 
     console.log('[generate-reply] calling AI Gateway (gemini-2.5-flash)');
+    const usageBlock = await consumeUsageOrReject(user.id, 'ai', corsHeaders);
+    if (usageBlock) return usageBlock;
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
