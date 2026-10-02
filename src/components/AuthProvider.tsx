@@ -55,6 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const fetchUserRole = async (userId: string) => {
+    // Voorkom dubbele requests: auth-event en getSession vuren beide bij laden.
+    if (roleFetchFor.current === userId) return;
+    roleFetchFor.current = userId;
     try {
       const { data, error } = await supabase
         .from('user_roles')
