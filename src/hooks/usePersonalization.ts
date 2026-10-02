@@ -99,7 +99,7 @@ export function usePersonalization() {
   // Single shared query — one fetch per session regardless of how many
   // components call this hook.
   const { data, isLoading, error } = useQuery({
-    queryKey: PERSONALIZATION_QUERY_KEY,
+    queryKey: personalizationKey(user?.id ?? 'anonymous'),
     queryFn: () => fetchPersonalization(user!.id),
     enabled: !!user,
     staleTime: 5 * 60_000,
