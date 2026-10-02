@@ -150,7 +150,7 @@ const Dashboard = () => {
         return (
           <div key={key} className={`grid grid-cols-2 lg:grid-cols-4 gap-4 ${!isVisible(key) ? 'opacity-40' : ''}`}>
             {[
-              { label: timeFilter === 'today' ? 'Vandaag' : timeFilter === 'week' ? 'Deze Week' : 'Deze Maand', value: getMailCount(), sub: `${stats.totalEmails} totaal`, icon: Mail, color: 'primary', href: '/app' },
+              { label: timeFilter === 'today' ? t('ui.today') : timeFilter === 'week' ? t('ui.thisWeek') : t('ui.thisMonth'), value: getMailCount(), sub: `${stats.totalEmails} totaal`, icon: Mail, color: 'primary', href: '/app' },
               { label: 'Ongelezen', value: stats.unreadEmails, sub: 'wachtend op actie', icon: Zap, color: 'warning', href: '/app?filter=unread' },
               { label: 'Mailboxen', value: stats.connectionsCount, sub: 'gekoppeld', icon: Users, color: 'accent', href: '/mailbox-setup' },
               { label: 'Gelezen', value: stats.totalEmails - stats.unreadEmails, sub: 'afgehandeld', icon: CheckCircle, color: 'success', href: '/app' },
@@ -308,17 +308,17 @@ const Dashboard = () => {
               description={t('welcome').split('—')[0]}
               actions={
                 <>
-                  <Badge variant="outline" className="text-sm">{tierLabel}</Badge>
+                  <Badge variant="outline" className="text-sm">{tier === 'free' ? t('ui.tierFree') : tier === 'none' ? t('ui.tierNone') : tierLabel}</Badge>
                   <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
                     <SettingsIcon className="h-4 w-4 mr-1" />
-                    {isEditing ? 'Klaar' : 'Aanpassen'}
+                    {isEditing ? t('ui.done') : t('ui.customize')}
                   </Button>
                   <Select value={timeFilter} onValueChange={setTimeFilter}>
                     <SelectTrigger className="w-36"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="today">Vandaag</SelectItem>
-                      <SelectItem value="week">Deze week</SelectItem>
-                      <SelectItem value="month">Deze maand</SelectItem>
+                      <SelectItem value="today">{t('ui.today')}</SelectItem>
+                      <SelectItem value="week">{t('ui.thisWeek')}</SelectItem>
+                      <SelectItem value="month">{t('ui.thisMonth')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </>
