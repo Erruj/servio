@@ -20,6 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUsageTracking } from '@/hooks/useUsageTracking';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { usePersonalization } from '@/hooks/usePersonalization';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import {
   Mail, Clock, Zap, CheckCircle, BarChart3, Calendar, ArrowRight,
   FileText, Loader2, TrendingUp, Receipt, FileBox, Sparkles, Users,
@@ -89,40 +90,26 @@ const Dashboard = () => {
   const [timeFilter, setTimeFilter] = useState('today');
   const [isEditing, setIsEditing] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['dashboard-data', user?.id],
+  const { data: rpc, isLoading: statsLoading } = useDashboardStats();
+  const { data: recentData, isLoading: recentLoading } = useQuery({
+    queryKey: ['dashboard-recent', user?.id],
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const now = new Date();
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-      const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
-      const [totalRes, unreadRes, todayRes, weekRes, monthRes, recentRes, invoiceRes, receiptRes, docRes, connRes] = await Promise.all([
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).eq('is_read', false),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).gte('received_at', todayStart),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).gte('received_at', weekStart),
-        supabase.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).gte('received_at', monthStart),
-        supabase.from('emails').select('id, subject, from_name, from_email, received_at, is_read').eq('user_id', user!.id).order('received_at', { ascending: false }).limit(5),
-        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-        supabase.from('receipts').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-        supabase.from('documents').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-        supabase.from('email_connections').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-      ]);
-
-      return {
-        stats: {
-          totalEmails: totalRes.count || 0, unreadEmails: unreadRes.count || 0,
-          todayEmails: todayRes.count || 0, weekEmails: weekRes.count || 0, monthEmails: monthRes.count || 0,
-          totalInvoices: invoiceRes.count || 0, totalReceipts: receiptRes.count || 0,
-          totalDocuments: docRes.count || 0, connectionsCount: connRes.count || 0,
-        } as DashboardStats,
-        recentEmails: (recentRes.data as RecentEmail[]) || [],
-      };
+      const { data } = await supabase.from('emails').select('id, subject, from_name, from_email, received_at, is_read').eq('user_id', user!.id).order('received_at', { ascending: false }).limit(5);
+      return (data as RecentEmail[]) || [];
     },
   });
+  const isLoading = statsLoading || recentLoading;
+  const data = rpc ? {
+    stats: {
+      totalEmails: rpc.total_emails, unreadEmails: rpc.unread_emails,
+      todayEmails: rpc.today_emails, weekEmails: rpc.week_emails, monthEmails: rpc.month_emails,
+      totalInvoices: rpc.total_invoices, totalReceipts: rpc.total_receipts,
+      totalDocuments: rpc.total_documents, connectionsCount: rpc.connections,
+    } as DashboardStats,
+    recentEmails: recentData ?? [],
+  } : undefined;
 
   const stats: DashboardStats = data?.stats ?? {
     totalEmails: 0, unreadEmails: 0, todayEmails: 0, weekEmails: 0, monthEmails: 0,
