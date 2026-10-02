@@ -19,7 +19,7 @@ import { Crown } from 'lucide-react';
 
 const MailboxSetup = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -45,7 +45,7 @@ const MailboxSetup = () => {
     maxMailboxes !== null && activeConnections.length >= maxMailboxes;
   const limitMessage =
     maxMailboxes !== null
-      ? `Je hebt het maximum van ${maxMailboxes} mailbox${maxMailboxes === 1 ? '' : 'en'} bereikt voor je ${tierLabel}-plan. Upgrade om meer mailboxen te koppelen.`
+      ? t('mailboxLimitMessage', { count: maxMailboxes, tier: tierLabel })
       : '';
 
   useEffect(() => {
@@ -54,8 +54,8 @@ const MailboxSetup = () => {
 
     if (connected) {
       toast({
-        title: "✅ Mailbox gekoppeld!",
-        description: `Je ${connected === 'gmail' ? 'Gmail' : 'Outlook'} account is succesvol gekoppeld.`,
+        title: t('mailboxConnected'),
+        description: t('mailboxConnectedAccount', { provider: connected === 'gmail' ? 'Gmail' : 'Outlook' }),
       });
       navigate('/mailbox-setup', { replace: true });
     }
@@ -63,14 +63,14 @@ const MailboxSetup = () => {
     if (error) {
       if (error === 'mailbox_limit_reached') {
         toast({
-          title: "Mailboxlimiet bereikt",
-          description: "Je abonnement staat geen extra mailbox toe. Upgrade je plan om meer mailboxen te koppelen.",
+          title: t('mailboxLimitReached'),
+          description: t('mailboxLimitReachedDesc'),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "❌ Koppeling mislukt",
-          description: `Er is een fout opgetreden: ${error}`,
+          title: t('connectionFailed'),
+          description: t('connectionFailedDesc', { error }),
           variant: "destructive",
         });
       }
@@ -105,11 +105,11 @@ const MailboxSetup = () => {
   const handleManualSync = async () => {
     try {
       await syncEmails();
-      toast({ title: "📧 Emails bijgewerkt", description: "Je mailbox is gesynchroniseerd." });
+      toast({ title: t('emailsUpdated'), description: t('mailboxSynced') });
     } catch (error) {
       toast({
-        title: "Synchronisatie mislukt",
-        description: error instanceof Error ? error.message : "Onbekende fout. Probeer het later opnieuw.",
+        title: t('mailboxSyncFailed'),
+        description: error instanceof Error ? error.message : t('unknownErrorRetry'),
         variant: "destructive",
       });
     } finally {
@@ -190,20 +190,19 @@ const MailboxSetup = () => {
                   <div>
                     <p className="font-medium text-destructive">{loadError}</p>
                     <p className="text-muted-foreground">
-                      Hierdoor kan het lijken alsof je geen mailbox gekoppeld hebt. Probeer de status te vernieuwen.
+                      {t('mailboxLoadErrorHint')}
                     </p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
-                  Opnieuw proberen
+                  {t('retry')}
                 </Button>
               </div>
             )}
 
             {!isLoading && !loadError && activeConnections.length === 0 && (
               <div className="rounded-2xl border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-                Er is momenteel geen mailbox gekoppeld aan je account. Eerder gesynchroniseerde e-mails blijven
-                zichtbaar in je inbox, maar er komt geen nieuwe mail binnen tot je opnieuw koppelt.
+                {t('noMailboxConnectedDesc')}
               </div>
             )}
 
@@ -217,12 +216,12 @@ const MailboxSetup = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center text-xl">
                     <CheckCircle className="h-6 w-6 mr-3 text-success" />
-                    Gekoppelde accounts
+                    {t('connectedAccounts')}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
                     {maxMailboxes === null
-                      ? `${activeConnections.length} mailbox${activeConnections.length === 1 ? '' : 'en'} gekoppeld (onbeperkt met je ${tierLabel}-plan)`
-                      : `${activeConnections.length} van de ${maxMailboxes} mailbox${maxMailboxes === 1 ? '' : 'en'} gekoppeld (${tierLabel}-plan)`}
+                      ? t('connectedMailboxesUnlimited', { count: activeConnections.length, tier: tierLabel })
+                      : t('connectedMailboxesLimited', { count: activeConnections.length, max: maxMailboxes, tier: tierLabel })}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -240,13 +239,13 @@ const MailboxSetup = () => {
                               {getProviderName(connection.provider)}
                             </Badge>
                             {connection.is_active ? (
-                              <span className="text-success">● Actief</span>
+                              <span className="text-success">● {t('active')}</span>
                             ) : (
-                              <span className="text-muted-foreground">● Ontkoppeld</span>
+                              <span className="text-muted-foreground">● {t('disconnected')}</span>
                             )}
                             {connection.last_sync_at && (
                               <span>
-                                Laatst gesync: {new Date(connection.last_sync_at).toLocaleString('nl-NL')}
+                                {t('lastSynced')}: {new Date(connection.last_sync_at).toLocaleString(i18n.language)}
                               </span>
                             )}
                           </div>
@@ -258,7 +257,7 @@ const MailboxSetup = () => {
                           )}
                           {!connection.is_active && (
                             <p className="mt-1 text-sm text-muted-foreground">
-                              Deze mailbox is ontkoppeld. Je e-mailhistorie blijft bewaard.
+                              {t('disconnectedMailboxHistory')}
                             </p>
                           )}
                         </div>
@@ -271,7 +270,7 @@ const MailboxSetup = () => {
                             onClick={() => handleReconnect(connection.provider)}
                           >
                             <Link2 className="h-4 w-4 mr-1" />
-                            Opnieuw koppelen
+                            {t('reconnect')}
                           </Button>
                         )}
                         {!connection.is_active && (
@@ -281,7 +280,7 @@ const MailboxSetup = () => {
                             onClick={() => handleReconnect(connection.provider)}
                           >
                             <Link2 className="h-4 w-4 mr-1" />
-                            Opnieuw verbinden
+                            {t('reconnect')}
                           </Button>
                         )}
                         {connection.is_active && (
@@ -292,7 +291,7 @@ const MailboxSetup = () => {
                             className="text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
-                            Ontkoppelen
+                            {t('disconnect')}
                           </Button>
                         )}
                       </div>
@@ -306,10 +305,10 @@ const MailboxSetup = () => {
             {/* Provider Selection */}
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                {activeConnections.length > 0 ? '➕ Nog een mailbox toevoegen' : '⚙️ Koppel je mailbox'}
+                {activeConnections.length > 0 ? `➕ ${t('addAnotherMailbox')}` : `⚙️ ${t('ui.connectMailboxTitle')}`}
               </h2>
               <p className="text-muted-foreground mb-6">
-                Kies een provider om je emails te synchroniseren
+                {t('chooseEmailProvider')}
               </p>
 
               {mailboxLimitReached && (
@@ -321,11 +320,11 @@ const MailboxSetup = () => {
                     <Crown className="mt-0.5 h-5 w-5 text-primary" />
                     <div className="space-y-3">
                       <div>
-                        <p className="font-medium text-foreground">Mailboxlimiet bereikt</p>
+                        <p className="font-medium text-foreground">{t('mailboxLimitReached')}</p>
                         <p className="text-sm text-muted-foreground">{limitMessage}</p>
                       </div>
                       <Button size="sm" onClick={() => navigate('/pricing')}>
-                        Bekijk abonnementen
+                        {t('viewPlans')}
                       </Button>
                     </div>
                   </div>
@@ -341,25 +340,25 @@ const MailboxSetup = () => {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           Gmail
-                          <Badge variant="secondary" className="text-xs">Binnenkort beschikbaar</Badge>
+                          <Badge variant="secondary" className="text-xs">{t('comingSoon')}</Badge>
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">Google Gmail koppelen</p>
+                        <p className="text-sm text-muted-foreground mt-1">{t('connectGmail')}</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {['OAuth 2.0', 'Auto-sync', 'Volledige integratie'].map((feature, i) => (
+                        {['OAuth 2.0', t('autoSync'), t('fullIntegration')].map((feature, i) => (
                           <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
                         ))}
                       </div>
                       <Button className="w-full" variant="outline" disabled>
                         <Clock className="h-4 w-4 mr-2" />
-                        Binnenkort beschikbaar
+                        {t('comingSoon')}
                       </Button>
                       <p className="text-xs text-muted-foreground text-center">
-                        We ronden momenteel Google's verificatieproces af. Gebruik ondertussen IMAP of Outlook.
+                        {t('gmailVerificationPending')}
                       </p>
                     </div>
                   </CardContent>
@@ -372,17 +371,17 @@ const MailboxSetup = () => {
                       <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">🔗</div>
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          Andere e-mail
-                          <Badge className="bg-primary/20 text-primary text-[10px]">Universeel</Badge>
+                          {t('otherEmail')}
+                          <Badge className="bg-primary/20 text-primary text-[10px]">{t('universal')}</Badge>
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">IMAP/SMTP koppeling</p>
+                        <p className="text-sm text-muted-foreground mt-1">{t('imapConnection')}</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {['Alle providers', 'IMAP/SMTP', 'Versleuteld'].map((feature, i) => (
+                        {[t('allProviders'), 'IMAP/SMTP', t('encrypted')].map((feature, i) => (
                           <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
                         ))}
                       </div>
@@ -393,10 +392,10 @@ const MailboxSetup = () => {
                         title={mailboxLimitReached ? limitMessage : undefined}
                       >
                         <Link2 className="h-4 w-4 mr-2" />
-                        Koppel via IMAP
+                        {t('connectViaImap')}
                       </Button>
                       <p className="text-xs text-muted-foreground text-center">
-                        {mailboxLimitReached ? limitMessage : 'Werkt met Namecheap, Zoho, Yahoo en meer'}
+                        {mailboxLimitReached ? limitMessage : t('imapProvidersDesc')}
                       </p>
                     </div>
                   </CardContent>
@@ -409,14 +408,14 @@ const MailboxSetup = () => {
                       <div className="text-3xl p-2 rounded-lg bg-primary/10 text-primary">📨</div>
                       <div>
                         <CardTitle>Microsoft Outlook</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">Outlook / Microsoft 365 koppelen</p>
+                        <p className="text-sm text-muted-foreground mt-1">{t('connectOutlook')}</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {['OAuth 2.0', 'Auto-sync', 'Volledige integratie'].map((feature, i) => (
+                        {['OAuth 2.0', t('autoSync'), t('fullIntegration')].map((feature, i) => (
                           <Badge key={i} variant="outline" className="text-xs">{feature}</Badge>
                         ))}
                       </div>
@@ -427,9 +426,9 @@ const MailboxSetup = () => {
                         title={mailboxLimitReached ? limitMessage : undefined}
                       >
                         {connectingProvider === 'outlook' ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verbinden...</>
+                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('connecting')}</>
                         ) : (
-                          <><Mail className="h-4 w-4 mr-2" />Koppel Outlook</>
+                          <><Mail className="h-4 w-4 mr-2" />{t('connectOutlookButton')}</>
                         )}
                       </Button>
                       {mailboxLimitReached && (
@@ -444,15 +443,15 @@ const MailboxSetup = () => {
             {/* Help Section */}
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle className="text-xl">❓ Hulp nodig?</CardTitle>
+                <CardTitle className="text-xl">❓ {t('needHelp')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Hulp bij het koppelen van je mailbox? Neem contact op met ons support team.
+                  {t('mailboxHelpDesc')}
                 </p>
                 <div className="flex space-x-4">
                   <Button variant="outline" onClick={() => navigate('/contact')}>
-                    💬 Contact Support
+                    💬 {t('contactSupport')}
                   </Button>
                 </div>
               </CardContent>
