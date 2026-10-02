@@ -150,10 +150,10 @@ const Dashboard = () => {
         return (
           <div key={key} className={`grid grid-cols-2 lg:grid-cols-4 gap-4 ${!isVisible(key) ? 'opacity-40' : ''}`}>
             {[
-              { label: timeFilter === 'today' ? t('ui.today') : timeFilter === 'week' ? t('ui.thisWeek') : t('ui.thisMonth'), value: getMailCount(), sub: `${stats.totalEmails} totaal`, icon: Mail, color: 'primary', href: '/app' },
-              { label: 'Ongelezen', value: stats.unreadEmails, sub: 'wachtend op actie', icon: Zap, color: 'warning', href: '/app?filter=unread' },
-              { label: 'Mailboxen', value: stats.connectionsCount, sub: 'gekoppeld', icon: Users, color: 'accent', href: '/mailbox-setup' },
-              { label: 'Gelezen', value: stats.totalEmails - stats.unreadEmails, sub: 'afgehandeld', icon: CheckCircle, color: 'success', href: '/app' },
+              { label: timeFilter === 'today' ? t('ui.today') : timeFilter === 'week' ? t('ui.thisWeek') : t('ui.thisMonth'), value: getMailCount(), sub: t('ui.totalCount',{count:stats.totalEmails}), icon: Mail, color: 'primary', href: '/app' },
+              { label: t('ui.unread'), value: stats.unreadEmails, sub: t('ui.waitingAction'), icon: Zap, color: 'warning', href: '/app?filter=unread' },
+              { label: t('ui.mailboxes'), value: stats.connectionsCount, sub: t('ui.connected'), icon: Users, color: 'accent', href: '/mailbox-setup' },
+              { label: t('ui.read'), value: stats.totalEmails - stats.unreadEmails, sub: t('ui.handled'), icon: CheckCircle, color: 'success', href: '/app' },
             ].map((m, i) => (
               <Card key={i} className="shadow-card hover:shadow-elevated transition-all duration-200 cursor-pointer" onClick={() => navigate(m.href)}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -229,7 +229,7 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 gap-3">
                 {(quickActions as any[]).map((a: any, i: number) => {
                   const isInbox = a.label === 'Inbox' || a.href === '/app';
-                  const desc = isInbox ? `${stats.unreadEmails} ongelezen` : (a.desc || '');
+                  const desc = isInbox ? t('ui.unreadCount',{count:stats.unreadEmails}) : (a.desc || '');
                   return (
                     <Button key={i} variant="outline" className="h-auto p-3 flex items-center justify-start gap-3" onClick={() => navigate(a.href)}>
                       <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0"><Zap className="h-4 w-4 text-primary" /></div>
@@ -257,7 +257,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               {recentEmails.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nog geen emails gesynchroniseerd.</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('ui.noEmailsSynced')}</p>
               ) : (
                 <div className="space-y-1">
                   {recentEmails.map((email) => (

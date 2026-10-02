@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Smile, Meh, Frown, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -22,6 +23,7 @@ const LABELS: Record<string, string> = {
 
 export const CustomerSatisfactionWidget = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState<Record<string, number>>({ positive: 0, neutral: 0, negative: 0 });
 
@@ -80,9 +82,9 @@ export const CustomerSatisfactionWidget = () => {
               <Heart className="h-6 w-6 text-primary" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Nog geen sentiment data</p>
+              <p className="text-sm font-medium text-foreground">{t('ui.noSentimentTitle')}</p>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Zodra de AI je inkomende emails analyseert zie je hier het sentiment van de laatste 30 dagen.
+                {t('ui.noSentimentDesc')}
               </p>
             </div>
           </div>
@@ -117,7 +119,7 @@ export const CustomerSatisfactionWidget = () => {
                 <span className="flex-1 text-muted-foreground">Negatief</span>
                 <span className="font-semibold">{counts.negative}</span>
               </div>
-              <p className="text-xs text-muted-foreground pt-2">Op basis van {total} emails (laatste 30 dagen).</p>
+              <p className="text-xs text-muted-foreground pt-2">{t('ui.sentimentBasedOn',{count:total})}</p>
             </div>
           </div>
         )}

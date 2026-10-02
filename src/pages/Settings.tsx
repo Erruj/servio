@@ -112,9 +112,15 @@ const Settings = () => {
           autoProcessAttachments: (data as any).auto_process_invoice_attachments ?? false,
           tagSuggestions: data.tag_suggestions ?? true,
         };
+        // Taalkeuze in de browser (taalkiezer) heeft voorrang op het profiel
+        const localLang = localStorage.getItem('servio-language');
+        if (localLang) {
+          loaded.language = localLang;
+        } else {
+          i18n.changeLanguage(loaded.language);
+          localStorage.setItem('servio-language', loaded.language);
+        }
         setSettings(loaded);
-        i18n.changeLanguage(loaded.language);
-        localStorage.setItem('servio-language', loaded.language);
         setAppTheme(loaded.theme);
       }
     } catch (error: any) {
@@ -133,6 +139,7 @@ const Settings = () => {
   const handleLanguageChange = (value: string) => {
     setSettings(prev => ({ ...prev, language: value }));
     i18n.changeLanguage(value);
+    localStorage.setItem('servio-language', value);
   };
 
   const handleAccentChange = (color: string) => {

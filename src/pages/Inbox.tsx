@@ -188,15 +188,15 @@ const Inbox = () => {
       <SyncErrorBanner connections={connections} />
 
       
-      <div className="flex-1 flex min-h-0">
+      <div className="flex-1 flex min-h-0 min-w-0 w-full overflow-x-hidden">
         <Sidebar />
         
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center border-b border-border">
-            <div className="pl-4 flex items-center gap-2">
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 w-full">
+          <div className="flex items-center border-b border-border min-w-0 w-full">
+            <div className="pl-2 sm:pl-4 flex items-center gap-2 shrink-0">
               <Button onClick={() => setComposeOpen(true)} size="sm" className="gap-2">
                 <PenSquare className="h-4 w-4" />
-                <span className="hidden sm:inline">Nieuwe e-mail</span>
+                <span className="hidden sm:inline">{t('ui.newEmail')}</span>
               </Button>
               {'Notification' in window && Notification.permission === 'default' && (
                 <Button variant="ghost" size="sm" onClick={requestNotificationPermission} title="Notificaties inschakelen">
@@ -204,7 +204,7 @@ const Inbox = () => {
                 </Button>
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <Topbar
                 onSearchChange={handleSearchChange}
                 onFilterChange={handleFilterChange}
@@ -214,7 +214,7 @@ const Inbox = () => {
               />
             </div>
             {hasConnections && (
-              <div className="pr-4 flex items-center gap-1">
+              <div className="pr-2 sm:pr-4 flex items-center gap-1 shrink-0">
                 <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing}>
                   {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                   <span className="ml-2 hidden sm:inline">Sync</span>

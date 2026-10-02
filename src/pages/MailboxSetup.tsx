@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Mail, CheckCircle, Loader2, RefreshCw, Trash2, AlertCircle, Link2, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
@@ -18,6 +19,7 @@ import { Crown } from 'lucide-react';
 
 const MailboxSetup = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -141,32 +143,41 @@ const MailboxSetup = () => {
       <div className="flex-1 flex">
         <Sidebar />
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-8 space-y-8">
+        <div className="flex-1 min-w-0 overflow-y-auto">
+          <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" onClick={() => navigate('/app')} className="p-2">
-                  <ArrowLeft className="h-5 w-5" />
-                  Terug
+            <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+              <div className="flex items-center justify-between gap-2 sm:hidden">
+                <Button variant="ghost" onClick={() => navigate('/app')} className="min-h-11 px-2">
+                  <ArrowLeft className="h-5 w-5 mr-1" /> {t('ui.back')}
                 </Button>
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">📧 Mailbox Koppelen</h1>
-                  <p className="text-lg text-muted-foreground mt-2">
-                    Koppel je mailbox om echte emails te ontvangen en met AI te beantwoorden
-                  </p>
+                <div className="flex items-center gap-1">
+                  <Button onClick={() => refetch()} variant="ghost" size="icon" className="h-11 w-11" title={t('ui.refreshStatus')} aria-label={t('ui.refreshStatus')}>
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                  {activeConnections.length > 0 && (
+                    <Button onClick={handleManualSync} variant="outline" size="icon" className="h-11 w-11" title={t('ui.syncNow')} aria-label={t('ui.syncNow')}>
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <Button onClick={() => refetch()} variant="ghost" size="sm" title="Status vernieuwen">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Status vernieuwen
+              <div className="flex items-center gap-4 min-w-0">
+                <Button variant="ghost" onClick={() => navigate('/app')} className="p-2 hidden sm:inline-flex shrink-0">
+                  <ArrowLeft className="h-5 w-5" /> {t('ui.back')}
+                </Button>
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground break-words">📧 {t('ui.mailboxSetupTitle')}</h1>
+                  <p className="text-base sm:text-lg text-muted-foreground mt-2">{t('ui.mailboxSetupDesc')}</p>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
+                <Button onClick={() => refetch()} variant="ghost" size="sm" title={t('ui.refreshStatus')}>
+                  <RefreshCw className="h-4 w-4 mr-2" /> {t('ui.refreshStatus')}
                 </Button>
                 {activeConnections.length > 0 && (
                   <Button onClick={handleManualSync} variant="outline" size="sm">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Synchroniseer nu
+                    <RefreshCw className="h-4 w-4 mr-2" /> {t('ui.syncNow')}
                   </Button>
                 )}
               </div>
