@@ -1864,7 +1864,6 @@ const resources = {
       mailboxConnectedDesc: 'Ihr {{provider}} ist verbunden. E-Mails werden jetzt synchronisiert...',
       emailsSynced: '📧 E-Mails aktualisiert',
       inboxSynced: 'Ihr Posteingang ist synchronisiert.',
-     ,
       backgroundSyncing: '📧 E-Mails werden im Hintergrund synchronisiert',
       backgroundSyncingDesc: 'Dies kann einen Moment dauern. Ihr Posteingang wird automatisch aktualisiert.',
 
@@ -2564,7 +2563,6 @@ const resources = {
       mailboxConnectedDesc: 'Votre {{provider}} est connecté. Les e-mails sont en cours de synchronisation...',
       emailsSynced: '📧 E-mails mis à jour',
       inboxSynced: 'Votre boîte de réception est synchronisée.',
-     ,
       backgroundSyncing: '📧 Synchronisation des e-mails en arrière-plan',
       backgroundSyncingDesc: 'Cela peut prendre un moment. Votre boîte de réception sera mise à jour automatiquement.',
 
