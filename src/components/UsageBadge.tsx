@@ -1,11 +1,13 @@
 import { useUsageTracking } from '@/hooks/useUsageTracking';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Mail, Sparkles, AlertTriangle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function UsageBadge() {
+  const { t } = useTranslation();
   const { usage, isLoading } = useUsageTracking();
   const { limits, tier } = useFeatureAccess();
 
@@ -18,7 +20,7 @@ export function UsageBadge() {
 
   return (
     <div className="px-4 py-3 space-y-3 border-t border-border">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Gebruik</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('ui.usage')}</p>
 
       <Tooltip>
         <TooltipTrigger asChild>

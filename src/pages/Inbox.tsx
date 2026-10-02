@@ -256,15 +256,15 @@ const Inbox = () => {
               </div>
             </div>
           ) : !hasConnections ? (
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center max-w-md">
+            <div className="flex-1 min-w-0 w-full flex items-center justify-center p-4 sm:p-8">
+              <div className="text-center w-full max-w-md mx-auto px-2 break-words">
                 <div className="p-6 bg-primary/10 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
                   <Mail className="h-12 w-12 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-3">Koppel je mailbox</h2>
-                <p className="text-muted-foreground mb-6">Verbind je mailbox om je emails hier te zien en met AI te beantwoorden.</p>
-                <Button size="lg" onClick={() => window.location.href = '/mailbox-setup'}>
-                  <Mail className="h-5 w-5 mr-2" /> Mailbox koppelen
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3">{t('ui.connectMailboxTitle')}</h2>
+                <p className="text-muted-foreground mb-6">{t('ui.connectMailboxDesc')}</p>
+                <Button size="lg" className="max-w-full whitespace-normal h-auto min-h-11" onClick={() => window.location.href = '/mailbox-setup'}>
+                  <Mail className="h-5 w-5 mr-2 shrink-0" /> {t('ui.connectMailboxButton')}
                 </Button>
               </div>
             </div>

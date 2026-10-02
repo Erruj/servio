@@ -556,7 +556,7 @@ De ROI is vrij duidelijk.
 
 ## Aan de slag
 
-Benieuwd hoe een [AI boekhoudassistent](/) eruitziet in de praktijk? Servio biedt 14 dagen gratis proef — inclusief de AI assistent. Stel je eerste vraag en kijk wat er gebeurt.
+Benieuwd hoe een [AI boekhoudassistent](/features) eruitziet in de praktijk? Servio biedt 14 dagen gratis proef — inclusief de AI assistent. Stel je eerste vraag en kijk wat er gebeurt.
 
 En als je toch bezig bent: lees ook ons [vergelijkingsartikel over administratiesoftware](/blog/administratie-software-zzp-vergelijken) om te zien hoe Servio zich verhoudt tot Moneybird en Jortt.`
   },

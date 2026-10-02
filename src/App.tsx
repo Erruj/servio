@@ -1,9 +1,10 @@
+import { useAppPageTitle } from '@/hooks/useAppPageTitle';
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
@@ -29,7 +30,6 @@ const Settings = lazy(() => import("./pages/Settings"));
 
 const Signup = lazy(() => import("./pages/Signup"));
 const MailboxSetup = lazy(() => import("./pages/MailboxSetup"));
-const Analytics = lazy(() => import("./pages/Analytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -86,6 +86,7 @@ function AppRoutes() {
   const { user, isLoading } = useAuth();
   useLanguagePersistence();
   useUrlLanguageSync();
+  useAppPageTitle();
 
   if (isLoading) {
     return (
@@ -174,11 +175,7 @@ function AppRoutes() {
           <MailboxSetup />
         </ProtectedRoute>
       } />
-      <Route path="/analytics" element={
-        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance', 'viewer']}>
-          <Analytics />
-        </ProtectedRoute>
-      } />
+      <Route path="/analytics" element={<Navigate to="/stats" replace />} />
       <Route path="/team" element={
         <ProtectedRoute requiredRoles={['owner', 'admin']}>
           <TeamManagement />

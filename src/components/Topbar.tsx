@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
 import { NotificationBell } from '@/components/NotificationBell';
 
 import {
@@ -33,6 +34,7 @@ interface TopbarProps {
 export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -79,7 +81,7 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Zoek in subject, afzender of label..."
+            placeholder={t('ui.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
@@ -92,15 +94,15 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle</SelectItem>
+            <SelectItem value="all">{t('ui.filterAll')}</SelectItem>
             <SelectItem value="inbox">Inbox</SelectItem>
-            <SelectItem value="unread">Ongelezen</SelectItem>
-            <SelectItem value="starred">Met ster</SelectItem>
-            <SelectItem value="important">Belangrijk</SelectItem>
-            <SelectItem value="snoozed">Gesnoozed</SelectItem>
-            <SelectItem value="spam">Spam</SelectItem>
-            <SelectItem value="sent">Verzonden</SelectItem>
-            <SelectItem value="blocked">Geblokkeerd</SelectItem>
+            <SelectItem value="unread">{t('ui.unread')}</SelectItem>
+            <SelectItem value="starred">{t('ui.starred')}</SelectItem>
+            <SelectItem value="important">{t('ui.important')}</SelectItem>
+            <SelectItem value="snoozed">{t('ui.snoozed')}</SelectItem>
+            <SelectItem value="spam">{t('ui.spam')}</SelectItem>
+            <SelectItem value="sent">{t('ui.sent')}</SelectItem>
+            <SelectItem value="blocked">{t('ui.blocked')}</SelectItem>
           </SelectContent>
         </Select>
         {connections.filter(c => c.is_active !== false).length >= 2 && (
@@ -110,10 +112,10 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
           >
             <SelectTrigger className="w-44">
               <Mail className="h-4 w-4 mr-2 shrink-0" />
-              <SelectValue placeholder="Alle mailboxen" />
+              <SelectValue placeholder={t('ui.allMailboxes')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle mailboxen</SelectItem>
+              <SelectItem value="all">{t('ui.allMailboxes')}</SelectItem>
               {connections.filter(c => c.is_active !== false).map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   <span className="flex items-center gap-2">
@@ -129,7 +131,7 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
 
         {searchQuery && (
           <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-muted-foreground text-xs">
-            Wis filters
+            {t('ui.clearFilters')}
           </Button>
         )}
       </div>
@@ -159,9 +161,9 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate('/profile')}>Profiel</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}>Instellingen</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout}>Uitloggen</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/profile')}>{t('ui.profile')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/settings')}>{t('ui.settings')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>{t('ui.logout')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -17,12 +17,12 @@ export function Header({ user, onLogout }: HeaderProps) {
   return (
     <header className="bg-card border-b border-border shadow-subtle">
       <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <MobileNav />
-          <div className="p-1.5 md:p-2 bg-primary/20 rounded-xl">
+          <div className="p-1.5 md:p-2 bg-primary/20 rounded-xl shrink-0">
             <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-primary" />
           </div>
-          <div>
+          <div className="hidden sm:block min-w-0">
             <h1 className="text-xl md:text-2xl font-bold text-primary">Servio</h1>
             <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
               {t('tagline')}
@@ -30,19 +30,21 @@ export function Header({ user, onLogout }: HeaderProps) {
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 md:space-x-3">
-          <ThemeToggle />
-          <LanguageSelector />
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
+            <LanguageSelector />
+          </div>
           
           {user && (
-            <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-foreground truncate max-w-[150px]">
                   {user.user_metadata?.full_name || user.email}
                 </p>
                 <p className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={onLogout}>
+              <Button variant="outline" size="sm" onClick={onLogout} className="min-h-11 min-w-11" aria-label={t('logout')}>
                 <LogOut className="h-4 w-4 md:mr-2" />
                 <span className="hidden md:inline">{t('logout')}</span>
               </Button>

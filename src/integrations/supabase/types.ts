@@ -1185,6 +1185,7 @@ export type Database = {
     }
     Functions: {
       current_organization_id: { Args: never; Returns: string }
+      get_dashboard_stats: { Args: never; Returns: Json }
       get_onboarding_status: { Args: never; Returns: Json }
       get_team_members: {
         Args: never

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const roleFetchFor = useRef<string | null>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             fetchUserRole(session.user.id);
           }, 0);
         } else {
-          setUserRole(null);
+          setUserRole(null); roleFetchFor.current = null;
         }
       }
     );
@@ -55,6 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const fetchUserRole = async (userId: string) => {
+    // Voorkom dubbele requests: auth-event en getSession vuren beide bij laden.
+    if (roleFetchFor.current === userId) return;
+    roleFetchFor.current = userId;
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -158,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setUserRole(null);
+    setUserRole(null); roleFetchFor.current = null;
     // Leeg de gecachte data zodat een volgende gebruiker in dit tabblad
     // nooit instellingen of data van de vorige account te zien krijgt.
     queryClient.clear();
