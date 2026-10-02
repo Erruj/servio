@@ -48,8 +48,20 @@ Deno.serve(async (req) => {
 
     const notifications: Notif[] = [];
 
+    const { data: settingsRows } = await supabase
+      .from("user_settings")
+      .select("user_id, subscription_status, subscription_tier, trial_end_date");
+    const adminAccess = new Map<string, boolean>();
+    for (const s of settingsRows ?? []) {
+      const r: any = s;
+      const inTrial = r.subscription_status === "trial" && r.trial_end_date && new Date(r.trial_end_date) > now;
+      const paidPro = r.subscription_status === "active" && (!r.subscription_tier || ["pro", "business"].includes(r.subscription_tier));
+      adminAccess.set(r.user_id, Boolean(inTrial || paidPro));
+    }
+
     for (const p of profiles ?? []) {
       const uid = p.id;
+      const hasAdmin = adminAccess.get(uid) ?? false;
 
       // Unpaid invoices > 30 days
       const { data: inv30 } = await supabase
@@ -68,7 +80,7 @@ Deno.serve(async (req) => {
           severity: "urgent",
           message: `URGENT: Je hebt ${count60} onbetaalde factu${count60 === 1 ? "ur" : "ren"} ouder dan 60 dagen.`,
           action_url: "/app/administration/invoices",
-          dedup_key: `inv60-${todayKey}`,
+          dedup_key: "inv60",
         });
       } else if (count30 > 0) {
         notifications.push({
@@ -77,7 +89,7 @@ Deno.serve(async (req) => {
           severity: "warning",
           message: `Je hebt ${count30} onbetaalde factu${count30 === 1 ? "ur" : "ren"} ouder dan 30 dagen. Wil je een herinnering sturen?`,
           action_url: "/app/administration/invoices",
-          dedup_key: `inv30-${todayKey}`,
+          dedup_key: "inv30",
         });
       }
 
@@ -103,7 +115,7 @@ Deno.serve(async (req) => {
             severity: "warning",
             message: `Klant ${info.name || email} stuurt veel klachten (${info.count}). Wil je een automatisch antwoordtemplate instellen?`,
             action_url: "/app/templates",
-            dedup_key: `complaints-${email}-${todayKey}`,
+            dedup_key: `complaints-${email}`,
           });
         }
       }
@@ -115,14 +127,14 @@ Deno.serve(async (req) => {
         .eq("user_id", uid)
         .gte("created_at", d14)
         .limit(1);
-      if (!tx || tx.length === 0) {
+      if (hasAdmin && (!tx || tx.length === 0)) {
         notifications.push({
           user_id: uid,
           type: "no_transactions",
           severity: "info",
           message: "Je hebt 2 weken geen transacties toegevoegd. Alles up to date?",
           action_url: "/app/administration/financial-overview",
-          dedup_key: `notx-${todayKey}`,
+          dedup_key: "notx",
         });
       }
 
@@ -130,7 +142,7 @@ Deno.serve(async (req) => {
       const month = now.getMonth() + 1;
       const day = now.getDate();
       const btwMonths = [1, 4, 7, 10];
-      if (btwMonths.includes(month) && day >= 15 && day <= 31) {
+      if (hasAdmin && btwMonths.includes(month) && day >= 15 && day <= 31) {
         const daysLeft = 31 - day;
         notifications.push({
           user_id: uid,

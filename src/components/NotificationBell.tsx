@@ -92,8 +92,8 @@ export function NotificationBell() {
         <div className="flex items-center justify-between px-3 py-2 border-b">
           <span className="text-sm font-semibold">Meldingen</span>
           {unread > 0 && (
-            <button onClick={markAllRead} className="text-xs text-primary hover:underline">
-              Alles als gelezen
+            <button onClick={markAllRead} className="text-xs text-primary hover:underline min-h-11 px-2">
+              Alles als gelezen markeren
             </button>
           )}
         </div>
