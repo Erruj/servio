@@ -29,7 +29,6 @@ const Settings = lazy(() => import("./pages/Settings"));
 
 const Signup = lazy(() => import("./pages/Signup"));
 const MailboxSetup = lazy(() => import("./pages/MailboxSetup"));
-const Analytics = lazy(() => import("./pages/Analytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -174,11 +173,7 @@ function AppRoutes() {
           <MailboxSetup />
         </ProtectedRoute>
       } />
-      <Route path="/analytics" element={
-        <ProtectedRoute requiredRoles={['owner', 'admin', 'finance', 'viewer']}>
-          <Analytics />
-        </ProtectedRoute>
-      } />
+      <Route path="/analytics" element={<Navigate to="/stats" replace />} />
       <Route path="/team" element={
         <ProtectedRoute requiredRoles={['owner', 'admin']}>
           <TeamManagement />
