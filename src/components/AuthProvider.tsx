@@ -107,31 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Geen sessie = "Confirm email" staat aan; gebruiker moet eerst bevestigen
       const needsEmailConfirmation = !data.session;
 
-      // Owner role is automatically assigned via database trigger (handle_new_user)
-      // Verify role assignment after a brief delay and add fallback
-      if (data.user) {
-        setTimeout(async () => {
-          try {
-            const { data: roleData, error: roleError } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', data.user!.id)
-              .maybeSingle();
-            
-            if (roleError || !roleData) {
-              console.warn('Role not found, inserting owner role as fallback');
-              // Fallback: manually insert owner role
-              await supabase.from('user_roles').insert([{
-                user_id: data.user!.id,
-                role: 'owner',
-                organization_id: data.user!.id,
-              }]);
-            }
-          } catch (e) {
-            console.error('Failed to verify/insert role:', e);
-          }
-        }, 1500);
-      }
+      // De owner-rol wordt server-side toegekend door de trigger handle_new_user.
       
       return { error: null, needsEmailConfirmation };
     } catch (error) {
