@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
  * Bewust een vaste datum: eerder werd hier new Date() gebruikt, waardoor de
  * pagina elke dag "vandaag" toonde als laatste wijziging.
  */
-const LAST_REVISED = new Date('2026-01-15T00:00:00Z');
+const LAST_REVISED = new Date('2026-10-02T00:00:00Z');
 
 interface Section {
   h: string;

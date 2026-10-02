@@ -581,7 +581,7 @@ const resources = {
           contactUs: 'Contact us',
           startFree: 'Start Free',
           sectionTitle: 'Simple, transparent pricing',
-          sectionSubtitle: 'Choose the plan that fits you. Always 14 days free trial.',
+          sectionSubtitle: 'Choose the plan that fits you. Every new account first gets all features free for 14 days.',
           freeTrialBadge: '14 days free',
           plans: [
             { name: 'Starter', price: '9.99', description: 'Perfect to get started', features: ['Limited inbox', 'Limited AI calls', '1 user', 'Basic reports'] },
@@ -1944,7 +1944,7 @@ const resources = {
           contactUs: 'Kontaktieren Sie uns',
           startFree: 'Kostenlos starten',
           sectionTitle: 'Einfache, transparente Preise',
-          sectionSubtitle: 'Wählen Sie den Tarif, der zu Ihnen passt. Immer 14 Tage kostenlos testen.',
+          sectionSubtitle: 'Wählen Sie den Tarif, der zu Ihnen passt. Jedes neue Konto erhält zuerst 14 Tage alle Funktionen kostenlos.',
           freeTrialBadge: '14 Tage kostenlos',
           plans: [
             { name: 'Starter', price: '9,99', description: 'Perfekt für den Einstieg', features: ['Begrenzter Posteingang', 'Begrenzte KI-Aufrufe', '1 Nutzer', 'Basis-Berichte'] },
