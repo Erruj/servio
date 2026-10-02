@@ -158,6 +158,9 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
+      if (trialExpired && settings?.subscription_status === 'trial') {
+        await supabaseClient.from('user_settings').update({ subscription_status: 'expired' }).eq('user_id', user.id);
+      }
       
       // Return trial status if no subscription
       return new Response(JSON.stringify({ 
