@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
 export function MobileNav() {
@@ -40,11 +42,11 @@ export function MobileNav() {
     <div className="md:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-9 w-9">
+          <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-72 p-0">
+        <SheetContent side="left" className="w-72 p-0 overflow-y-auto pb-32">
           <SheetTitle className="sr-only">Navigatie</SheetTitle>
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
@@ -116,7 +118,11 @@ export function MobileNav() {
             )}
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-3 bg-background">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageSelector />
+            </div>
             <p className="text-xs text-muted-foreground">v1.0.0 · © {new Date().getFullYear()} Servio</p>
           </div>
         </SheetContent>
