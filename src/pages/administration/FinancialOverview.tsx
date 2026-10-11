@@ -45,19 +45,40 @@ interface FinancialData {
   benchmark: string | null;
 }
 
-type PeriodFilter = 'month' | 'quarter' | 'year';
+type PeriodFilter = 'month' | 'quarter' | 'year' | 'all';
 
 export default function FinancialOverview() {
   const { t } = useTranslation();
   const [data, setData] = useState<FinancialData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEmpty, setIsEmpty] = useState(false);
-  const [period, setPeriod] = useState<PeriodFilter>('month');
+  const [period, setPeriod] = useState<PeriodFilter | null>(null);
   const [aiInsights, setAiInsights] = useState<string[]>([]);
   const [loadingInsights, setLoadingInsights] = useState(false);
 
+  // Bepaal eenmalig of er überhaupt data is, en kies de kleinste periode waarin de nieuwste data valt.
   useEffect(() => {
-    loadFinancialData();
+    (async () => {
+      const latest = async (table: 'invoices' | 'receipts' | 'transactions', col: string) => {
+        const { data } = await (supabase.from(table) as any).select(col).not(col, 'is', null).order(col, { ascending: false }).limit(1);
+        return data?.[0]?.[col] as string | undefined;
+      };
+      const dates = (await Promise.all([
+        latest('invoices', 'invoice_date'), latest('receipts', 'receipt_date'), latest('transactions', 'date'),
+      ])).filter(Boolean) as string[];
+      if (dates.length === 0) {
+        setIsEmpty(true);
+        setLoading(false);
+        return;
+      }
+      const newest = new Date(dates.sort().reverse()[0]);
+      const pick = (['month', 'quarter', 'year'] as PeriodFilter[]).find((p) => newest >= getDateRange(p).startDate) ?? 'all';
+      setPeriod(pick);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (period) loadFinancialData();
   }, [period]);
 
   const getDateRange = (periodType: PeriodFilter) => {
@@ -83,6 +104,11 @@ export default function FinancialOverview() {
         previousStartDate = new Date(now.getFullYear() - 1, 0, 1);
         previousEndDate = new Date(now.getFullYear() - 1, 11, 31);
         break;
+      default:
+        startDate = new Date(2000, 0, 1);
+        previousStartDate = new Date(1999, 0, 1);
+        previousEndDate = new Date(1999, 11, 31);
+        break;
     }
 
     return { startDate, previousStartDate, previousEndDate, endDate: now };
@@ -91,7 +117,7 @@ export default function FinancialOverview() {
   const loadFinancialData = async () => {
     setLoading(true);
     try {
-      const { startDate, previousStartDate, previousEndDate } = getDateRange(period);
+      const { startDate, previousStartDate, previousEndDate } = getDateRange(period ?? 'month');
       
       // Fetch all financial data
       const [invoicesRes, receiptsRes, transactionsRes] = await Promise.all([
@@ -232,11 +258,7 @@ export default function FinancialOverview() {
         : null;
 
       // Real empty state — do NOT fabricate demo numbers
-      if (invoices.length === 0 && receipts.length === 0 && transactions.length === 0) {
-        setIsEmpty(true);
-        setData(null);
-        setAiInsights([]);
-      } else {
+      {
         setIsEmpty(false);
         setData({
           totalIncome,
@@ -378,7 +400,7 @@ export default function FinancialOverview() {
           <h1 className="text-3xl font-bold text-foreground">{t('financialOverview')}</h1>
           <p className="text-muted-foreground">{t('financialOverviewDescription')}</p>
         </div>
-        <Select value={period} onValueChange={(v: PeriodFilter) => setPeriod(v)}>
+        <Select value={period ?? 'month'} onValueChange={(v: PeriodFilter) => setPeriod(v)}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
@@ -386,6 +408,7 @@ export default function FinancialOverview() {
             <SelectItem value="month">{t('thisMonth')}</SelectItem>
             <SelectItem value="quarter">{t('thisQuarter')}</SelectItem>
             <SelectItem value="year">{t('thisYear')}</SelectItem>
+            <SelectItem value="all">{t('allTime', { defaultValue: 'Alles' })}</SelectItem>
           </SelectContent>
         </Select>
       </div>
