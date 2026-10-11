@@ -59,7 +59,7 @@ export default function Features() {
                 id={feature.id}
                 className={`py-20 md:py-28 ${index % 2 === 1 ? 'bg-muted/30' : ''}`}
               >
-                <div className="container mx-auto px-6">
+                <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                   <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center max-w-6xl mx-auto">
                     <Reveal className={index % 2 === 1 ? 'lg:order-2' : ''}>
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
@@ -125,7 +125,7 @@ export default function Features() {
           })}
 
           <section className="py-20 md:py-28 bg-muted/30">
-            <div className="container mx-auto px-6">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
               <Reveal className="max-w-3xl mx-auto text-center">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-6 h-6 text-primary" strokeWidth={1.5} />

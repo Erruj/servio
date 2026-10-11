@@ -107,7 +107,7 @@ export function HomeBento() {
 
   return (
     <section className="bg-white py-24 md:py-32">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-neutral-900">{t('marketing.product.title')}</h2>
           <p className="mt-4 text-neutral-600">{t('marketing.product.subtitle')}</p>
@@ -179,10 +179,12 @@ export function HomeHowItWorks() {
   const contents = [connect, inbox, dash];
 
   return (
-    <section className="relative overflow-hidden bg-[#0A0F1E] py-24 md:py-32">
-      <div className={`pointer-events-none absolute inset-0 ${DOTS_DARK}`} />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[30rem] w-[50rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-3xl" />
-      <div className="relative">
+    <section className="relative bg-[#0A0F1E] py-24 md:py-32">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className={`absolute inset-0 ${DOTS_DARK}`} />
+        <div className="absolute left-1/2 top-0 h-[30rem] w-[50rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-3xl" />
+      </div>
+      <div className="relative z-10">
         <div className="mx-auto mb-8 max-w-2xl px-4 text-center">
           <span className="text-sm font-medium text-blue-300">{t('marketing.howItWorks.eyebrow')}</span>
           <h2 className="mt-3 text-3xl md:text-5xl font-bold tracking-tight text-white">{t('marketing.howItWorks.title')}</h2>
@@ -203,7 +205,7 @@ export function HomePricingTeaser() {
 
   return (
     <section className="bg-[#F4F4F6] py-24 md:py-32">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-neutral-900">{t('marketing.landing.pricingTitle')}</h2>
           <p className="mt-4 text-neutral-600">{t('marketing.landing.pricingSubtitle')}</p>

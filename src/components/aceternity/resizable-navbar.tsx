@@ -32,23 +32,23 @@ export const NavBody = ({
   className?: string;
   visible?: boolean;
 }) => (
-  <motion.div
-    animate={{
-      backdropFilter: visible ? "blur(10px)" : "none",
-      boxShadow: visible ? SHADOW : "none",
-      width: visible ? "60%" : "100%",
-      y: visible ? 12 : 0,
-    }}
-    transition={{ type: "spring", stiffness: 200, damping: 50 }}
-    style={{ minWidth: "860px" }}
-    className={cn(
-      "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex",
-      visible && "bg-white/80",
-      className,
-    )}
-  >
-    {children}
-  </motion.div>
+  <div className="mx-auto hidden w-full max-w-7xl px-4 sm:px-6 lg:flex lg:px-8">
+    <motion.div
+      animate={{
+        backdropFilter: visible ? "blur(10px)" : "none",
+        boxShadow: visible ? SHADOW : "none",
+        y: visible ? 12 : 0,
+      }}
+      transition={{ type: "spring", stiffness: 200, damping: 50 }}
+      className={cn(
+        "relative z-[60] mx-auto flex flex-row items-center justify-between gap-6 rounded-full bg-transparent py-2 transition-[padding] duration-200",
+        visible ? "w-auto bg-white/80 px-5" : "w-full px-0",
+        className,
+      )}
+    >
+      {children}
+    </motion.div>
+  </div>
 );
 
 export const NavItems = ({
@@ -64,10 +64,7 @@ export const NavItems = ({
   return (
     <motion.div
       onMouseLeave={() => setHovered(null)}
-      className={cn(
-        "pointer-events-none absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium lg:flex",
-        className,
-      )}
+      className={cn("hidden flex-row items-center gap-1 text-sm font-medium lg:flex", className)}
     >
       {items.map((item, idx) => (
         <Link

@@ -208,7 +208,7 @@ export default function MarketingPricing() {
 
           {/* Pricing cards */}
           <section className="pb-20">
-            <div className="container mx-auto px-6">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
               <StaggerGroup className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 {PLAN_META.map((meta, idx) => {
                   const texts = planTexts[idx];
@@ -301,7 +301,7 @@ export default function MarketingPricing() {
           {/* Comparison table */}
 
           <section className="py-16 md:py-20">
-            <div className="container mx-auto px-6">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
               <Reveal>
                 <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-3">
                   {t(`${P}.comparisonTitle`)}
@@ -357,7 +357,7 @@ export default function MarketingPricing() {
 
           {/* Enterprise contact */}
           <section className="pb-24">
-            <div className="container mx-auto px-6">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
               <Reveal className="mt-4 max-w-2xl mx-auto">
                 <div className="rounded-xl border border-border/40 bg-muted/30 p-8 text-center">
                   <h3 className="text-lg font-semibold text-foreground mb-2">
