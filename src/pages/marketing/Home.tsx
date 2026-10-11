@@ -1,10 +1,5 @@
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { ProductSection } from '@/components/landing/ProductSection';
-import { BenefitsSection } from '@/components/landing/BenefitsSection';
-import { CTASection } from '@/components/landing/CTASection';
+import { HomeHero, HomeBento, HomeHowItWorks, HomePricingTeaser, LampCTA } from '@/components/landing/HomeSections';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { SeoHead } from '@/components/SeoHead';
 import { useTranslation } from 'react-i18next';
@@ -39,23 +34,18 @@ export default function MarketingHome() {
   return (
     <>
       <SeoHead path="/" title={title} description={description} keywords={keywords}>
-        {faqJsonLd && (
-          <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
-        )}
+        {faqJsonLd && <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>}
       </SeoHead>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen overflow-x-hidden bg-white">
         <LandingHeader />
-
         <main>
-          <HeroSection />
-          <FeaturesSection />
-          <HowItWorksSection />
-          <ProductSection />
-          <BenefitsSection />
-          <CTASection />
+          <HomeHero />
+          <HomeBento />
+          <HomeHowItWorks />
+          <HomePricingTeaser />
+          <LampCTA />
         </main>
-
         <LandingFooter />
       </div>
     </>
