@@ -1,3 +1,4 @@
+import { computeVat, formatEUR, isSalesInvoice, receiptVat } from '@/lib/finance';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -209,24 +210,20 @@ export default function Exports() {
         return;
       }
 
-      const outVat = invoices.reduce((s: number, r: any) => s + (Number(r.vat_amount) || 0), 0);
-      const outAmount = invoices.reduce((s: number, r: any) => s + (Number(r.amount) || 0), 0);
-      // For receipts assume 21% if no field
-      const inVat = receipts.reduce((s: number, r: any) => s + (Number(r.amount) || 0) * 0.21 / 1.21, 0);
-      const toPay = outVat - inVat;
-
+      const v = computeVat(invoices, receipts);
+      const outVat = v.outputVat, inVat = v.inputVat, toPay = v.balance;
       const summary = [
         { label: 'Periode', value: label },
-        { label: 'Omzet (excl. BTW)', value: `€ ${(outAmount - outVat).toFixed(2)}` },
-        { label: 'BTW ontvangen (verkoop)', value: `€ ${outVat.toFixed(2)}` },
-        { label: 'BTW betaald (inkoop, geschat)', value: `€ ${inVat.toFixed(2)}` },
-        { label: 'Te betalen / terug te vorderen', value: `€ ${toPay.toFixed(2)}` },
+        { label: 'Omzet (excl. BTW)', value: formatEUR(v.salesExVat) },
+        { label: 'Af te dragen btw (verkoop)', value: formatEUR(outVat) },
+        { label: 'Voorbelasting (inkoop en bonnetjes)', value: formatEUR(inVat) },
+        { label: toPay < 0 ? 'Naar verwachting terug te vragen' : 'Te betalen', value: formatEUR(Math.abs(toPay)) },
       ];
 
       const headers = ['Datum', 'Type', 'Omschrijving', 'Bedrag', 'BTW'];
       const body = [
-        ...invoices.map((i: any) => [i.invoice_date || '-', 'Verkoop', i.supplier || i.invoice_number || '-', `€ ${Number(i.amount || 0).toFixed(2)}`, `€ ${Number(i.vat_amount || 0).toFixed(2)}`]),
-        ...receipts.map((r: any) => [r.receipt_date || '-', 'Inkoop', r.merchant || '-', `€ ${Number(r.amount || 0).toFixed(2)}`, `€ ${(Number(r.amount || 0) * 0.21 / 1.21).toFixed(2)}`]),
+        ...invoices.map((i: any) => [i.invoice_date || '-', isSalesInvoice(i) ? 'Verkoop' : 'Inkoop', i.supplier || i.invoice_number || '-', formatEUR(Number(i.amount || 0)), formatEUR(Number(i.vat_amount || 0))]),
+        ...receipts.map((r: any) => [r.receipt_date || '-', 'Bonnetje', r.merchant || '-', formatEUR(Number(r.amount || 0)), formatEUR(receiptVat(r))]),
       ];
 
       if (format === 'xlsx') {

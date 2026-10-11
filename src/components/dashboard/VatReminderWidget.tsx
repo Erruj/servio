@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { differenceInDays, format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { computeVat, formatEUR } from '@/lib/finance';
 
 // Bereken volgende BTW deadline (NL: maand na einde kwartaal, dag laatste van die maand)
 function getNextVatDeadline(now = new Date()) {
@@ -42,15 +43,13 @@ export const VatReminderWidget = () => {
       const qStart = new Date(year, (quarter - 1) * 3, 1).toISOString().slice(0, 10);
       const qEnd = new Date(year, quarter * 3, 0).toISOString().slice(0, 10);
       const [inv, rec] = await Promise.all([
-        supabase.from('invoices').select('vat_amount').eq('user_id', user.id)
+        supabase.from('invoices').select('amount, vat_amount, customer_id, supplier_id').eq('user_id', user.id)
           .gte('invoice_date', qStart).lte('invoice_date', qEnd),
         supabase.from('receipts').select('amount').eq('user_id', user.id)
           .gte('receipt_date', qStart).lte('receipt_date', qEnd),
       ]);
-      // BTW geïnd via uitgaande facturen aan klanten
-      const collected = (inv.data || []).reduce((s, r: any) => s + (Number(r.vat_amount) || 0), 0);
-      // BTW betaald aan leveranciers (aftrekbaar) - geschat op 21% van bruto bon
-      const paid = (rec.data || []).reduce((s, r: any) => s + (Number(r.amount) || 0) * 0.21 / 1.21, 0);
+      const v = computeVat((inv.data || []) as any[], (rec.data || []) as any[]);
+      const collected = v.outputVat, paid = v.inputVat;
       setVatBalance({ collected, paid });
     };
     load();
@@ -79,9 +78,9 @@ export const VatReminderWidget = () => {
         </div>
         {vatBalance && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Geschatte te betalen BTW</span>
+            <span className="text-muted-foreground">{balance < 0 ? 'Naar verwachting terug te vragen' : 'Reserveer'}</span>
             <span className="font-semibold text-foreground">
-              € {balance.toFixed(2)}
+              {formatEUR(Math.abs(balance))}
             </span>
           </div>
         )}
