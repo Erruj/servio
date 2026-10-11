@@ -6,3 +6,4 @@
 - [x] Deel 4: `/settings` en `/mailbox-setup` volledig vertaald in NL/EN/DE/FR/ES
 - [x] Marketing redesign blok 1: basis-onderdelen, nieuwe menubalk, homepage
 - [x] Marketing redesign blok 2: features, prijzen, over ons, blog, contact, juridisch + footer
+- [x] Marketing redesign eindcontrole: vertaalde voorbeeldschermen, taalkiezer 5 talen, cookiemelding, animaties alleen transform/opacity
