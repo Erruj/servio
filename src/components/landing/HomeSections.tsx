@@ -44,7 +44,7 @@ export function HomeHero() {
               <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-neutral-900 leading-[1.1]">
                 {t('marketing.landing.heroStop')}
                 <span className="block sm:inline"><FlipWords words={words} /></span>
-                <br />
+                <br className="hidden sm:inline" />
                 <span className="text-primary">{t('marketing.landing.heroStart')}</span>
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-base md:text-lg text-neutral-600 leading-relaxed">
