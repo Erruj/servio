@@ -185,7 +185,7 @@ const Inbox = () => {
       </Helmet>
       <Header user={user} onLogout={signOut} />
       <RateLimitBanner />
-      <SyncErrorBanner connections={connections} />
+      <SyncErrorBanner connections={connections} onRetry={async () => { await syncEmails(); await refetchConnections(); }} />
 
       
       <div className="flex-1 flex min-h-0 min-w-0 w-full overflow-x-hidden">

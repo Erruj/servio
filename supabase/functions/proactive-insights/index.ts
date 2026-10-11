@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { timingSafeEqual } from "../_shared/security.ts";
+import { isCronAuthorized, recordCronHealth } from "../_shared/security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,9 +20,8 @@ Deno.serve(async (req) => {
 
   // AuthZ: require cron secret. This is an admin/batch endpoint that reads
   // and writes data across all users using the service role.
-  const CRON_SECRET = Deno.env.get("CRON_SECRET");
   const cronHeader = req.headers.get("x-cron-secret");
-  if (!CRON_SECRET || !cronHeader || !timingSafeEqual(cronHeader, CRON_SECRET)) {
+  if (!(await isCronAuthorized(cronHeader))) {
     return new Response(JSON.stringify({ error: "Niet geautoriseerd" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -162,12 +161,14 @@ Deno.serve(async (req) => {
       if (!error) inserted++;
     }
 
+    await recordCronHealth("proactive-insights");
     return new Response(
       JSON.stringify({ ok: true, users: profiles?.length ?? 0, inserted, total_candidates: notifications.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("proactive-insights error", e);
+    await recordCronHealth("proactive-insights", String(e));
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

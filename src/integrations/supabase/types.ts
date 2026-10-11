@@ -208,6 +208,30 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_health: {
+        Row: {
+          job_name: string
+          last_error: string | null
+          last_error_at: string | null
+          last_success_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          job_name: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_success_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          job_name?: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_success_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -1189,7 +1213,20 @@ export type Database = {
         Args: { _kind: string; _limit: number; _user_id: string }
         Returns: boolean
       }
+      cron_secret_matches: { Args: { _provided: string }; Returns: boolean }
       current_organization_id: { Args: never; Returns: string }
+      get_cron_health: {
+        Args: never
+        Returns: {
+          active: boolean
+          job_name: string
+          last_error: string
+          last_error_at: string
+          last_run_at: string
+          last_success_at: string
+          schedule: string
+        }[]
+      }
       get_dashboard_stats: { Args: never; Returns: Json }
       get_onboarding_status: { Args: never; Returns: Json }
       get_team_members: {

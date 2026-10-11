@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections } from '@/hooks/useEmailConnections';
 import { ImapConnectionModal } from '@/components/ImapConnectionModal';
 import { SyncErrorBanner } from '@/components/SyncErrorBanner';
+import { CronHealthCard } from '@/components/CronHealthCard';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { Crown } from 'lucide-react';
 
@@ -207,6 +208,7 @@ const MailboxSetup = () => {
             )}
 
             <SyncErrorBanner connections={connections} className="rounded-2xl border" />
+            <CronHealthCard />
 
             {/* Connected Accounts */}
 

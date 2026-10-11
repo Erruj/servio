@@ -72,3 +72,43 @@ export function buildCorsHeaders(req: Request, allowHeaders: string): Record<str
     "Vary": "Origin",
   };
 }
+
+/**
+ * Controleert een cron-secret tegen zowel de edge-secret CRON_SECRET als de
+ * Vault-secret CRON_SECRET (waarmee pg_cron aanroept). Zo blijft de cron werken
+ * ook als de twee waarden ooit uit elkaar lopen.
+ */
+export async function isCronAuthorized(provided: string | null | undefined): Promise<boolean> {
+  if (!provided) return false;
+  const envSecret = Deno.env.get("CRON_SECRET");
+  if (envSecret && timingSafeEqual(provided, envSecret)) return true;
+  try {
+    const url = Deno.env.get("SUPABASE_URL")!;
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const res = await fetch(`${url}/rest/v1/rpc/cron_secret_matches`, {
+      method: "POST",
+      headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ _provided: provided }),
+    });
+    return res.ok && (await res.json()) === true;
+  } catch {
+    return false;
+  }
+}
+
+/** Registreert succes/fout van een achtergrondtaak in cron_health. */
+export async function recordCronHealth(jobName: string, error?: string): Promise<void> {
+  try {
+    const url = Deno.env.get("SUPABASE_URL")!;
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const now = new Date().toISOString();
+    const row: Record<string, unknown> = { job_name: jobName, updated_at: now };
+    if (error) { row.last_error_at = now; row.last_error = error.slice(0, 500); }
+    else row.last_success_at = now;
+    await fetch(`${url}/rest/v1/cron_health?on_conflict=job_name`, {
+      method: "POST",
+      headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates" },
+      body: JSON.stringify(row),
+    });
+  } catch { /* bewaking mag de taak nooit breken */ }
+}
