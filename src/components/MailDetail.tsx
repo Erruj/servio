@@ -784,7 +784,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
               )}
             </div>
           </CardContent>
-        </Card>
+        </Card>}
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
@@ -808,7 +808,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             <Edit className="h-5 w-5 mr-2" />
             {isEditingReply ? 'Klaar met bewerken' : 'Aanpassen'}
           </Button>
-          <MailMoreMenu onPhishing={markAsPhishing} onResolved={handleMarkAsResolved} />
+          {analysis && <MailMoreMenu onPhishing={markAsPhishing} onResolved={handleMarkAsResolved} />}
           
         </div>
         </div>
