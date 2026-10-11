@@ -82,6 +82,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_job_state: {
+        Row: {
+          job_name: string
+          locked_until: string | null
+          paused_at: string | null
+          paused_reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          job_name: string
+          locked_until?: string | null
+          paused_at?: string | null
+          paused_reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          job_name?: string
+          locked_until?: string | null
+          paused_at?: string | null
+          paused_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_notifications: {
         Row: {
           action_url: string | null
@@ -436,6 +460,7 @@ export type Database = {
       emails: {
         Row: {
           ai_category: string | null
+          ai_classified_at: string | null
           ai_urgency: string | null
           body_html: string | null
           body_text: string | null
@@ -466,6 +491,7 @@ export type Database = {
         }
         Insert: {
           ai_category?: string | null
+          ai_classified_at?: string | null
           ai_urgency?: string | null
           body_html?: string | null
           body_text?: string | null
@@ -496,6 +522,7 @@ export type Database = {
         }
         Update: {
           ai_category?: string | null
+          ai_classified_at?: string | null
           ai_urgency?: string | null
           body_html?: string | null
           body_text?: string | null
@@ -1208,6 +1235,10 @@ export type Database = {
       }
     }
     Functions: {
+      acquire_ai_job_lock: {
+        Args: { _job: string; _seconds: number }
+        Returns: boolean
+      }
       choose_free_plan: { Args: never; Returns: undefined }
       consume_usage: {
         Args: { _kind: string; _limit: number; _user_id: string }
