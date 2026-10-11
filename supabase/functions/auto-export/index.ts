@@ -67,7 +67,7 @@ Deno.serve(async (req: Request) => {
     // AuthZ: either a valid cron secret (server-to-server) OR an authenticated user
     // (who can only export their own data)
     let callerUserId: string | null = null;
-    const isCron = !!CRON_SECRET && !!cronHeader && timingSafeEqual(cronHeader, CRON_SECRET);
+    const isCron = await isCronAuthorized(cronHeader);
 
     if (!isCron) {
       if (!authHeader) {

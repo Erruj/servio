@@ -5,7 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { timingSafeEqual } from "../_shared/security.ts";
+import { isCronAuthorized, recordCronHealth } from "../_shared/security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,7 +25,7 @@ serve(async (req) => {
     req.headers.get("x-cron-secret") ||
     (req.headers.get("Authorization") || "").replace("Bearer ", "");
 
-  if (!CRON_SECRET || !timingSafeEqual(provided, CRON_SECRET)) {
+  if (!(await isCronAuthorized(provided))) {
     return new Response(JSON.stringify({ error: "Niet geautoriseerd." }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -84,10 +84,28 @@ serve(async (req) => {
       results.push(...batchResults);
     }
 
+    // Bewaking: verbindingen die >60 min niet gelukt zijn krijgen een duidelijke sync_error.
+    const staleCutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: stale } = await supabase
+      .from("email_connections")
+      .select("id, last_sync_at, sync_error")
+      .eq("is_active", true)
+      .or(`last_sync_at.is.null,last_sync_at.lt.${staleCutoff}`);
+    for (const c of stale || []) {
+      if (c.sync_error) continue;
+      const since = c.last_sync_at
+        ? new Date(c.last_sync_at).toLocaleString("nl-NL", { timeZone: "Europe/Amsterdam" })
+        : "het koppelen";
+      await supabase.from("email_connections").update({
+        sync_error: `Mailbox is sinds ${since} niet meer bijgewerkt. Probeer opnieuw te synchroniseren of koppel de mailbox opnieuw.`,
+      }).eq("id", c.id);
+    }
+
     const succeeded = results.filter((r) => r.status === "success").length;
     const inserted = results.reduce((t, r) => t + (Number(r.inserted_count) || 0), 0);
     console.log(`[sync-all-connections] Klaar: ${succeeded}/${results.length} geslaagd, ${inserted} nieuwe e-mail(s)`);
 
+    await recordCronHealth("sync-all-connections", succeeded === results.length ? undefined : `${results.length - succeeded} van ${results.length} mailboxen mislukt`);
     return new Response(
       JSON.stringify({ success: true, total: results.length, succeeded, new_emails: inserted, results }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -95,6 +113,7 @@ serve(async (req) => {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Onbekende fout tijdens achtergrond-synchronisatie";
     console.error("[sync-all-connections] Fatale fout:", message);
+    await recordCronHealth("sync-all-connections", message);
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
