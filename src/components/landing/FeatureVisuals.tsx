@@ -112,7 +112,7 @@ export function AnalyticsVisual() {
             </div>
           ))}
         </div>
-        <div className="flex h-16 items-end gap-1.5">
+        <div className="flex h-16 shrink-0 items-end gap-1.5">
           {bars.map((h, i) => (
             <motion.div
               key={i}
