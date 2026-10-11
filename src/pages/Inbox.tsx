@@ -174,7 +174,7 @@ const Inbox = () => {
   const isLoading = connectionsLoading || emailsLoading;
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
+    <div className="h-full bg-background flex flex-col overflow-hidden">
       <Helmet>
         <title>Inbox – Servio</title>
         <meta name="description" content="Je AI-gestuurde Servio inbox: e-mails categoriseren, beantwoorden en prioriteren." />

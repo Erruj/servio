@@ -284,7 +284,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-full bg-background flex flex-col">
       <Helmet>
         <title>Dashboard – Servio</title>
         <meta name="description" content="Je persoonlijke Servio dashboard met realtime inzicht in e-mails, facturen en financiën." />
