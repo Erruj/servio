@@ -161,10 +161,10 @@ export default function Exports() {
 
       const summary = [
         { label: 'Jaar', value: String(year) },
-        { label: 'Totaal omzet', value: `€ ${totalRevenue.toFixed(2)}` },
-        { label: 'Totaal kosten', value: `€ ${totalCosts.toFixed(2)}` },
-        { label: 'Resultaat', value: `€ ${(totalRevenue - totalCosts).toFixed(2)}` },
-        { label: 'Facturen verstuurd', value: `${invoices.length} (€ ${totalInvoiced.toFixed(2)})` },
+        { label: 'Totaal omzet', value: formatEUR(totalRevenue) },
+        { label: 'Totaal kosten', value: formatEUR(totalCosts) },
+        { label: 'Resultaat', value: formatEUR(totalRevenue - totalCosts) },
+        { label: 'Facturen verstuurd', value: `${invoices.length} (${formatEUR(totalInvoiced)})` },
         { label: 'Bonnetjes', value: String(receipts.length) },
         { label: 'Gewerkte uren', value: totalHours.toFixed(1) },
       ];
@@ -181,9 +181,9 @@ export default function Exports() {
       } else {
         const headers = ['Datum', 'Type', 'Omschrijving', 'Bedrag'];
         const body: any[][] = [
-          ...invoices.map((i: any) => [i.invoice_date || i.created_at?.slice(0, 10), 'Factuur', i.supplier || i.invoice_number || '-', `€ ${Number(i.amount || 0).toFixed(2)}`]),
-          ...receipts.map((r: any) => [r.receipt_date || r.created_at?.slice(0, 10), 'Bonnetje', r.merchant || '-', `€ ${Number(r.amount || 0).toFixed(2)}`]),
-          ...transactions.map((t: any) => [t.date, t.type === 'income' ? 'Inkomst' : 'Uitgave', t.description || '-', `€ ${Number(t.amount || 0).toFixed(2)}`]),
+          ...invoices.map((i: any) => [i.invoice_date || i.created_at?.slice(0, 10), 'Factuur', i.supplier || i.invoice_number || '-', formatEUR(Number(i.amount || 0))]),
+          ...receipts.map((r: any) => [r.receipt_date || r.created_at?.slice(0, 10), 'Bonnetje', r.merchant || '-', formatEUR(Number(r.amount || 0))]),
+          ...transactions.map((t: any) => [t.date, t.type === 'income' ? 'Inkomst' : 'Uitgave', t.description || '-', formatEUR(Number(t.amount || 0))]),
         ].sort((a, b) => String(a[0]).localeCompare(String(b[0])));
         const blob = buildPDF(`Jaaroverzicht ${year}`, 'Volledig financieel overzicht', headers, body, summary);
         triggerDownload(blob, `jaaroverzicht_${year}.pdf`);
@@ -266,7 +266,7 @@ export default function Exports() {
         { label: 'Aantal regels', value: String(entries.length) },
         { label: 'Totaal uren', value: totalHours.toFixed(2) },
         { label: 'Factureerbare uren', value: billableHours.toFixed(2) },
-        { label: 'Geschatte omzet', value: `€ ${revenue.toFixed(2)}` },
+        { label: 'Geschatte omzet', value: formatEUR(revenue) },
       ];
       const headers = ['Datum', 'Project', 'Omschrijving', 'Uren', 'Tarief', 'Bedrag'];
       const body = entries.map((e: any) => {
@@ -277,8 +277,8 @@ export default function Exports() {
           e.project || '-',
           e.description || '-',
           h.toFixed(2),
-          `€ ${rate.toFixed(2)}`,
-          `€ ${(h * rate).toFixed(2)}`,
+          formatEUR(rate),
+          formatEUR(h * rate),
         ];
       });
 

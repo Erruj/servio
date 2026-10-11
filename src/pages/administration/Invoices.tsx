@@ -1,3 +1,4 @@
+import { formatEUR } from '@/lib/finance';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -437,11 +438,11 @@ export default function Invoices() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-5">
-        <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground">Totaal</div><div className="text-2xl font-bold">€{totals.total.toLocaleString()}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground flex items-center gap-1">BTW Totaal <HelpTooltip tipKey="invoice-vat-total" title="BTW Totaal" text="Het BTW bedrag wordt automatisch berekend op basis van je facturen. Reserveer dit voor je volgende BTW-aangifte." /></div><div className="text-2xl font-bold text-primary">€{totals.vat.toLocaleString()}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><div className="text-sm text-green-600">Betaald</div><div className="text-2xl font-bold text-green-600">€{totals.paid.toLocaleString()}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><div className="text-sm text-yellow-600">Open</div><div className="text-2xl font-bold text-yellow-600">€{totals.pending.toLocaleString()}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><div className="text-sm text-red-600">Verlopen</div><div className="text-2xl font-bold text-red-600">€{totals.overdue.toLocaleString()}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground">Totaal</div><div className="text-2xl font-bold">{formatEUR(totals.total)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground flex items-center gap-1">BTW Totaal <HelpTooltip tipKey="invoice-vat-total" title="BTW Totaal" text="Het BTW bedrag wordt automatisch berekend op basis van je facturen. Reserveer dit voor je volgende BTW-aangifte." /></div><div className="text-2xl font-bold text-primary">{formatEUR(totals.vat)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><div className="text-sm text-green-600">Betaald</div><div className="text-2xl font-bold text-green-600">{formatEUR(totals.paid)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><div className="text-sm text-yellow-600">Open</div><div className="text-2xl font-bold text-yellow-600">{formatEUR(totals.pending)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><div className="text-sm text-red-600">Verlopen</div><div className="text-2xl font-bold text-red-600">{formatEUR(totals.overdue)}</div></CardContent></Card>
       </div>
 
       <Card>
@@ -555,8 +556,8 @@ export default function Invoices() {
                     <TableCell className="font-medium">{invoice.invoice_number || '-'}</TableCell>
                     <TableCell>{invoice.supplier || t('unknown')}</TableCell>
                     <TableCell>{invoice.invoice_date || '-'}</TableCell>
-                    <TableCell className="text-right font-medium">€{invoice.amount?.toFixed(2) || '0.00'}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">€{invoice.vat_amount?.toFixed(2) || '0.00'}</TableCell>
+                    <TableCell className="text-right font-medium">{formatEUR(Number(invoice.amount ?? 0))}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{formatEUR(Number(invoice.vat_amount ?? 0))}</TableCell>
                     <TableCell>
                       <Select value={invoice.category || 'other'} onValueChange={(v) => updateInvoiceCategory(invoice.id, v as TransactionCategory)}>
                         <SelectTrigger className="h-8 w-28"><SelectValue /></SelectTrigger>

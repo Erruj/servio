@@ -1,3 +1,4 @@
+import { formatEUR } from '@/lib/finance';
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -295,7 +296,7 @@ export default function TimeTracking() {
           </CardContent></Card>
           <Card><CardContent className="pt-6 flex items-center gap-3">
             <Download className="h-8 w-8 text-primary" />
-            <div><p className="text-2xl font-bold">€{totalRevenue.toFixed(2)}</p><p className="text-sm text-muted-foreground">Totale waarde</p></div>
+            <div><p className="text-2xl font-bold">{formatEUR(totalRevenue)}</p><p className="text-sm text-muted-foreground">Totale waarde</p></div>
           </CardContent></Card>
         </div>
 

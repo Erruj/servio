@@ -1,3 +1,4 @@
+import { formatEUR } from '@/lib/finance';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -256,7 +257,7 @@ export default function Receipts() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className="text-2xl font-bold text-foreground">€{receipt.amount?.toFixed(2) || '0.00'}</p>
+                      <p className="text-2xl font-bold text-foreground">{formatEUR(Number(receipt.amount ?? 0))}</p>
                       {receipt.category && <Badge variant="outline">{receipt.category}</Badge>}
                     </div>
                   </CardContent>
