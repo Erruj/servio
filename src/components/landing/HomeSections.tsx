@@ -8,6 +8,7 @@ import { BentoGrid, BentoGridItem } from '@/components/aceternity/bento-grid';
 import { GlowingEffect } from '@/components/aceternity/glowing-effect';
 import { StickyScroll } from '@/components/aceternity/sticky-scroll-reveal';
 import { LampContainer } from '@/components/aceternity/lamp';
+import { ConnectAnim, AutomateAnim, OverviewAnim } from '@/components/landing/HowItWorksVisuals';
 import { ProductPreview } from '@/components/landing/ProductPreview';
 import { InboxVisual, AIReplyVisual, DocumentVisual, AnalyticsVisual, AssistantVisual, SecurityVisual } from '@/components/landing/FeatureVisuals';
 import { useMemo } from 'react';
@@ -138,45 +139,7 @@ function MockPanel({ children }: { children: React.ReactNode }) {
 export function HomeHowItWorks() {
   const { t } = useTranslation();
   const steps = t('marketing.howItWorks.steps', { returnObjects: true }) as Array<{ title: string; description: string }>;
-  const labels = t('marketing.landing.labels', { returnObjects: true }) as string[];
-
-  const connect = (
-    <MockPanel>
-      <p className="text-sm font-semibold text-white">{t('marketing.landing.connectTitle')}</p>
-      {[
-        { name: 'Outlook / Microsoft 365', Icon: Mail, status: t('marketing.landing.connected'), active: true },
-        { name: t('marketing.landing.imap'), Icon: Server, status: t('marketing.landing.connected'), active: true },
-        { name: 'Gmail', Icon: Mail, status: t('marketing.landing.comingSoon'), active: false },
-      ].map((p) => (
-        <div key={p.name} className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-          <span className="flex items-center gap-3 text-sm text-slate-200"><p.Icon className="h-4 w-4 text-blue-300" />{p.name}</span>
-          <span className={`rounded-full px-2.5 py-0.5 text-xs ${p.active ? 'bg-blue-500/20 text-blue-200' : 'bg-white/10 text-slate-400'}`}>{p.status}</span>
-        </div>
-      ))}
-    </MockPanel>
-  );
-  const inbox = (
-    <MockPanel>
-      {['Anna B.', 'Mark de V.', 'Studio Noord'].map((n, i) => (
-        <div key={n} className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-          <span className="text-sm text-slate-200">{n}</span>
-          <span className="flex items-center gap-1 rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs text-blue-200"><Tag className="h-3 w-3" />{labels[i]}</span>
-        </div>
-      ))}
-      <p className="mt-auto text-right text-[10px] text-slate-500">{t('marketing.landing.sampleData')}</p>
-    </MockPanel>
-  );
-  const dash = (
-    <MockPanel>
-      <div className="flex flex-1 items-end gap-2">
-        {[40, 65, 50, 80, 70, 95].map((h, i) => (
-          <div key={i} className="flex-1 rounded-t-lg bg-gradient-to-t from-blue-600 to-blue-400" style={{ height: `${h}%` }} />
-        ))}
-      </div>
-      <p className="text-right text-[10px] text-slate-500">{t('marketing.landing.sampleData')}</p>
-    </MockPanel>
-  );
-  const contents = [connect, inbox, dash];
+  const contents = [<ConnectAnim key="c" />, <AutomateAnim key="a" />, <OverviewAnim key="o" />];
 
   return (
     <section className="relative bg-[#0A0F1E] py-24 md:py-32">
