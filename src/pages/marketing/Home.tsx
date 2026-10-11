@@ -37,7 +37,7 @@ export default function MarketingHome() {
         {faqJsonLd && <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>}
       </SeoHead>
 
-      <div className="min-h-screen overflow-x-hidden bg-white">
+      <div className="min-h-screen overflow-x-clip bg-white">
         <LandingHeader />
         <main>
           <HomeHero />

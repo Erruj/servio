@@ -23,6 +23,7 @@ export function LandingFooter() {
             <h4 className="font-medium text-foreground mb-4 text-sm">{t('marketing.footer.product')}</h4>
             <ul className="space-y-2.5 text-sm">
               <li><Link to={`${prefix}/features`} className="text-neutral-500 hover:text-foreground transition-colors">{t('marketing.nav.features')}</Link></li>
+              <li><Link to={`${prefix}/blog`} className="text-neutral-500 hover:text-foreground transition-colors">{t('marketing.nav.blog')}</Link></li>
               <li><Link to={`${prefix}/pricing`} className="text-neutral-500 hover:text-foreground transition-colors">{t('marketing.nav.pricing')}</Link></li>
               <li><Link to={`${prefix}/about`} className="text-neutral-500 hover:text-foreground transition-colors">{t('marketing.nav.about')}</Link></li>
               <li><Link to="/login" className="text-neutral-500 hover:text-foreground transition-colors">{t('marketing.nav.login')}</Link></li>
