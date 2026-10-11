@@ -202,8 +202,7 @@ export function OverviewAnim() {
             d={path}
             fill="none"
             stroke="white"
-            strokeWidth={2}
-            vectorEffect="non-scaling-stroke"
+            strokeWidth={1.2}
             strokeLinecap="round"
             initial={reduce ? false : { pathLength: 0 }}
             animate={{ pathLength: 1 }}
