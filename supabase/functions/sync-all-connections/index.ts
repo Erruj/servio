@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { classifyPendingEmails } from "../_shared/classify.ts";
 import { isCronAuthorized, recordCronHealth } from "../_shared/security.ts";
 
 const corsHeaders = {
@@ -101,13 +102,17 @@ serve(async (req) => {
       }).eq("id", c.id);
     }
 
+    let classification: unknown = null;
+    try { classification = await classifyPendingEmails(supabase); console.log("[sync-all-connections] classificatie", classification); }
+    catch (e) { console.error("[sync-all-connections] classificatie mislukt:", e instanceof Error ? e.message : e); }
+
     const succeeded = results.filter((r) => r.status === "success").length;
     const inserted = results.reduce((t, r) => t + (Number(r.inserted_count) || 0), 0);
     console.log(`[sync-all-connections] Klaar: ${succeeded}/${results.length} geslaagd, ${inserted} nieuwe e-mail(s)`);
 
     await recordCronHealth("sync-all-connections", succeeded === results.length ? undefined : `${results.length - succeeded} van ${results.length} mailboxen mislukt`);
     return new Response(
-      JSON.stringify({ success: true, total: results.length, succeeded, new_emails: inserted, results }),
+      JSON.stringify({ success: true, total: results.length, succeeded, new_emails: inserted, classification, results }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
