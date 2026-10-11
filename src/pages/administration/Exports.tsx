@@ -1,3 +1,4 @@
+import { computeVat, formatEUR, isSalesInvoice, receiptVat } from '@/lib/finance';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -160,10 +161,10 @@ export default function Exports() {
 
       const summary = [
         { label: 'Jaar', value: String(year) },
-        { label: 'Totaal omzet', value: `€ ${totalRevenue.toFixed(2)}` },
-        { label: 'Totaal kosten', value: `€ ${totalCosts.toFixed(2)}` },
-        { label: 'Resultaat', value: `€ ${(totalRevenue - totalCosts).toFixed(2)}` },
-        { label: 'Facturen verstuurd', value: `${invoices.length} (€ ${totalInvoiced.toFixed(2)})` },
+        { label: 'Totaal omzet', value: formatEUR(totalRevenue) },
+        { label: 'Totaal kosten', value: formatEUR(totalCosts) },
+        { label: 'Resultaat', value: formatEUR(totalRevenue - totalCosts) },
+        { label: 'Facturen verstuurd', value: `${invoices.length} (${formatEUR(totalInvoiced)})` },
         { label: 'Bonnetjes', value: String(receipts.length) },
         { label: 'Gewerkte uren', value: totalHours.toFixed(1) },
       ];
@@ -180,9 +181,9 @@ export default function Exports() {
       } else {
         const headers = ['Datum', 'Type', 'Omschrijving', 'Bedrag'];
         const body: any[][] = [
-          ...invoices.map((i: any) => [i.invoice_date || i.created_at?.slice(0, 10), 'Factuur', i.supplier || i.invoice_number || '-', `€ ${Number(i.amount || 0).toFixed(2)}`]),
-          ...receipts.map((r: any) => [r.receipt_date || r.created_at?.slice(0, 10), 'Bonnetje', r.merchant || '-', `€ ${Number(r.amount || 0).toFixed(2)}`]),
-          ...transactions.map((t: any) => [t.date, t.type === 'income' ? 'Inkomst' : 'Uitgave', t.description || '-', `€ ${Number(t.amount || 0).toFixed(2)}`]),
+          ...invoices.map((i: any) => [i.invoice_date || i.created_at?.slice(0, 10), 'Factuur', i.supplier || i.invoice_number || '-', formatEUR(Number(i.amount || 0))]),
+          ...receipts.map((r: any) => [r.receipt_date || r.created_at?.slice(0, 10), 'Bonnetje', r.merchant || '-', formatEUR(Number(r.amount || 0))]),
+          ...transactions.map((t: any) => [t.date, t.type === 'income' ? 'Inkomst' : 'Uitgave', t.description || '-', formatEUR(Number(t.amount || 0))]),
         ].sort((a, b) => String(a[0]).localeCompare(String(b[0])));
         const blob = buildPDF(`Jaaroverzicht ${year}`, 'Volledig financieel overzicht', headers, body, summary);
         triggerDownload(blob, `jaaroverzicht_${year}.pdf`);
@@ -209,24 +210,20 @@ export default function Exports() {
         return;
       }
 
-      const outVat = invoices.reduce((s: number, r: any) => s + (Number(r.vat_amount) || 0), 0);
-      const outAmount = invoices.reduce((s: number, r: any) => s + (Number(r.amount) || 0), 0);
-      // For receipts assume 21% if no field
-      const inVat = receipts.reduce((s: number, r: any) => s + (Number(r.amount) || 0) * 0.21 / 1.21, 0);
-      const toPay = outVat - inVat;
-
+      const v = computeVat(invoices, receipts);
+      const outVat = v.outputVat, inVat = v.inputVat, toPay = v.balance;
       const summary = [
         { label: 'Periode', value: label },
-        { label: 'Omzet (excl. BTW)', value: `€ ${(outAmount - outVat).toFixed(2)}` },
-        { label: 'BTW ontvangen (verkoop)', value: `€ ${outVat.toFixed(2)}` },
-        { label: 'BTW betaald (inkoop, geschat)', value: `€ ${inVat.toFixed(2)}` },
-        { label: 'Te betalen / terug te vorderen', value: `€ ${toPay.toFixed(2)}` },
+        { label: 'Omzet (excl. BTW)', value: formatEUR(v.salesExVat) },
+        { label: 'Af te dragen btw (verkoop)', value: formatEUR(outVat) },
+        { label: 'Voorbelasting (inkoop en bonnetjes)', value: formatEUR(inVat) },
+        { label: toPay < 0 ? 'Naar verwachting terug te vragen' : 'Te betalen', value: formatEUR(Math.abs(toPay)) },
       ];
 
       const headers = ['Datum', 'Type', 'Omschrijving', 'Bedrag', 'BTW'];
       const body = [
-        ...invoices.map((i: any) => [i.invoice_date || '-', 'Verkoop', i.supplier || i.invoice_number || '-', `€ ${Number(i.amount || 0).toFixed(2)}`, `€ ${Number(i.vat_amount || 0).toFixed(2)}`]),
-        ...receipts.map((r: any) => [r.receipt_date || '-', 'Inkoop', r.merchant || '-', `€ ${Number(r.amount || 0).toFixed(2)}`, `€ ${(Number(r.amount || 0) * 0.21 / 1.21).toFixed(2)}`]),
+        ...invoices.map((i: any) => [i.invoice_date || '-', isSalesInvoice(i) ? 'Verkoop' : 'Inkoop', i.supplier || i.invoice_number || '-', formatEUR(Number(i.amount || 0)), formatEUR(Number(i.vat_amount || 0))]),
+        ...receipts.map((r: any) => [r.receipt_date || '-', 'Bonnetje', r.merchant || '-', formatEUR(Number(r.amount || 0)), formatEUR(receiptVat(r))]),
       ];
 
       if (format === 'xlsx') {
@@ -269,7 +266,7 @@ export default function Exports() {
         { label: 'Aantal regels', value: String(entries.length) },
         { label: 'Totaal uren', value: totalHours.toFixed(2) },
         { label: 'Factureerbare uren', value: billableHours.toFixed(2) },
-        { label: 'Geschatte omzet', value: `€ ${revenue.toFixed(2)}` },
+        { label: 'Geschatte omzet', value: formatEUR(revenue) },
       ];
       const headers = ['Datum', 'Project', 'Omschrijving', 'Uren', 'Tarief', 'Bedrag'];
       const body = entries.map((e: any) => {
@@ -280,8 +277,8 @@ export default function Exports() {
           e.project || '-',
           e.description || '-',
           h.toFixed(2),
-          `€ ${rate.toFixed(2)}`,
-          `€ ${(h * rate).toFixed(2)}`,
+          formatEUR(rate),
+          formatEUR(h * rate),
         ];
       });
 

@@ -1,3 +1,4 @@
+import { formatEUR } from '@/lib/finance';
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -301,9 +302,9 @@ export default function Quotes() {
               </Button>
 
               <div className="mt-6 space-y-1 text-right">
-                <p className="text-sm text-muted-foreground">Subtotaal: <span className="font-medium text-foreground">€{subtotal.toFixed(2)}</span></p>
-                <p className="text-sm text-muted-foreground">BTW: <span className="font-medium text-foreground">€{vatAmount.toFixed(2)}</span></p>
-                <p className="text-lg font-bold">Totaal: €{total.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Subtotaal: <span className="font-medium text-foreground">{formatEUR(subtotal)}</span></p>
+                <p className="text-sm text-muted-foreground">BTW: <span className="font-medium text-foreground">{formatEUR(vatAmount)}</span></p>
+                <p className="text-lg font-bold">Totaal: {formatEUR(total)}</p>
               </div>
             </CardContent>
           </Card>
@@ -416,7 +417,7 @@ export default function Quotes() {
                         <TableCell className="hidden md:table-cell">
                           {q.valid_until ? format(new Date(q.valid_until), 'd MMM yyyy', { locale: nl }) : '-'}
                         </TableCell>
-                        <TableCell className="text-right font-medium">€{Number(q.total).toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-medium">{formatEUR(Number(q.total))}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="sm">Acties</Button></DropdownMenuTrigger>

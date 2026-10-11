@@ -1,3 +1,4 @@
+import { formatEUR } from '@/lib/finance';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -187,7 +188,7 @@ export default function Customers() {
               <div className="flex items-center gap-3">
                 <Receipt className="h-8 w-8 text-primary" />
                 <div>
-                  <p className="text-2xl font-bold">€{Object.values(stats).reduce((a, s) => a + s.totalInvoiced, 0).toFixed(2)}</p>
+                  <p className="text-2xl font-bold">{formatEUR(Object.values(stats).reduce((a, s) => a + s.totalInvoiced, 0))}</p>
                   <p className="text-sm text-muted-foreground">Totaal gefactureerd</p>
                 </div>
               </div>
@@ -325,7 +326,7 @@ export default function Customers() {
                     <p className="text-xs text-muted-foreground">Offertes</p>
                   </div>
                   <div className="flex-1 bg-muted rounded-lg p-3 text-center">
-                    <p className="text-lg font-bold">€{(stats[detailCustomer.id]?.totalInvoiced || 0).toFixed(0)}</p>
+                    <p className="text-lg font-bold">{formatEUR(stats[detailCustomer.id]?.totalInvoiced || 0)}</p>
                     <p className="text-xs text-muted-foreground">Gefactureerd</p>
                   </div>
                 </div>

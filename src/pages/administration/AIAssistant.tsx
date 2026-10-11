@@ -1,3 +1,4 @@
+import { formatEUR } from '@/lib/finance';
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -418,12 +419,12 @@ export default function AIAssistant() {
                         <div className="mt-2 ml-2 flex gap-2 flex-wrap">
                           {message.metadata.monthlyIncome > 0 && (
                             <Badge variant="outline" className="text-xs">
-                              Omzet: €{message.metadata.monthlyIncome.toLocaleString()}
+                              Omzet: {formatEUR(message.metadata.monthlyIncome)}
                             </Badge>
                           )}
                           {message.metadata.monthlyExpenses > 0 && (
                             <Badge variant="outline" className="text-xs">
-                              Kosten: €{message.metadata.monthlyExpenses.toLocaleString()}
+                              Kosten: {formatEUR(message.metadata.monthlyExpenses)}
                             </Badge>
                           )}
                         </div>
