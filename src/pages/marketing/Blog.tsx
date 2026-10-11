@@ -103,9 +103,18 @@ function CategoryBadge({ category }: { category: BlogCategory }) {
 }
 
 
+const DUTCH_ONLY: Record<string, { title: string; body: string }> = {
+  en: { title: 'Our articles are currently only available in Dutch', body: 'We write for Dutch freelancers first. Translated articles are coming soon.' },
+  de: { title: 'Unsere Artikel gibt es derzeit nur auf Niederländisch', body: 'Wir schreiben zuerst für niederländische Selbstständige. Übersetzungen folgen bald.' },
+  fr: { title: 'Nos articles ne sont disponibles qu’en néerlandais pour le moment', body: 'Nous écrivons d’abord pour les indépendants néerlandais. Les traductions arrivent bientôt.' },
+  es: { title: 'Por ahora nuestros artículos solo están en neerlandés', body: 'Escribimos primero para autónomos de los Países Bajos. Pronto habrá traducciones.' },
+};
+
 export default function Blog() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
+  const lang = (i18n.language || 'nl').slice(0, 2);
+  const isNl = lang === 'nl';
   const prefix = isEn ? '/en' : '';
   const locale = isEn ? 'en-GB' : 'nl-NL';
 
@@ -146,6 +155,13 @@ export default function Blog() {
 <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
 
           {/* Uitgelicht artikel */}
+          {!isNl && (
+            <div className="rounded-3xl border border-neutral-200 bg-white p-8 md:p-12 text-center shadow-input">
+              <p className="text-lg font-semibold text-neutral-900 mb-2">{DUTCH_ONLY[lang]?.title}</p>
+              <p className="text-muted-foreground">{DUTCH_ONLY[lang]?.body}</p>
+            </div>
+          )}
+          {isNl && (<>
           <Reveal className="mb-16 md:mb-20">
             <Link
               to={`${prefix}/blog/${featured.slug}`}
@@ -225,6 +241,7 @@ export default function Blog() {
               </StaggerItem>
             ))}
           </StaggerGroup>
+          </>)}
 </div>
           <LampCTA />
         </main>
