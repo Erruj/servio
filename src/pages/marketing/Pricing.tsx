@@ -25,130 +25,67 @@ const YEARLY_PRICE_IDS: Record<string, string> = {
   business: 'price_1TdA1TDME8sDkzM9f24n5ANg',
 };
 
-const PLANS = [
-  {
-    tier: 'free',
-    name: 'Gratis',
-    description: 'Voor wie eerst wil proberen',
-    monthly: 0,
-    yearlyMonthly: 0,
-    yearlyTotal: 0,
-    yearlySavings: 0,
-    cta: 'Direct beginnen',
-    popular: false,
-    isFree: true,
-    features: [
-      '20 e-mails per maand',
-      '1 gekoppelde mailbox',
-      '10 AI-calls per maand',
-      '1 gebruiker',
-      'AI antwoordsuggesties',
-      'Basis inbox automatisering',
-      'Permanent gratis — geen creditcard',
-    ],
-  },
-  {
-    tier: 'starter',
-    name: 'Starter',
-    description: 'Voor net startende ZZP\'ers',
-    monthly: 9.99,
-    yearlyMonthly: 8.32,
-    yearlyTotal: 99.99,
-    yearlySavings: 19.89,
-    cta: 'Start gratis',
-    popular: false,
-    features: [
-      '100 e-mails per maand',
-      '2 gekoppelde mailboxen',
-      '50 AI-calls per maand',
-      '1 gebruiker',
-      'AI antwoordsuggesties',
-      'Basis inbox automatisering',
-      'Factuurverwerking',
-    ],
-  },
-  {
-    tier: 'pro',
-    name: 'Pro',
-    description: 'Meest gekozen door ZZP\'ers',
-    monthly: 29.99,
-    yearlyMonthly: 24.99,
-    yearlyTotal: 299.99,
-    yearlySavings: 59.89,
-    cta: 'Start gratis',
-    popular: true,
-    features: [
-      'Onbeperkt e-mails',
-      '5 gekoppelde mailboxen',
-      'Onbeperkt AI-calls',
-      '3 gebruikers',
-      'AI Boekhoudassistent',
-      'Offertes & klantenbeheer',
-      'Urenregistratie',
-      'Geavanceerde rapportages',
-      'Priority support',
-    ],
-  },
-  {
-    tier: 'business',
-    name: 'Business',
-    description: 'Voor groeiende teams',
-    monthly: 79.99,
-    yearlyMonthly: 66.66,
-    yearlyTotal: 799.99,
-    yearlySavings: 159.89,
-    cta: 'Start gratis',
-    popular: false,
-    features: [
-      'Onbeperkt gekoppelde mailboxen',
-      'Onbeperkte gebruikers',
-      'API toegang',
-      'Dedicated accountmanager',
-      'Priority SLA (4 uur)',
-      'Op-maat onboarding',
-      'Alles uit Pro',
-    ],
-  },
+// Prijzen en vlaggen blijven in code; alle zichtbare tekst komt uit i18n
+// (marketing.pricing.page.plans, zelfde volgorde als PLAN_META).
+const PLAN_META = [
+  { tier: 'free', monthly: 0, yearlyMonthly: 0, yearlyTotal: 0, yearlySavings: 0, popular: false, isFree: true },
+  { tier: 'starter', monthly: 9.99, yearlyMonthly: 8.32, yearlyTotal: 99.99, yearlySavings: 19.89, popular: false, isFree: false },
+  { tier: 'pro', monthly: 29.99, yearlyMonthly: 24.99, yearlyTotal: 299.99, yearlySavings: 59.89, popular: true, isFree: false },
+  { tier: 'business', monthly: 79.99, yearlyMonthly: 66.66, yearlyTotal: 799.99, yearlySavings: 159.89, popular: false, isFree: false },
+] as const;
+
+// Celwaardes: 'yes' | 'no' | i18n-sleutel (unlimited/basic/full) | letterlijke tekst.
+// Rijnamen komen uit marketing.pricing.page.rows (zelfde volgorde).
+type CellDef = 'yes' | 'no' | 'unlimited' | 'basic' | 'full' | (string & {});
+const COMPARISON_DEF: { cells: [CellDef, CellDef, CellDef, CellDef]; key?: boolean }[] = [
+  { cells: ['20', '100', 'unlimited', 'unlimited'], key: true },
+  { cells: ['10', '50', 'unlimited', 'unlimited'], key: true },
+  { cells: ['1', '1', '3', 'unlimited'], key: true },
+  { cells: ['1', '2', '5', 'unlimited'], key: true },
+  { cells: ['yes', 'yes', 'yes', 'yes'], key: true },
+  { cells: ['basic', 'basic', 'full', 'full'] },
+  { cells: ['no', 'yes', 'yes', 'yes'], key: true },
+  { cells: ['basic', 'basic', 'full', 'full'] },
+  { cells: ['no', 'no', 'yes', 'yes'], key: true },
+  { cells: ['no', 'no', 'yes', 'yes'] },
+  { cells: ['no', 'no', 'yes', 'yes'] },
+  { cells: ['no', 'no', 'yes', 'yes'], key: true },
+  { cells: ['no', 'no', 'yes', 'yes'] },
+  { cells: ['no', 'no', 'yes', 'yes'] },
+  { cells: ['no', 'no', 'yes', 'yes'], key: true },
+  { cells: ['no', 'no', 'no', 'yes'] },
+  { cells: ['no', 'no', 'no', 'yes'] },
+  { cells: ['no', 'no', 'no', 'yes'] },
+  { cells: ['no', 'no', 'no', 'yes'] },
 ];
 
-
-type Cell = string | boolean;
-const COMPARISON: { feature: string; free: Cell; starter: Cell; pro: Cell; business: Cell; key?: boolean }[] = [
-  { feature: 'E-mails per maand', free: '20', starter: '100', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
-  { feature: 'AI-calls per maand', free: '10', starter: '50', pro: 'Onbeperkt', business: 'Onbeperkt', key: true },
-  { feature: 'Gebruikers', free: '1', starter: '1', pro: '3', business: 'Onbeperkt', key: true },
-  { feature: 'Gekoppelde mailboxen', free: '1', starter: '2', pro: '5', business: 'Onbeperkt', key: true },
-  { feature: 'AI antwoordsuggesties', free: true, starter: true, pro: true, business: true, key: true },
-  { feature: 'Inbox automatisering', free: 'Basis', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
-  { feature: 'Factuurverwerking', free: false, starter: true, pro: true, business: true, key: true },
-  { feature: 'Financieel dashboard', free: 'Basis', starter: 'Basis', pro: 'Volledig', business: 'Volledig' },
-  { feature: 'AI Boekhoudassistent', free: false, starter: false, pro: true, business: true, key: true },
-  { feature: 'Offertes', free: false, starter: false, pro: true, business: true },
-  { feature: 'Klantenbeheer', free: false, starter: false, pro: true, business: true },
-  { feature: 'Urenregistratie', free: false, starter: false, pro: true, business: true, key: true },
-  { feature: 'Geavanceerde rapportages', free: false, starter: false, pro: true, business: true },
-  { feature: 'Exports (PDF/Excel/ZIP)', free: false, starter: false, pro: true, business: true },
-  { feature: 'Priority support', free: false, starter: false, pro: true, business: true, key: true },
-  { feature: 'API toegang', free: false, starter: false, pro: false, business: true },
-  { feature: 'Dedicated accountmanager', free: false, starter: false, pro: false, business: true },
-  { feature: 'Priority SLA (4 uur)', free: false, starter: false, pro: false, business: true },
-  { feature: 'Op-maat onboarding', free: false, starter: false, pro: false, business: true },
-];
-
-function renderCell(v: Cell) {
-  if (v === true) return <Check className="w-5 h-5 text-success mx-auto" aria-label="Ja" />;
-  if (v === false) return <X className="w-5 h-5 text-muted-foreground mx-auto" aria-label="Nee" />;
-  return <span className="text-sm text-foreground">{v}</span>;
+interface PlanTexts {
+  name: string;
+  description: string;
+  cta: string;
+  features: string[];
 }
 
 export default function MarketingPricing() {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { createCheckoutSession, checkSubscription, subscriptionStatus, openCustomerPortal } = useSubscription();
   const [billing, setBilling] = useState<BillingCycle>('monthly');
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+
+  const P = 'marketing.pricing.page';
+  const planTexts = (t(`${P}.plans`, { returnObjects: true }) as PlanTexts[]) || [];
+  const rowNames = (t(`${P}.rows`, { returnObjects: true }) as string[]) || [];
+
+  const renderCell = (v: CellDef) => {
+    if (v === 'yes') return <Check className="w-5 h-5 text-success mx-auto" aria-label={t(`${P}.yes`)} />;
+    if (v === 'no') return <X className="w-5 h-5 text-muted-foreground mx-auto" aria-label={t(`${P}.no`)} />;
+    if (v === 'unlimited' || v === 'basic' || v === 'full') {
+      return <span className="text-sm text-foreground">{t(`${P}.${v}`)}</span>;
+    }
+    return <span className="text-sm text-foreground">{v}</span>;
+  };
 
   const handlePlanClick = async (tier: string) => {
     if (!user) {
@@ -162,9 +99,7 @@ export default function MarketingPricing() {
         subscriptionStatus?.subscribed === true ||
         subscriptionStatus?.subscription_status === 'active';
       if (hasPaidPlan) {
-        toast.info(
-          'Je hebt een actief betaald abonnement. Zeg dit eerst op in het klantportaal — daarna kun je verder op het gratis plan.',
-        );
+        toast.info(t(`${P}.toastPaidDowngrade`));
         await openCustomerPortal();
         return;
       }
@@ -172,27 +107,22 @@ export default function MarketingPricing() {
         const { error } = await (supabase.rpc as any)('choose_free_plan');
         if (error) throw error;
         await checkSubscription();
-        toast.success('Je bent nu op het gratis plan.');
+        toast.success(t(`${P}.toastFreeActivated`));
         navigate('/app');
       } catch (e: any) {
         console.error('Kon gratis plan niet activeren:', e);
-        toast.error('Kon gratis plan niet activeren. Probeer opnieuw.');
+        toast.error(t(`${P}.toastFreeError`));
       }
       return;
     }
-    toast.info('Checkout...');
+    toast.info(t(`${P}.toastCheckout`));
     await createCheckoutSession(tier, billing);
   };
 
+  const title = t(`${P}.seoTitle`);
+  const description = t(`${P}.seoDescription`);
 
-  const title = isEn
-    ? 'Pricing | Servio AI Business Assistant'
-    : 'Prijzen | Servio AI Bedrijfsassistent';
-  const description = isEn
-    ? 'Transparent pricing for every entrepreneur. From €9.99/month. Every new account gets 14 days of all features free, no credit card.'
-    : 'Transparante prijzen voor elke ondernemer. Vanaf €9,99/maand. Elk nieuw account krijgt 14 dagen alle functies gratis, zonder creditcard.';
-
-  const visibleFeatures = showAllFeatures ? COMPARISON : COMPARISON.filter(c => c.key);
+  const visibleRows = showAllFeatures ? COMPARISON_DEF : COMPARISON_DEF.filter(c => c.key);
 
   const faqItems = (t('marketing.faq.items', { returnObjects: true }) as Array<{ q: string; a: string }>) || [];
   const faqJsonLd = faqItems.length
@@ -223,18 +153,18 @@ export default function MarketingPricing() {
 <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:24px_24px]" /><div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_60%)]" />
             <div className="container relative mx-auto px-6">
               <Reveal className="max-w-3xl mx-auto text-center">
-                <span className="text-sm font-medium text-primary mb-4 block">Prijzen</span>
+                <span className="text-sm font-medium text-primary mb-4 block">{t('marketing.pricing.eyebrow')}</span>
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-6 leading-tight">
-                  Transparante prijzen,
+                  {t(`${P}.h1Top`)}
                   <br />
-                  <span className="text-primary">geen verrassingen</span>
+                  <span className="text-primary">{t(`${P}.h1Accent`)}</span>
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
-                  Elk nieuw account krijgt 14 dagen alle functies gratis, zonder creditcard. Daarna kies je een plan of ga je door op Gratis.
+                  {t(`${P}.subtitle`)}
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-sm mb-10">
-                  {['14 dagen alle functies gratis bij aanmelden', 'Geen creditcard nodig voor je proefperiode', 'Betaalde plannen maandelijks opzegbaar'].map((item, i) => (
+                  {[t(`${P}.trust1`), t(`${P}.trust2`), t(`${P}.trust3`)].map((item, i) => (
                     <span key={i} className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle2 className="w-4 h-4 text-success" />
                       {item}
@@ -254,7 +184,7 @@ export default function MarketingPricing() {
                       )}
                       aria-pressed={billing === 'monthly'}
                     >
-                      Maandelijks
+                      {t(`${P}.monthly`)}
                     </button>
                     <button
                       type="button"
@@ -265,11 +195,11 @@ export default function MarketingPricing() {
                       )}
                       aria-pressed={billing === 'yearly'}
                     >
-                      Jaarlijks
+                      {t(`${P}.yearly`)}
                     </button>
                   </div>
                   <Badge className="bg-success/15 text-success hover:bg-success/20 border-0">
-                    Bespaar 17%
+                    {t(`${P}.saveBadge`)}
                   </Badge>
                 </div>
               </Reveal>
@@ -280,24 +210,26 @@ export default function MarketingPricing() {
           <section className="pb-20">
             <div className="container mx-auto px-6">
               <StaggerGroup className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                {PLANS.map((plan) => {
+                {PLAN_META.map((meta, idx) => {
+                  const texts = planTexts[idx];
+                  if (!texts) return null;
                   const isYearly = billing === 'yearly';
-                  const displayMonthly = isYearly ? plan.yearlyMonthly : plan.monthly;
+                  const displayMonthly = isYearly ? meta.yearlyMonthly : meta.monthly;
                   return (
                     <StaggerItem
                       as="article"
-                      key={plan.tier}
+                      key={meta.tier}
                       className={cn(
                         'relative rounded-3xl p-8 transition-all duration-200 ease-out hover:-translate-y-1',
-                        plan.popular
+                        meta.popular
                           ? 'bg-foreground text-background border-2 border-foreground shadow-2xl md:scale-[1.03]'
                           : 'bg-white border border-neutral-200 shadow-input hover:shadow-elevated'
                       )}
                     >
-                      {plan.popular && (
+                      {meta.popular && (
                         <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} />
                       )}
-                      {plan.popular && (
+                      {meta.popular && (
                         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                           <span className="inline-flex px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-medium whitespace-nowrap">
                             {t('marketing.pricing.mostPopular')}
@@ -306,41 +238,44 @@ export default function MarketingPricing() {
                       )}
 
                       <header className="mb-6">
-                        <h2 className={cn('text-xl font-semibold mb-1', plan.popular ? 'text-background' : 'text-foreground')}>
-                          {plan.name}
+                        <h2 className={cn('text-xl font-semibold mb-1', meta.popular ? 'text-background' : 'text-foreground')}>
+                          {texts.name}
                         </h2>
-                        <p className={cn('text-sm', plan.popular ? 'text-background/70' : 'text-muted-foreground')}>
-                          {plan.description}
+                        <p className={cn('text-sm', meta.popular ? 'text-background/70' : 'text-muted-foreground')}>
+                          {texts.description}
                         </p>
                       </header>
 
                       <div className="mb-6 min-h-[88px]">
                         <div className="flex items-baseline gap-2">
                           {isYearly && (
-                            <span className={cn('text-lg line-through', plan.popular ? 'text-background/40' : 'text-muted-foreground/60')}>
-                              €{plan.monthly.toFixed(2).replace('.', ',')}
+                            <span className={cn('text-lg line-through', meta.popular ? 'text-background/40' : 'text-muted-foreground/60')}>
+                              €{meta.monthly.toFixed(2).replace('.', ',')}
                             </span>
                           )}
-                          <span className={cn('text-4xl font-semibold transition-all', plan.popular ? 'text-background' : 'text-foreground')}>
+                          <span className={cn('text-4xl font-semibold transition-all', meta.popular ? 'text-background' : 'text-foreground')}>
                             €{displayMonthly.toFixed(2).replace('.', ',')}
                           </span>
-                          <span className={cn('text-sm', plan.popular ? 'text-background/70' : 'text-muted-foreground')}>/maand incl. btw</span>
+                          <span className={cn('text-sm', meta.popular ? 'text-background/70' : 'text-muted-foreground')}>{t(`${P}.perMonthVat`)}</span>
                         </div>
                         {isYearly && (
-                          <p className={cn('text-xs mt-2', plan.popular ? 'text-background/70' : 'text-muted-foreground')}>
-                            Gefactureerd als €{plan.yearlyTotal.toFixed(2).replace('.', ',')}/jaar · Bespaar €{plan.yearlySavings.toFixed(2).replace('.', ',')}
+                          <p className={cn('text-xs mt-2', meta.popular ? 'text-background/70' : 'text-muted-foreground')}>
+                            {t(`${P}.billedYearly`, {
+                              total: meta.yearlyTotal.toFixed(2).replace('.', ','),
+                              savings: meta.yearlySavings.toFixed(2).replace('.', ','),
+                            })}
                           </p>
                         )}
-                        <p className={cn('text-xs mt-1.5 font-medium', plan.popular ? 'text-background/70' : 'text-success')}>
-                          {plan.isFree ? 'Permanent gratis — geen creditcard' : 'Direct actief na betaling'}
+                        <p className={cn('text-xs mt-1.5 font-medium', meta.popular ? 'text-background/70' : 'text-success')}>
+                          {meta.isFree ? t(`${P}.freeNote`) : t(`${P}.paidNote`)}
                         </p>
                       </div>
 
                       <ul className="space-y-3 mb-8">
-                        {plan.features.map((feature, i) => (
+                        {texts.features.map((feature, i) => (
                           <li key={i} className="flex items-start gap-3 text-sm">
-                            <Check className={cn('w-4 h-4 flex-shrink-0 mt-0.5', plan.popular ? 'text-background/70' : 'text-success')} />
-                            <span className={plan.popular ? 'text-background/90' : 'text-foreground'}>{feature}</span>
+                            <Check className={cn('w-4 h-4 flex-shrink-0 mt-0.5', meta.popular ? 'text-background/70' : 'text-success')} />
+                            <span className={meta.popular ? 'text-background/90' : 'text-foreground'}>{feature}</span>
                           </li>
                         ))}
                       </ul>
@@ -348,12 +283,12 @@ export default function MarketingPricing() {
                       <Button
                         className={cn(
                           'w-full h-12 rounded-xl text-sm font-medium',
-                          plan.popular && 'bg-background text-foreground hover:bg-background/90'
+                          meta.popular && 'bg-background text-foreground hover:bg-background/90'
                         )}
-                        variant={plan.popular ? 'secondary' : 'default'}
-                        onClick={() => handlePlanClick(plan.tier)}
+                        variant={meta.popular ? 'secondary' : 'default'}
+                        onClick={() => handlePlanClick(meta.tier)}
                       >
-                        {plan.cta}
+                        {texts.cta}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </StaggerItem>
@@ -369,10 +304,10 @@ export default function MarketingPricing() {
             <div className="container mx-auto px-6">
               <Reveal>
                 <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-center text-foreground mb-3">
-                  Wat zit er in elk plan?
+                  {t(`${P}.comparisonTitle`)}
                 </h2>
                 <p className="text-muted-foreground text-center mb-12">
-                  Een volledige vergelijking van alle features per plan.
+                  {t(`${P}.comparisonSubtitle`)}
                 </p>
               </Reveal>
 
@@ -380,24 +315,24 @@ export default function MarketingPricing() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/40">
-                      <th className="text-left p-4 md:p-5 font-medium text-muted-foreground w-1/3">Feature</th>
-                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">Gratis</th>
-                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">Starter</th>
+                      <th className="text-left p-4 md:p-5 font-medium text-muted-foreground w-1/3">{t(`${P}.featureCol`)}</th>
+                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">{planTexts[0]?.name}</th>
+                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">{planTexts[1]?.name}</th>
                       <th className="p-4 md:p-5 font-semibold text-center bg-[#2563eb] text-white relative">
-                        Pro
-                        <span className="block text-[10px] font-normal text-white/80 mt-0.5">Meest gekozen</span>
+                        {planTexts[2]?.name}
+                        <span className="block text-[10px] font-normal text-white/80 mt-0.5">{t(`${P}.mostChosen`)}</span>
                       </th>
-                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">Business</th>
+                      <th className="p-4 md:p-5 font-semibold text-foreground text-center">{planTexts[3]?.name}</th>
                     </tr>
                   </thead>
                   <StaggerGroup as="tbody" stagger={0.04}>
-                    {visibleFeatures.map((row, i) => (
+                    {visibleRows.map((row, i) => (
                       <StaggerItem as="tr" y={10} key={i} className="border-b border-border/30 last:border-0">
-                        <td className="p-4 md:p-5 text-foreground">{row.feature}</td>
-                        <td className="p-4 md:p-5 text-center">{renderCell(row.free)}</td>
-                        <td className="p-4 md:p-5 text-center">{renderCell(row.starter)}</td>
-                        <td className="p-4 md:p-5 text-center bg-[#2563eb]/5">{renderCell(row.pro)}</td>
-                        <td className="p-4 md:p-5 text-center">{renderCell(row.business)}</td>
+                        <td className="p-4 md:p-5 text-foreground">{rowNames[COMPARISON_DEF.indexOf(row)]}</td>
+                        <td className="p-4 md:p-5 text-center">{renderCell(row.cells[0])}</td>
+                        <td className="p-4 md:p-5 text-center">{renderCell(row.cells[1])}</td>
+                        <td className="p-4 md:p-5 text-center bg-[#2563eb]/5">{renderCell(row.cells[2])}</td>
+                        <td className="p-4 md:p-5 text-center">{renderCell(row.cells[3])}</td>
                       </StaggerItem>
                     ))}
                   </StaggerGroup>
@@ -407,13 +342,13 @@ export default function MarketingPricing() {
               {/* Mobile/quick toggle: show all */}
               <div className="text-center mt-6 md:hidden">
                 <Button variant="outline" onClick={() => setShowAllFeatures(v => !v)}>
-                  {showAllFeatures ? 'Toon belangrijkste features' : 'Toon alle features'}
+                  {showAllFeatures ? t(`${P}.showLess`) : t(`${P}.showAll`)}
                 </Button>
               </div>
               <div className="text-center mt-6 hidden md:block">
                 {!showAllFeatures && (
                   <Button variant="ghost" onClick={() => setShowAllFeatures(true)}>
-                    Toon alle features
+                    {t(`${P}.showAll`)}
                   </Button>
                 )}
               </div>
@@ -426,13 +361,13 @@ export default function MarketingPricing() {
               <Reveal className="mt-4 max-w-2xl mx-auto">
                 <div className="rounded-xl border border-border/40 bg-muted/30 p-8 text-center">
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Iets groters nodig?
+                    {t(`${P}.enterpriseTitle`)}
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    Voor grotere teams of specifieke wensen maken we graag een offerte op maat.
+                    {t(`${P}.enterpriseDesc`)}
                   </p>
                   <Button variant="outline" onClick={() => window.location.href = 'mailto:info@getservio.co'}>
-                    Neem contact op
+                    {t(`${P}.contactUs`)}
                   </Button>
                 </div>
               </Reveal>
