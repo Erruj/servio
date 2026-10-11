@@ -437,8 +437,8 @@ export default function Invoices() {
 
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-5">
-        <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground">Totaal</div><div className="text-2xl font-bold">{formatEUR(totals.total)}</div></CardContent></Card>
+      <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-5">
+        <Card className="col-span-2 md:col-span-1"><CardContent className="pt-4"><div className="text-sm text-muted-foreground">Totaal</div><div className="text-2xl font-bold">{formatEUR(totals.total)}</div></CardContent></Card>
         <Card><CardContent className="pt-4"><div className="text-sm text-muted-foreground flex items-center gap-1">BTW Totaal <HelpTooltip tipKey="invoice-vat-total" title="BTW Totaal" text="Het BTW bedrag wordt automatisch berekend op basis van je facturen. Reserveer dit voor je volgende BTW-aangifte." /></div><div className="text-2xl font-bold text-primary">{formatEUR(totals.vat)}</div></CardContent></Card>
         <Card><CardContent className="pt-4"><div className="text-sm text-green-600">Betaald</div><div className="text-2xl font-bold text-green-600">{formatEUR(totals.paid)}</div></CardContent></Card>
         <Card><CardContent className="pt-4"><div className="text-sm text-yellow-600">Open</div><div className="text-2xl font-bold text-yellow-600">{formatEUR(totals.pending)}</div></CardContent></Card>

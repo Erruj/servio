@@ -247,6 +247,36 @@ export default function TeamManagement() {
               description="Nodig collega's uit om samen te werken in Servio."
             />
           ) : (
+            <>
+            <ul className="md:hidden divide-y divide-border/60">
+              {teamMembers.map((member) => (
+                <li key={member.id} className="py-3 flex items-start gap-3">
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className="font-medium text-foreground truncate">{member.full_name || t('unknown')}</p>
+                    <p className="text-sm text-muted-foreground truncate">{member.email}</p>
+                    <Badge variant={getRoleBadgeVariant(member.role)}>{t(member.role) || member.role}</Badge>
+                  </div>
+                  {member.user_id !== user?.id && (
+                    <div className="flex flex-col items-end gap-2">
+                      <Select value={member.role} onValueChange={(value) => handleUpdateRole(member.id, value)}>
+                        <SelectTrigger className="w-32 h-11" aria-label="Rol wijzigen"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="owner">{t('owner')}</SelectItem>
+                          <SelectItem value="admin">{t('admin')}</SelectItem>
+                          <SelectItem value="agent">{t('agent')}</SelectItem>
+                          <SelectItem value="finance">{t('finance')}</SelectItem>
+                          <SelectItem value="viewer">{t('viewer')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Teamlid verwijderen" onClick={() => setDeleteTarget(member.id)} disabled={loading}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <div className="hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -301,6 +331,8 @@ export default function TeamManagement() {
                 ))}
               </TableBody>
             </Table>
+            </div>
+            </>
           )}
         </CardContent>
       </Card>
