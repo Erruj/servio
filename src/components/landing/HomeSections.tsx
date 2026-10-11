@@ -9,7 +9,7 @@ import { GlowingEffect } from '@/components/aceternity/glowing-effect';
 import { StickyScroll } from '@/components/aceternity/sticky-scroll-reveal';
 import { LampContainer } from '@/components/aceternity/lamp';
 import { ProductPreview } from '@/components/landing/ProductPreview';
-import { InboxVisual, AIReplyVisual, DocumentVisual, AnalyticsVisual } from '@/components/landing/FeatureVisuals';
+import { InboxVisual, AIReplyVisual, DocumentVisual, AnalyticsVisual, AssistantVisual, SecurityVisual } from '@/components/landing/FeatureVisuals';
 import { useMemo } from 'react';
 
 function usePrefix() {
@@ -88,7 +88,7 @@ function IconDot({ Icon }: { Icon: typeof Inbox }) {
 }
 
 function VisualHeader({ children }: { children: React.ReactNode }) {
-  return <div className="relative z-10 flex min-h-[8rem] flex-1 overflow-hidden rounded-2xl">{children}</div>;
+  return <div className="relative z-10 h-40 overflow-hidden rounded-2xl [mask-image:linear-gradient(to_bottom,black_75%,transparent)] md:h-44">{children}</div>;
 }
 
 export function HomeBento() {
@@ -100,10 +100,10 @@ export function HomeBento() {
     <VisualHeader key="1"><AIReplyVisual /></VisualHeader>,
     <VisualHeader key="2"><DocumentVisual /></VisualHeader>,
     <VisualHeader key="3"><AnalyticsVisual /></VisualHeader>,
-    null,
-    null,
+    <VisualHeader key="4"><AssistantVisual /></VisualHeader>,
+    <VisualHeader key="5"><SecurityVisual /></VisualHeader>,
   ];
-  const spans = ['md:col-span-2', '', '', 'md:col-span-2', '', ''];
+  const spans = ['md:col-span-2', '', '', 'md:col-span-2', 'md:col-span-2', ''];
 
   return (
     <section className="bg-white py-24 md:py-32">
