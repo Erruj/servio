@@ -30,7 +30,7 @@ export function HomeHero() {
   const trust = [t('marketing.hero.trustNoCard'), t('marketing.hero.trustQuickSetup'), t('marketing.hero.trustCancel')];
 
   return (
-    <section className="relative overflow-hidden bg-[#F4F4F6] pt-24" aria-label="Servio">
+    <section className="relative overflow-hidden bg-[#F4F4F6] pt-36 md:pt-24" aria-label="Servio">
       <div className={`pointer-events-none absolute inset-0 ${DOTS_LIGHT}`} />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[40rem] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.18),transparent_60%)]" />
       <div className="relative">
