@@ -10,3 +10,11 @@
 
 - [x] Audit deel 1, punt 1: cron hersteld + bewaking
 - [ ] Audit deel 1, punten 2–6 (auto-classificatie, bijlagen, auto-antwoord, schrijfstijl, threads)
+
+## Software-audit deel 2 (administratie)
+- [x] 1. Financieel Overzicht leeg ondanks data
+- [ ] 2. Verkoopfacturen (Verkoop/Inkoop, PDF, Resend, offerte→factuur, uren→factuur)
+- [ ] 3. BTW-reservering per kwartaal
+- [ ] 4. AI-boekhoudassistent (server-side totalen, prompt, streaming, versturen)
+- [ ] 5. Categorieën vertalen
+- [ ] 6. Team-uitnodigingen (mail, /invite/:token, limieten, rollen)

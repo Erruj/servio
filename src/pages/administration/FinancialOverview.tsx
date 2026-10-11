@@ -123,7 +123,7 @@ export default function FinancialOverview() {
       const [invoicesRes, receiptsRes, transactionsRes] = await Promise.all([
         supabase.from('invoices').select('*').gte('invoice_date', startDate.toISOString().split('T')[0]),
         supabase.from('receipts').select('*').gte('receipt_date', startDate.toISOString().split('T')[0]),
-        supabase.from('transactions').select('*').gte('date', startDate.toISOString().split('T')[0])
+        supabase.from('transactions').select('*')
       ]);
 
       // Previous period for comparison
