@@ -9,7 +9,8 @@ import { useTranslation } from 'react-i18next';
  * Bewust een vaste datum: eerder werd hier new Date() gebruikt, waardoor de
  * pagina elke dag "vandaag" toonde als laatste wijziging.
  */
-const LAST_REVISED = new Date('2026-10-02T00:00:00Z');
+const LAST_REVISED_DEFAULT = new Date('2026-10-02T00:00:00Z');
+const LAST_REVISED_BY_DOC: Record<string, Date> = { privacy: new Date('2026-10-11T00:00:00Z') };
 
 interface Section {
   h: string;
@@ -57,7 +58,7 @@ export function LegalPage({ docKey, path, seoTitleNl, seoTitleEn, seoDescription
               <div className="prose prose-neutral dark:prose-invert max-w-none">
                 <Reveal delay={0.05}>
                   <p className="text-lg text-muted-foreground mb-8">
-                    {lastUpdated} {LAST_REVISED.toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {lastUpdated} {(LAST_REVISED_BY_DOC[docKey] ?? LAST_REVISED_DEFAULT).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
                 </Reveal>
 

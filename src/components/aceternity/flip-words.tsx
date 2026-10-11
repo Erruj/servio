@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -32,21 +32,43 @@ export const FlipWords = ({
     setCurrentWord(words[0]);
   }, [words]);
 
-  const sizer = words.map((w) => (
-    <span key={w} aria-hidden className="invisible whitespace-nowrap px-2 [grid-area:1/1]">{w}</span>
-  ));
+  // Meet de breedte van elk woord; de regel animeert naar de breedte van
+  // het actieve woord, zodat de hele kop gecentreerd blijft.
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const [widths, setWidths] = useState<Record<string, number>>({});
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = measureRef.current;
+      if (!el) return;
+      const next: Record<string, number> = {};
+      Array.from(el.children).forEach((c, i) => { next[words[i]] = (c as HTMLElement).offsetWidth; });
+      setWidths(next);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    document.fonts?.ready.then(measure).catch(() => {});
+    return () => window.removeEventListener('resize', measure);
+  }, [words]);
+  const sizer = (
+    <span ref={measureRef} aria-hidden className="pointer-events-none invisible absolute left-0 top-0 flex">
+      {words.map((w) => <span key={w} className="whitespace-nowrap px-2">{w}</span>)}
+    </span>
+  );
+  const width = widths[currentWord];
 
   if (reduce) {
     return (
-      <span className="relative inline-grid justify-items-center sm:justify-items-start">
-        {sizer}
-        <span className={cn("relative z-10 whitespace-nowrap px-2 text-primary [grid-area:1/1]", className)}>{words[0]}</span>
-      </span>
+      <span className={cn("relative inline-block whitespace-nowrap px-2 text-primary", className)}>{words[0]}</span>
     );
   }
 
   return (
-    <span className="relative inline-grid justify-items-center sm:justify-items-start">
+    <motion.span
+      className="relative inline-grid justify-items-start align-bottom"
+      initial={false}
+      animate={width ? { width } : undefined}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+    >
     {sizer}
     <AnimatePresence onExitComplete={() => setIsAnimating(false)}>
       <motion.span
@@ -81,6 +103,6 @@ export const FlipWords = ({
         ))}
       </motion.span>
     </AnimatePresence>
-    </span>
+    </motion.span>
   );
 };
