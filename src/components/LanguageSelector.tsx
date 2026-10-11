@@ -17,10 +17,25 @@ const languages = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
 ];
 
+export const APP_LANGUAGES = languages;
+
+/** Wisselt de taal en slaat de keuze op in de browser én het profiel. */
+export function changeAppLanguage(i18n: { changeLanguage: (l: string) => unknown }, languageCode: string) {
+  i18n.changeLanguage(languageCode);
+  localStorage.setItem('servio-language', languageCode);
+  supabase.auth.getUser().then(({ data }) => {
+    if (data.user) {
+      supabase.from('user_settings').update({ language: languageCode }).eq('user_id', data.user.id).then(() => {});
+    }
+  });
+}
+
 export function LanguageSelector() {
   const { i18n } = useTranslation();
 
   const handleLanguageChange = (languageCode: string) => {
+    changeAppLanguage(i18n, languageCode);
+    return;
     i18n.changeLanguage(languageCode);
     localStorage.setItem('servio-language', languageCode);
     // Ook in het profiel opslaan, zodat de keuze op andere apparaten blijft staan
