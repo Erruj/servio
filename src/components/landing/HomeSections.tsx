@@ -179,10 +179,12 @@ export function HomeHowItWorks() {
   const contents = [connect, inbox, dash];
 
   return (
-    <section className="relative overflow-hidden bg-[#0A0F1E] py-24 md:py-32">
-      <div className={`pointer-events-none absolute inset-0 ${DOTS_DARK}`} />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[30rem] w-[50rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-3xl" />
-      <div className="relative">
+    <section className="relative bg-[#0A0F1E] py-24 md:py-32">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className={`absolute inset-0 ${DOTS_DARK}`} />
+        <div className="absolute left-1/2 top-0 h-[30rem] w-[50rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-3xl" />
+      </div>
+      <div className="relative z-10">
         <div className="mx-auto mb-8 max-w-2xl px-4 text-center">
           <span className="text-sm font-medium text-blue-300">{t('marketing.howItWorks.eyebrow')}</span>
           <h2 className="mt-3 text-3xl md:text-5xl font-bold tracking-tight text-white">{t('marketing.howItWorks.title')}</h2>
