@@ -11,7 +11,12 @@ interface HeaderProps {
   onLogout?: () => void;
 }
 
-export function Header({ user, onLogout }: HeaderProps) {
+/** Verouderd: de gedeelde app-shell levert nu de bovenbalk. Blijft als lege stub voor bestaande pagina's. */
+export function Header(_props: HeaderProps) {
+  return null;
+}
+
+export function LegacyHeader({ user, onLogout }: HeaderProps) {
   const { t } = useTranslation();
 
   return (

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useInAppShell } from '@/components/shell/AppShellContext';
+import { AccountMenu } from '@/components/shell/AccountMenu';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Mail, BarChart3, FileText, Settings, Brain, PieChart, Wallet, Receipt, Upload, FileBox, Users, Lock, Shield, ClipboardList, Clock, UserCircle, Star, GripVertical, RotateCcw } from 'lucide-react';
 import servioLogo from '@/assets/servio-icon.png';
@@ -14,6 +17,8 @@ import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist
 
 interface SidebarProps {
   className?: string;
+  /** Alleen de shell rendert de sidebar; losse aanroepen in pagina's renderen dan niets. */
+  fromShell?: boolean;
 }
 
 const getNavigation = (t: any) => [
@@ -45,25 +50,27 @@ interface NavItemProps {
   onToggleFavorite?: () => void;
   requiredLabel?: string;
   showFavControls?: boolean;
+  collapsed?: boolean;
 }
 
-function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requiredLabel, showFavControls }: NavItemProps) {
+function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requiredLabel, showFavControls, collapsed }: NavItemProps) {
   const content = (
     <NavLink
       to={item.href}
       className={cn(
-        'group flex items-center h-10 px-3 text-[13px] font-medium rounded-lg transition-all duration-150 ease-out',
+        'group flex items-center h-10 px-3 text-[13px] font-medium rounded-xl transition-all duration-150 ease-out',
+        collapsed && 'justify-center px-0',
         isActive
-          ? 'bg-primary text-primary-foreground shadow-subtle'
+          ? 'bg-primary/10 text-primary'
           : isLocked
             ? 'text-muted-foreground/50 cursor-default'
             : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
       )}
     >
-      <item.icon className="mr-3 h-[18px] w-[18px] flex-shrink-0" />
-      <span className="flex-1 truncate">{item.name}</span>
-      {isLocked && <Lock className="h-3.5 w-3.5 ml-2 text-muted-foreground/50" />}
-      {showFavControls && !isLocked && onToggleFavorite && (
+      <item.icon className={cn('h-[18px] w-[18px] flex-shrink-0', !collapsed && 'mr-3')} />
+      {!collapsed && <span className="flex-1 truncate">{item.name}</span>}
+      {isLocked && !collapsed && <Lock className="h-3.5 w-3.5 ml-2 text-muted-foreground/50" />}
+      {showFavControls && !collapsed && !isLocked && onToggleFavorite && (
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(); }}
           className={cn(
@@ -77,11 +84,11 @@ function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requi
     </NavLink>
   );
 
-  if (isLocked) {
+  if (isLocked || collapsed) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>{content}</TooltipTrigger>
-        <TooltipContent side="right">{requiredLabel}</TooltipContent>
+        <TooltipContent side="right">{isLocked ? requiredLabel : item.name}</TooltipContent>
       </Tooltip>
     );
   }
@@ -89,8 +96,16 @@ function NavItem({ item, isActive, isLocked, isFavorite, onToggleFavorite, requi
   return content;
 }
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar(props: SidebarProps) {
+  const inShell = useInAppShell();
+  if (inShell && !props.fromShell) return null;
+  return <SidebarInner {...props} />;
+}
+
+function SidebarInner({ className }: SidebarProps) {
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('servio-sidebar-collapsed') === '1');
+  const toggleCollapsed = () => setCollapsed((c) => { localStorage.setItem('servio-sidebar-collapsed', c ? '0' : '1'); return !c; });
   const { t } = useTranslation();
   const { permissions } = useRoleAccess();
   const { canAccessAdministration, canAccessAIAssistant, canAccessDocuments, canAccessExports, canAccessAdvancedStats, canManageTeam, requiredTierLabel } = useFeatureAccess();
@@ -133,19 +148,22 @@ export function Sidebar({ className }: SidebarProps) {
   const favoriteItems = favorites.map(id => allItems.find(i => i.id === id)).filter(Boolean) as typeof allItems;
 
   return (
-    <div className={cn('hidden md:flex w-[220px] bg-sidebar border-r border-sidebar-border flex-col sticky top-0 h-screen overflow-hidden', className)}>
-      {/* Logo */}
-      <div className="px-6 pt-6 pb-5">
-        <div className="flex items-center space-x-3">
-          <img src={servioLogo} alt="Servio AI Business Assistant logo" className="w-9 h-9" width={36} height={36} />
-          <div>
-            <h1 className="text-[17px] font-bold text-foreground tracking-tight">Servio</h1>
+    <div className={cn('hidden md:flex bg-card border-r border-border flex-col sticky top-0 h-screen overflow-hidden transition-[width] duration-200 ease-out', collapsed ? 'w-16' : 'w-64', className)}>
+      {/* Logo — één keer, bovenaan */}
+      <div className={cn('flex h-14 items-center shrink-0', collapsed ? 'justify-center px-2' : 'justify-between px-5')}>
+        {!collapsed && (
+          <div className="flex items-center gap-2.5">
+            <img src={servioLogo} alt="Servio logo" className="w-7 h-7" width={28} height={28} />
+            <span className="text-[17px] font-semibold text-foreground tracking-tight">Servio</span>
           </div>
-        </div>
+        )}
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground" onClick={toggleCollapsed} aria-label={collapsed ? t('ui.expandSidebar', { defaultValue: 'Menu uitklappen' }) : t('ui.collapseSidebar', { defaultValue: 'Menu inklappen' })}>
+          {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        </Button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 pb-4 space-y-5 overflow-y-auto">
+      <nav className={cn('flex-1 pb-4 space-y-5 overflow-y-auto', collapsed ? 'px-2' : 'px-3')}>
         {/* Favorites */}
         {favoriteItems.length > 0 && (
           <div className="space-y-0.5">
@@ -154,6 +172,7 @@ export function Sidebar({ className }: SidebarProps) {
             </h3>
             {favoriteItems.map((item) => (
               <NavItem
+                collapsed={collapsed}
                 key={`fav-${item.id}`}
                 item={item}
                 isActive={location.pathname === item.href}
@@ -166,6 +185,7 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* Main Navigation */}
         <div className="space-y-1">
+          {!collapsed && <h3 className="px-3 pt-1 pb-1.5 text-[13px] font-medium text-muted-foreground">{t('ui.workspace', { defaultValue: 'Werkruimte' })}</h3>}
           {finalMainNav.filter(item => {
             if (item.href === '/app' && !permissions.canAccessInbox) return false;
             if (item.href === '/stats' && !permissions.canAccessStatistics) return false;
@@ -174,6 +194,7 @@ export function Sidebar({ className }: SidebarProps) {
             return true;
           }).map((item) => (
             <NavItem
+                collapsed={collapsed}
               key={item.id}
               item={item}
               isActive={location.pathname === item.href}
@@ -189,15 +210,16 @@ export function Sidebar({ className }: SidebarProps) {
         {/* Administration Section */}
         {permissions.canAccessAdministration && (
           <div className="space-y-0.5">
-            <h3 className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-[0.08em]">
+            {!collapsed && <h3 className="px-3 pt-2 pb-1.5 text-[13px] font-medium text-muted-foreground">
               {t('administration')}
-            </h3>
+            </h3>}
             {adminNavigation.filter(item => {
               if (item.href === '/administration/ai-assistant' && !permissions.canUseAI) return false;
               if (item.href === '/administration/exports' && !permissions.canExportData) return false;
               return true;
             }).map((item) => (
               <NavItem
+                collapsed={collapsed}
                 key={item.id}
                 item={item}
                 isActive={location.pathname === item.href}
@@ -214,7 +236,9 @@ export function Sidebar({ className }: SidebarProps) {
         {/* Team Management */}
         {permissions.canManageTeam && (
           <div className="space-y-1 mt-2">
+            {!collapsed && <h3 className="px-3 pt-2 pb-1.5 text-[13px] font-medium text-muted-foreground">{t('ui.team', { defaultValue: 'Team' })}</h3>}
             <NavItem
+                collapsed={collapsed}
               item={{ id: 'team', name: t('teamManagement'), href: '/team', icon: Users, feature: 'team_management' }}
               isActive={location.pathname === '/team'}
               isLocked={isFeatureLocked('team_management')}
@@ -224,7 +248,7 @@ export function Sidebar({ className }: SidebarProps) {
         )}
 
         {/* Sidebar customize toggle */}
-        <div className="pt-2 border-t border-border">
+        {!collapsed && <div className="pt-2 border-t border-border">
           <Button
             variant="ghost"
             size="sm"
@@ -245,17 +269,15 @@ export function Sidebar({ className }: SidebarProps) {
               {t('resetFavorites')}
             </Button>
           )}
-        </div>
+        </div>}
       </nav>
 
-      <OnboardingChecklist />
-      <UsageBadge />
+      {!collapsed && <OnboardingChecklist />}
+      {!collapsed && <UsageBadge />}
 
-      {/* Footer - sticky bottom */}
-      <div className="flex-shrink-0 px-4 py-3 border-t border-sidebar-border">
-        <p className="text-[11px] text-muted-foreground/70">
-          {t('version')} 1.0.0 · © {new Date().getFullYear()} Servio
-        </p>
+      {/* Accountmenu */}
+      <div className="flex-shrink-0 p-2 border-t border-border">
+        <AccountMenu collapsed={collapsed} />
       </div>
     </div>
   );
