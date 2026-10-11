@@ -38,7 +38,22 @@ import { EmailBodyRenderer } from '@/components/EmailBodyRenderer';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import type { TemplateItem } from '@/types';
-import { FileText } from 'lucide-react';
+import { FileText, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+const MailMoreMenu = ({ onPhishing, onResolved }: { onPhishing: () => void; onResolved: () => void }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="outline" size="icon" className="h-11 w-11 flex-shrink-0" aria-label="Meer acties">
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem onClick={onResolved}>Markeer als afgehandeld</DropdownMenuItem>
+      <DropdownMenuItem onClick={onPhishing} className="text-destructive focus:text-destructive">Markeer als phishing</DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
 
 interface MailDetailProps {
   mail: MailItem | null;
@@ -393,21 +408,6 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   };
 
   if (!mail) {
-    const markAsPhishing = () => {
-    if (!mail) return;
-    const blocked = JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]');
-    if (!blocked.includes(mail.from)) {
-      blocked.push(mail.from);
-      localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
-    }
-    toast({ title: "Afzender geblokkeerd", description: `${mail.from} is gemarkeerd als phishing en geblokkeerd.` });
-  };
-
-  const sentimentLabel = (v?: string) => {
-    const m: Record<string, string> = { happy: 'Positief', positive: 'Positief', neutral: 'Neutraal', unhappy: 'Negatief', negative: 'Negatief' };
-    return v ? (m[v] || v) : undefined;
-  };
-
   return (
       <div className={`bg-card flex items-center justify-center ${className}`}>
         <div className="text-center text-muted-foreground">
@@ -448,6 +448,21 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   };
 
   const isUnhappy = analysis?.sentiment === 'Negatief' || mail?.customerSentiment === 'unhappy';
+
+  const markAsPhishing = () => {
+  if (!mail) return;
+  const blocked = JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]');
+  if (!blocked.includes(mail.from)) {
+    blocked.push(mail.from);
+    localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
+  }
+  toast({ title: "Afzender geblokkeerd", description: `${mail.from} is gemarkeerd als phishing en geblokkeerd.` });
+};
+
+const sentimentLabel = (v?: string) => {
+  const m: Record<string, string> = { happy: 'Positief', positive: 'Positief', neutral: 'Neutraal', unhappy: 'Negatief', negative: 'Negatief' };
+  return v ? (m[v] || v) : undefined;
+};
 
   return (
     <ErrorBoundary>
