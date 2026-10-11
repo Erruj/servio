@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Globe, ChevronDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 /**
  * Compact language switcher (NL/EN/DE/FR/ES). Only EN has its own /en URLs.
@@ -40,6 +43,36 @@ export function LanguageSwitcher({ variant = 'marketing' }: { variant?: 'marketi
       }
     }
   };
+
+  useEffect(() => {
+    document.documentElement.lang = current;
+  }, [current]);
+
+  if (variant === 'marketing') {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Taal / Language"
+            className="inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+          >
+            <Globe className="h-4 w-4" />
+            {current.toUpperCase()}
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="z-[70] min-w-[10rem]">
+          {LANGS.map((l) => (
+            <DropdownMenuItem key={l.code} onSelect={() => switchTo(l.code)} className="min-h-11 justify-between">
+              {l.name}
+              {current === l.code && <Check className="h-4 w-4 text-primary" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
 
   return (
     <div className="inline-flex flex-wrap items-center rounded-lg border border-border/60 bg-background/60 p-0.5 text-xs">
