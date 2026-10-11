@@ -2912,8 +2912,8 @@ const resources = {
 
       marketing: {
         landing: {
-          flipWords: ['e-mails', 'factures', 'reçus', 'paperasse'],
-          heroStop: 'Fini les',
+          flipWords: ['les e-mails', 'les factures', 'les reçus', 'la paperasse'],
+          heroStop: 'Fini',
           heroStart: 'Place à votre entreprise.',
           pricingTitle: 'Des prix simples et transparents',
           pricingSubtitle: 'Prix TTC. Chaque nouveau compte profite d’abord de toutes les fonctionnalités gratuitement pendant 14 jours.',
@@ -3683,8 +3683,8 @@ const resources = {
 
       marketing: {
         landing: {
-          flipWords: ['correos', 'facturas', 'recibos', 'papeleo'],
-          heroStop: 'Olvídate de los',
+          flipWords: ['los correos', 'las facturas', 'los recibos', 'el papeleo'],
+          heroStop: 'Olvídate de',
           heroStart: 'Empieza a emprender.',
           pricingTitle: 'Precios simples y transparentes',
           pricingSubtitle: 'Precios con IVA incluido. Cada cuenta nueva recibe primero 14 días de todas las funciones gratis.',
