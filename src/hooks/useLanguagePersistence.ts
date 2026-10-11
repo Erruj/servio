@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { isMarketingPath, isLanguagePersistSuppressed } from '@/hooks/useUrlLanguageSync';
 
 const SUPPORTED = ['nl', 'en', 'de', 'fr', 'es'];
 
@@ -18,7 +19,8 @@ export function useLanguagePersistence() {
   // Laad opgeslagen taal bij mount; voor ingelogde gebruikers wint het profiel
   useEffect(() => {
     const savedLanguage = localStorage.getItem('servio-language');
-    if (savedLanguage && savedLanguage !== i18n.language) {
+    const onMarketing = isMarketingPath(window.location.pathname);
+    if (!onMarketing && savedLanguage && savedLanguage !== i18n.language) {
       i18n.changeLanguage(savedLanguage);
     }
 
@@ -35,7 +37,7 @@ export function useLanguagePersistence() {
         .then(({ data: settings }) => {
           const lang = settings?.language;
           if (cancelled || !lang || !SUPPORTED.includes(lang)) return;
-          if (lang !== i18n.language) {
+          if (!isMarketingPath(window.location.pathname) && lang !== i18n.language) {
             i18n.changeLanguage(lang);
           }
           try { localStorage.setItem('servio-language', lang); } catch { /* noop */ }
@@ -48,6 +50,7 @@ export function useLanguagePersistence() {
   // Sla elke taalwijziging op in localStorage én (indien ingelogd) in het profiel
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
+      if (isLanguagePersistSuppressed()) return;
       const code = lng.slice(0, 2);
       try { localStorage.setItem('servio-language', code); } catch { /* noop */ }
       supabase.auth.getUser().then(({ data }) => {

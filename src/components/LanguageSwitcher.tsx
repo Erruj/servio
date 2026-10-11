@@ -1,3 +1,4 @@
+import { changeLanguageTransient, setMarketingLanguageChoice } from '@/hooks/useUrlLanguageSync';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -26,10 +27,14 @@ export function LanguageSwitcher({ variant = 'marketing' }: { variant?: 'marketi
 
   const switchTo = (lng: Lng) => {
     if (lng === current) return;
-    i18n.changeLanguage(lng);
-    try { localStorage.setItem('servio-language', lng); } catch { /* noop */ }
+    if (variant !== 'marketing') {
+      i18n.changeLanguage(lng);
+      try { localStorage.setItem('servio-language', lng); } catch { /* noop */ }
+    }
 
     if (variant === 'marketing') {
+      setMarketingLanguageChoice(lng);
+      changeLanguageTransient(lng);
       const path = location.pathname;
       const isMarketingPath = ['/', '/features', '/pricing', '/about', '/blog', '/contact', '/privacy', '/terms', '/cookies'].some(
         (p) => path === p || path.startsWith(p === '/' ? '/' : p + '/')

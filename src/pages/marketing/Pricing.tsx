@@ -53,10 +53,6 @@ const COMPARISON_DEF: { cells: [CellDef, CellDef, CellDef, CellDef]; key?: boole
   { cells: ['no', 'no', 'yes', 'yes'] },
   { cells: ['no', 'no', 'yes', 'yes'] },
   { cells: ['no', 'no', 'yes', 'yes'], key: true },
-  { cells: ['no', 'no', 'no', 'yes'] },
-  { cells: ['no', 'no', 'no', 'yes'] },
-  { cells: ['no', 'no', 'no', 'yes'] },
-  { cells: ['no', 'no', 'no', 'yes'] },
 ];
 
 interface PlanTexts {
