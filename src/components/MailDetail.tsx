@@ -393,7 +393,22 @@ export function MailDetail({ mail, className }: MailDetailProps) {
   };
 
   if (!mail) {
-    return (
+    const markAsPhishing = () => {
+    if (!mail) return;
+    const blocked = JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]');
+    if (!blocked.includes(mail.from)) {
+      blocked.push(mail.from);
+      localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
+    }
+    toast({ title: "Afzender geblokkeerd", description: `${mail.from} is gemarkeerd als phishing en geblokkeerd.` });
+  };
+
+  const sentimentLabel = (v?: string) => {
+    const m: Record<string, string> = { happy: 'Positief', positive: 'Positief', neutral: 'Neutraal', unhappy: 'Negatief', negative: 'Negatief' };
+    return v ? (m[v] || v) : undefined;
+  };
+
+  return (
       <div className={`bg-card flex items-center justify-center ${className}`}>
         <div className="text-center text-muted-foreground">
           <MailIcon className="h-16 w-16 mx-auto mb-4 opacity-30" />
@@ -539,20 +554,34 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             </CardContent>
           </Card>
         ) : !analysis ? (
-          <Card className="shadow-card border-primary/20">
-            <CardContent className="p-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <Brain className="h-5 w-5 text-primary flex-shrink-0" />
-                <div className="min-w-0">
-                  <p className="font-medium text-foreground">AI analyse</p>
-                  <p className="text-xs text-muted-foreground">Klik om deze email te analyseren met AI</p>
+          <div className="sticky bottom-3 z-20">
+            <Card className="rounded-2xl border-primary/20 bg-card/95 backdrop-blur shadow-elevated">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-sm font-semibold text-foreground mr-1">AI</span>
+                  {mail.aiCategory || mail.aiUrgency || mail.customerSentiment ? (
+                    <>
+                      {mail.aiCategory && <Badge variant="outline" className={getCategoryClassName(mail.aiCategory)}>{mail.aiCategory}</Badge>}
+                      {mail.aiUrgency && <Badge className={getUrgencyClassName(mail.aiUrgency as any)}>Urgentie: {mail.aiUrgency}</Badge>}
+                      {mail.customerSentiment && <Badge variant="secondary">{sentimentLabel(mail.customerSentiment)}</Badge>}
+                    </>
+                  ) : (
+                    <span className="text-[13px] text-muted-foreground">Wordt automatisch gesorteerd bij de volgende synchronisatie.</span>
+                  )}
                 </div>
-              </div>
-              <Button size="sm" onClick={analyzeCurrentMail}>
-                <Sparkles className="h-4 w-4 mr-2" />Analyseer
-              </Button>
-            </CardContent>
-          </Card>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" className="flex-1 sm:flex-none h-11 sm:h-9" onClick={generateAiReply} disabled={isGeneratingReply}>
+                    <Sparkles className="h-4 w-4 mr-2" />Antwoord voorstellen
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1 sm:flex-none h-11 sm:h-9" onClick={analyzeCurrentMail}>
+                    <Brain className="h-4 w-4 mr-2" />Samenvatten
+                  </Button>
+                  <MailMoreMenu onPhishing={markAsPhishing} onResolved={handleMarkAsResolved} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         ) : analysis && (
           <>
             {/* Summary */}
@@ -674,7 +703,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
         )}
 
         {/* AI Reply Suggestion */}
-        <Card className="relative overflow-hidden bg-primary/[0.04] animate-page-in">
+        {(reply || isGeneratingReply || isEditingReply || analysis) && <Card className="relative overflow-hidden bg-primary/[0.04] animate-page-in">
           <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
           <CardHeader className="pb-3 p-5 pl-6">
             <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -758,7 +787,7 @@ export function MailDetail({ mail, className }: MailDetailProps) {
         </Card>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 sm:flex sm:space-x-4 gap-2 sm:gap-0 pt-2">
+        <div className="flex gap-2 pt-2">
           <Button 
             onClick={handleSendReply}
             size="lg"
@@ -779,34 +808,8 @@ export function MailDetail({ mail, className }: MailDetailProps) {
             <Edit className="h-5 w-5 mr-2" />
             {isEditingReply ? 'Klaar met bewerken' : 'Aanpassen'}
           </Button>
+          <MailMoreMenu onPhishing={markAsPhishing} onResolved={handleMarkAsResolved} />
           
-          <Button 
-            variant="outline" 
-            onClick={handleMarkAsResolved}
-            size="lg"
-            className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
-          >
-            <CheckCircle2 className="h-5 w-5 mr-2" />
-            Afgehandeld
-          </Button>
-
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              const blocked = JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]');
-              const sender = mail.from;
-              if (!blocked.includes(sender)) {
-                blocked.push(sender);
-                localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
-              }
-              toast({ title: "🚫 Afzender geblokkeerd", description: `${sender} is gemarkeerd als phishing en geblokkeerd.` });
-            }}
-            size="lg"
-            className="bg-destructive/10 text-destructive hover:bg-destructive/20 shadow-card hover:shadow-elevated transition-all duration-200 font-semibold py-6"
-          >
-            <ShieldAlert className="h-5 w-5 mr-2" />
-            Phishing
-          </Button>
         </div>
         </div>
       </div>
