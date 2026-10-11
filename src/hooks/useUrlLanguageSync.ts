@@ -24,7 +24,10 @@ export function useUrlLanguageSync() {
     if (!isMarketingPath(path)) return;
 
     const wantsEn = path === '/en' || path.startsWith('/en/');
-    const target = wantsEn ? 'en' : 'nl';
+    // Alleen /en-paden forceren een taal; op overige marketing-paden
+    // blijft de opgeslagen voorkeur (localStorage) leidend.
+    if (!wantsEn) return;
+    const target = 'en';
     if (i18n.language !== target) {
       i18n.changeLanguage(target);
       try { localStorage.setItem('servio-language', target); } catch { /* noop */ }
