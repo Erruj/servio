@@ -35,15 +35,6 @@ export function LanguageSelector() {
 
   const handleLanguageChange = (languageCode: string) => {
     changeAppLanguage(i18n, languageCode);
-    return;
-    i18n.changeLanguage(languageCode);
-    localStorage.setItem('servio-language', languageCode);
-    // Ook in het profiel opslaan, zodat de keuze op andere apparaten blijft staan
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        supabase.from('user_settings').update({ language: languageCode }).eq('user_id', data.user.id).then(() => {});
-      }
-    });
   };
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
