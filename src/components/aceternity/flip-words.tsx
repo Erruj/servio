@@ -32,6 +32,10 @@ export const FlipWords = ({
     setCurrentWord(words[0]);
   }, [words]);
 
+  if (reduce) {
+    return <span className={cn("relative z-10 inline-block px-2 text-left text-primary", className)}>{words[0]}</span>;
+  }
+
   return (
     <AnimatePresence onExitComplete={() => setIsAnimating(false)}>
       <motion.span
