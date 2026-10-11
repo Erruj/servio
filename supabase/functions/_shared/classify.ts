@@ -80,7 +80,7 @@ export async function classifyPendingEmails(supabase: SupabaseClient): Promise<{
         const it = items.find((x) => Number(x.i) === i) || {};
         const cat = CATEGORIES.includes(it.category) ? it.category : "Overig";
         const urg = ["Hoog", "Normaal", "Laag"].includes(it.urgency) ? it.urgency : "Normaal";
-        const sent = sentimentMap[String(it.sentiment || "").toLowerCase()] ?? "neutral";
+        const sent = cat === "Nieuwsbrief" ? null : (sentimentMap[String(it.sentiment || "").toLowerCase()] ?? "neutral");
         await supabase.from("emails").update({ ai_category: cat, ai_urgency: urg, customer_sentiment: sent, ai_classified_at: now }).eq("id", rest[i].id);
         classified++;
       }

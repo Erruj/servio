@@ -9,7 +9,8 @@
 - [x] Marketing redesign eindcontrole: vertaalde voorbeeldschermen, taalkiezer 5 talen, cookiemelding, animaties alleen transform/opacity
 
 - [x] Audit deel 1, punt 1: cron hersteld + bewaking
-- [ ] Audit deel 1, punten 2–6 (auto-classificatie, bijlagen, auto-antwoord, schrijfstijl, threads)
+- [x] Auto-classificatie (eindcontrole deel 2 punt 1)
+- [ ] Eindcontrole deel 2 punten 2,3,5–10 ( bijlagen, auto-antwoord, schrijfstijl, threads)
 
 ## Software-audit deel 2 (administratie)
 - [x] 1. Financieel Overzicht leeg ondanks data
