@@ -69,6 +69,9 @@ export function MailList({
   mailsRef.current = mails;
 
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [urgencyFilter, setUrgencyFilter] = useState('all');
+  const availableCategories = useMemo(() => [...new Set(mails.map(m => m.aiCategory).filter(Boolean) as string[])].sort(), [mails]);
 
   useEffect(() => {
     let filtered = mailsRef.current;
@@ -98,6 +101,9 @@ export function MailList({
       case 'blocked': filtered = filtered.filter(m => blockedSenders.includes(m.from)); break;
     }
 
+    if (categoryFilter !== 'all') filtered = filtered.filter(m => m.aiCategory === categoryFilter);
+    if (urgencyFilter !== 'all') filtered = filtered.filter(m => m.aiUrgency === urgencyFilter);
+
     // Hide blocked senders from non-blocked views
     if (filter !== 'blocked' && blockedSenders.length > 0) {
       filtered = filtered.filter(m => !blockedSenders.includes(m.from));
@@ -105,7 +111,7 @@ export function MailList({
 
     setPinnedIds(filtered.map(m => m.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, safeSearchQuery, mailIdsFingerprint, blockedSenders]);
+  }, [filter, safeSearchQuery, mailIdsFingerprint, blockedSenders, categoryFilter, urgencyFilter]);
 
   // De gepinde ids met actuele mail-data, zodat leesstatus en AI-labels live blijven meebewegen
   // binnen een bevroren lijst-samenstelling.
@@ -146,27 +152,14 @@ export function MailList({
     return buildPreview({ bodyText: mail.bodyText, bodyHtml: mail.bodyHtml || mail.body, snippet: mail.snippet }, 120);
   };
 
-  const getMailAnalysis = (mail: MailItem) => {
-    let category: Category = 'Overig';
-    let urgency: Urgency = 'Normaal';
-    const content = (mail.subject + ' ' + mail.body).toLowerCase();
-    
-    if (content.includes('retour') || content.includes('return')) category = 'Retour';
-    else if (content.includes('klacht') || content.includes('beschadigd') || content.includes('boos')) category = 'Klacht';
-    else if (content.includes('factuur') || content.includes('invoice')) category = 'Factuur';
-    else if (content.includes('wachtwoord') || content.includes('password')) category = 'Vraag';
-    else if (content.includes('error') || content.includes('technisch')) category = 'Technisch';
+  const getMailAnalysis = (mail: MailItem) => ({
+    category: mail.aiCategory || null,
+    urgency: (['Hoog', 'Normaal', 'Laag'].includes(mail.aiUrgency || '') ? mail.aiUrgency : null) as Urgency | null,
+  });
 
-    if (content.includes('urgent') || content.includes('direct') || mail.labels.includes('urgent')) urgency = 'Hoog';
-    else if (content.includes('snel')) urgency = 'Normaal';
-    else urgency = 'Laag';
-
-    return { category, urgency };
-  };
-
-  const getCategoryClassName = (category: Category): string => {
-    const classes = { 'Retour': 'category-retour', 'Klacht': 'category-klacht', 'Factuur': 'category-factuur', 'Vraag': 'category-vraag', 'Technisch': 'category-technisch', 'Overig': 'category-overig' };
-    return classes[category];
+  const getCategoryClassName = (category: string): string => {
+    const classes: Record<string, string> = { Klacht: 'category-klacht', Factuur: 'category-factuur', Offerte: 'category-factuur', Vraag: 'category-vraag', Klant: 'category-retour', Technisch: 'category-technisch', Retour: 'category-retour' };
+    return classes[category] ?? 'category-overig';
   };
 
   const getUrgencyClassName = (urgency: Urgency): string => {
@@ -185,6 +178,18 @@ export function MailList({
           <Button variant="ghost" size="sm" onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}>
             <CheckSquare className="h-4 w-4" />
           </Button>
+        </div>
+        <div className="flex gap-2 mt-2">
+          <select aria-label="Filter op categorie" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="h-9 flex-1 min-w-0 rounded-[10px] border border-input bg-background px-2 text-xs text-foreground">
+            <option value="all">Alle categorieën</option>
+            {availableCategories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select aria-label="Filter op urgentie" value={urgencyFilter} onChange={(e) => setUrgencyFilter(e.target.value)} className="h-9 flex-1 min-w-0 rounded-[10px] border border-input bg-background px-2 text-xs text-foreground">
+            <option value="all">Alle urgenties</option>
+            <option value="Hoog">Hoog</option>
+            <option value="Normaal">Normaal</option>
+            <option value="Laag">Laag</option>
+          </select>
         </div>
       </div>
 
@@ -237,8 +242,8 @@ interface VirtualMailListProps {
   newMailIds: Set<string>;
   toggleSelect: (id: string) => void;
   getEmailPreview: (mail: MailItem) => string;
-  getMailAnalysis: (mail: MailItem) => { category: Category; urgency: Urgency };
-  getCategoryClassName: (c: Category) => string;
+  getMailAnalysis: (mail: MailItem) => { category: string | null; urgency: Urgency | null };
+  getCategoryClassName: (c: string) => string;
   getUrgencyClassName: (u: Urgency) => string;
   emptyTitle: string;
   emptyMessage: string;
@@ -250,7 +255,7 @@ function VirtualMailList(props: VirtualMailListProps) {
   const rowVirtualizer = useVirtualizer({
     count: mails.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 84,
+    estimateSize: () => 104,
     overscan: 10,
   });
 
@@ -326,6 +331,12 @@ function VirtualMailList(props: VirtualMailListProps) {
                   <div className="text-[12px] text-muted-foreground truncate">
                     {emailPreview}
                   </div>
+                  {(() => { const a = getMailAnalysis(mail); if (!a.category && !a.urgency) return null; return (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      {a.urgency && <span title={`Urgentie: ${a.urgency}`} aria-label={`Urgentie: ${a.urgency}`} className={cn('block w-2 h-2 rounded-full', getUrgencyClassName(a.urgency))} />}
+                      {a.category && <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-5 rounded-full', getCategoryClassName(a.category))}>{a.category}</Badge>}
+                    </div>
+                  ); })()}
                 </div>
               </div>
             </div>
