@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
-import { ArrowRight, CheckCircle2, Inbox, Sparkles, Receipt, LineChart, Bot, ShieldCheck, Mail, Server, Tag } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Inbox, Sparkles, Receipt, LineChart, Bot, ShieldCheck } from 'lucide-react';
 import { ContainerScroll } from '@/components/aceternity/container-scroll-animation';
 import { FlipWords } from '@/components/aceternity/flip-words';
 import { BentoGrid, BentoGridItem } from '@/components/aceternity/bento-grid';
@@ -130,10 +130,6 @@ export function HomeBento() {
       </div>
     </section>
   );
-}
-
-function MockPanel({ children }: { children: React.ReactNode }) {
-  return <div className="flex h-full min-h-[18rem] w-full flex-col gap-3 rounded-3xl border border-white/10 bg-white/5 p-6">{children}</div>;
 }
 
 export function HomeHowItWorks() {
