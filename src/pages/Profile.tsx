@@ -194,7 +194,7 @@ export default function Profile() {
   const initials = fullName ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : email?.charAt(0)?.toUpperCase() || '?';
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-full bg-background">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <div className="max-w-2xl mx-auto p-6 space-y-6">

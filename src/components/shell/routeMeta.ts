@@ -1,0 +1,21 @@
+/** Paginatitels (i18n-sleutels) en bovenliggende groep voor de bovenbalk. */
+export const ROUTE_META: Record<string, { titleKey: string; parentKey?: string }> = {
+  '/app': { titleKey: 'inbox' },
+  '/dashboard': { titleKey: 'dashboard' },
+  '/stats': { titleKey: 'statistics' },
+  '/templates': { titleKey: 'templates' },
+  '/settings': { titleKey: 'settings' },
+  '/profile': { titleKey: 'ui.profile' },
+  '/mailbox-setup': { titleKey: 'ui.mailboxSetupTitle', parentKey: 'settings' },
+  '/team': { titleKey: 'teamManagement' },
+  '/administration/overview': { titleKey: 'financialOverview', parentKey: 'administration' },
+  '/administration/ai-assistant': { titleKey: 'aiAssistant', parentKey: 'administration' },
+  '/administration/invoices': { titleKey: 'invoices', parentKey: 'administration' },
+  '/administration/quotes': { titleKey: 'quotes', parentKey: 'administration' },
+  '/administration/receipts': { titleKey: 'receipts', parentKey: 'administration' },
+  '/administration/customers': { titleKey: 'customers', parentKey: 'administration' },
+  '/administration/time-tracking': { titleKey: 'timeTracking', parentKey: 'administration' },
+  '/administration/documents': { titleKey: 'documents', parentKey: 'administration' },
+  '/administration/exports': { titleKey: 'exports', parentKey: 'administration' },
+  '/administration/audit-log': { titleKey: 'auditLog', parentKey: 'administration' },
+};

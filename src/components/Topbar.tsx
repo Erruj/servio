@@ -69,10 +69,13 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
     onFilterChange?.('all');
   };
 
-  const handleLogout = async () => {
+  const handleLogoutUnused = async () => {
     await signOut();
     navigate('/login');
   };
+
+  // Zonder zoek-handler is dit een lege balk; de shell levert notificaties, help en account.
+  if (!onSearchChange) return null;
 
   return (
     <div className={`bg-background border-b border-border min-h-14 px-2 sm:px-6 flex items-center justify-between gap-2 min-w-0 w-full ${className}`}>
@@ -136,37 +139,6 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
         )}
       </div>
 
-      {/* Status and user menu */}
-      <div className="flex items-center gap-1 sm:gap-4 shrink-0">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="text-muted-foreground hidden sm:inline-flex"
-          title="Sneltoetsen (druk op ?)"
-        >
-          <HelpCircle className="h-4 w-4" />
-        </Button>
-
-        <NotificationBell />
-
-
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="flex items-center gap-2 px-1 sm:px-3">
-              <div className="w-8 h-8 shrink-0 bg-primary rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="text-sm max-w-[150px] truncate hidden md:inline">{displayName}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate('/profile')}>{t('ui.profile')}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}>{t('ui.settings')}</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout}>{t('ui.logout')}</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
     </div>
   );
 }

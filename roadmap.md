@@ -18,3 +18,9 @@
 - [ ] 4. AI-boekhoudassistent (server-side totalen, prompt, streaming, versturen)
 - [ ] 5. Categorieën vertalen
 - [ ] 6. Team-uitnodigingen (mail, /invite/:token, limieten, rollen)
+
+## Software deel 3 (clean look app)
+- [x] 1. Eén app-shell (sidebar w-64 + accountmenu + inklappen, slanke bovenbalk met titel/kruimelpad, ⌘K, notificaties, help; tagline weg)
+- [ ] 2. Bouwstenen (kaarten, tabellen, knoppen, lege staat, typografie, animaties, dark mode)
+- [ ] 3. Pagina-specifiek (Dashboard, Inbox, Instellingen 2 kolommen, Administratie, Statistieken)
+- [ ] Controle 1440/1024/375, licht en donker

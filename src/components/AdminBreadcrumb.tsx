@@ -17,7 +17,12 @@ interface AdminBreadcrumbProps {
   parentHref?: string;
 }
 
-export function AdminBreadcrumb({ currentPage, parentLabel, parentHref = '/dashboard' }: AdminBreadcrumbProps) {
+/** De bovenbalk van de shell toont nu titel en kruimelpad; deze losse breadcrumb rendert niets meer. */
+export function AdminBreadcrumb(_props: AdminBreadcrumbProps) {
+  return null;
+}
+
+export function LegacyAdminBreadcrumb({ currentPage, parentLabel, parentHref = '/dashboard' }: AdminBreadcrumbProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const resolvedParentLabel = parentLabel ?? t('breadcrumbAdministration');

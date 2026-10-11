@@ -142,43 +142,43 @@ function AppRoutes() {
       {/* Protected app routes */}
       <Route path="/app" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'agent']}>
-          <Inbox />
+          <AppShell noScroll><Inbox /></AppShell>
         </ProtectedRoute>
       } />
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          <Dashboard />
+          <AppShell><Dashboard /></AppShell>
         </ProtectedRoute>
       } />
       <Route path="/stats" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'finance', 'viewer']}>
-          <Statistics />
+          <AppShell noScroll><Statistics /></AppShell>
         </ProtectedRoute>
       } />
       <Route path="/templates" element={
         <ProtectedRoute requiredRoles={['owner', 'admin', 'agent']}>
-          <Templates />
+          <AppShell><Templates /></AppShell>
         </ProtectedRoute>
       } />
       <Route path="/settings" element={
         <ProtectedRoute requiredRoles={['owner', 'admin']}>
-          <Settings />
+          <AppShell><Settings /></AppShell>
         </ProtectedRoute>
       } />
       <Route path="/profile" element={
         <ProtectedRoute>
-          <Profile />
+          <AppShell noScroll><Profile /></AppShell>
         </ProtectedRoute>
       } />
       <Route path="/mailbox-setup" element={
         <ProtectedRoute>
-          <MailboxSetup />
+          <AppShell><MailboxSetup /></AppShell>
         </ProtectedRoute>
       } />
       <Route path="/analytics" element={<Navigate to="/stats" replace />} />
       <Route path="/team" element={
         <ProtectedRoute requiredRoles={['owner', 'admin']}>
-          <TeamManagement />
+          <AppShell><TeamManagement /></AppShell>
         </ProtectedRoute>
       } />
       
