@@ -7,3 +7,6 @@
 - [x] Marketing redesign blok 1: basis-onderdelen, nieuwe menubalk, homepage
 - [x] Marketing redesign blok 2: features, prijzen, over ons, blog, contact, juridisch + footer
 - [x] Marketing redesign eindcontrole: vertaalde voorbeeldschermen, taalkiezer 5 talen, cookiemelding, animaties alleen transform/opacity
+
+- [x] Audit deel 1, punt 1: cron hersteld + bewaking
+- [ ] Audit deel 1, punten 2–6 (auto-classificatie, bijlagen, auto-antwoord, schrijfstijl, threads)
