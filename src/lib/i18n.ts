@@ -739,7 +739,7 @@ const resources = {
           ],
           plansFull: [
             { name: 'Starter', tier: 'starter', price: '9.99', description: 'For starting entrepreneurs', features: ['Up to 100 emails per month', '50 AI calls per month', '1 user', 'Basic financial dashboard', 'Email support'], cta: 'Try free for 14 days' },
-            { name: 'Pro', tier: 'pro', price: '29.99', description: "Most chosen by freelancers": 'For entrepreneurs who want to automate everything', features: ['Unlimited emails', 'Unlimited AI calls', 'Full administration module', 'AI accounting assistant', 'Up to 3 users', 'Advanced reports', 'Priority support'], cta: 'Start free trial' },
+            { name: 'Pro', tier: 'pro', price: '29.99', description: 'For entrepreneurs who want to automate everything', features: ['Unlimited emails', 'Unlimited AI calls', 'Full administration module', 'AI accounting assistant', 'Up to 3 users', 'Advanced reports', 'Priority support'], cta: 'Start free trial' },
             { name: 'Business', tier: 'business', price: '79.99', description: 'For growing SMBs', features: ['Unlimited connected mailboxes', 'Unlimited users', 'Personal support', 'Everything in Pro'], cta: 'Contact us' },
           ],
         },
@@ -1493,7 +1493,7 @@ const resources = {
             plans: [
               { name: 'Gratis', description: 'Voor wie eerst wil proberen', cta: 'Direct beginnen', features: ['20 e-mails per maand', '1 gekoppelde mailbox', '10 AI-calls per maand', '1 gebruiker', 'AI antwoordsuggesties', 'Basis inbox automatisering'] },
               { name: 'Starter', description: "Voor net startende ZZP'ers", cta: 'Start gratis', features: ['100 e-mails per maand', '2 gekoppelde mailboxen', '50 AI-calls per maand', '1 gebruiker', 'AI antwoordsuggesties', 'Basis inbox automatisering', 'Factuurverwerking'] },
-              { name: 'Pro', description: "Meest gekozen door ZZP'ers": 'Voor ondernemers die alles willen automatiseren', cta: 'Start gratis', features: ['Onbeperkt e-mails', '5 gekoppelde mailboxen', 'Onbeperkt AI-calls', '3 gebruikers', 'AI Boekhoudassistent', 'Offertes & klantenbeheer', 'Urenregistratie', 'Geavanceerde rapportages', 'Priority support'] },
+              { name: 'Pro', description: 'Voor ondernemers die alles willen automatiseren', cta: 'Start gratis', features: ['Onbeperkt e-mails', '5 gekoppelde mailboxen', 'Onbeperkt AI-calls', '3 gebruikers', 'AI Boekhoudassistent', 'Offertes & klantenbeheer', 'Urenregistratie', 'Geavanceerde rapportages', 'Priority support'] },
               { name: 'Business', description: 'Voor groeiende teams', cta: 'Start gratis', features: ['Onbeperkt gekoppelde mailboxen', 'Onbeperkte gebruikers', 'Persoonlijke support', 'Alles uit Pro'] },
             ],
             comparisonTitle: 'Wat zit er in elk plan?',
@@ -1541,7 +1541,7 @@ const resources = {
           ],
           plansFull: [
             { name: 'Starter', tier: 'starter', price: '9,99', description: 'Voor startende ondernemers', features: ['Tot 100 e-mails per maand', '50 AI-calls per maand', '1 gebruiker', 'Basis financieel dashboard', 'E-mail support'], cta: 'Probeer 14 dagen gratis' },
-            { name: 'Pro', tier: 'pro', price: '29,99', description: "Meest gekozen door ZZP'ers": 'Voor ondernemers die alles willen automatiseren', features: ['Onbeperkte e-mails', 'Onbeperkte AI-calls', 'Volledige administratie module', 'AI boekhoudassistent', 'Tot 3 gebruikers', 'Geavanceerde rapportages', 'Prioriteit support'], cta: 'Start gratis proefperiode' },
+            { name: 'Pro', tier: 'pro', price: '29,99', description: 'Voor ondernemers die alles willen automatiseren', features: ['Onbeperkte e-mails', 'Onbeperkte AI-calls', 'Volledige administratie module', 'AI boekhoudassistent', 'Tot 3 gebruikers', 'Geavanceerde rapportages', 'Prioriteit support'], cta: 'Start gratis proefperiode' },
             { name: 'Business', tier: 'business', price: '79,99', description: "Voor groeiende MKB's", features: ['Onbeperkt gekoppelde mailboxen', 'Onbeperkte gebruikers', 'Persoonlijke support', 'Alles uit Pro'], cta: 'Neem contact op' },
           ],
         },
