@@ -1,3 +1,4 @@
+// @ts-ignore - draait met bun test
 import { describe, expect, test } from 'bun:test';
 import { computeTotals, computeVat, expenseCategories, monthlySeries, formatAxisEUR, formatEUR } from './finance';
 
