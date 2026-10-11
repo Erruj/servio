@@ -1,3 +1,4 @@
+import { LampCTA, HomeBento } from '@/components/landing/HomeSections';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { SeoHead } from '@/components/SeoHead';
@@ -80,11 +81,13 @@ export default function Contact() {
       <div className="min-h-screen bg-background">
         <LandingHeader />
 
-        <main className="pt-32 pb-20">
-          <div className="container mx-auto px-6">
+        <main>
+<section className="relative overflow-hidden bg-[#F4F4F6] pt-32 pb-20">
+<div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:24px_24px]" /><div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_60%)]" />
+          <div className="container relative mx-auto px-6">
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-16">
-                <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground mb-4">
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-4">
                   {t('marketing.contact.title')}
                 </h1>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -176,6 +179,8 @@ export default function Contact() {
               </Card>
             </div>
           </div>
+</section>
+          <LampCTA />
         </main>
 
         <LandingFooter />
