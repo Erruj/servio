@@ -330,7 +330,7 @@
 /* ============================================================
    Mobile responsiveness
    ============================================================ */
-html, body { max-width: 100%; overflow-x: hidden; }
+html, body { max-width: 100%; overflow-x: clip; }
 
 @media (max-width: 767px) {
   input:not([type='checkbox']):not([type='radio']),
