@@ -1,3 +1,4 @@
+import { LampCTA, HomeBento } from '@/components/landing/HomeSections';
 import { Link } from 'react-router-dom';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -129,20 +130,26 @@ export default function Blog() {
 
       <div className="min-h-screen bg-background">
         <LandingHeader />
-        <main className="max-w-6xl mx-auto px-6 py-20 md:py-28">
+        <main>
+<section className="relative overflow-hidden bg-[#F4F4F6] pt-32 pb-16 md:pt-40">
+<div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:24px_24px]" /><div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_60%)]" />
+<div className="relative max-w-6xl mx-auto px-6">
           <Reveal className="max-w-2xl mb-14 md:mb-20">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-5">
               Blog
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">{t('marketing.blog.title')}</h1>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-5">{t('marketing.blog.title')}</h1>
             <p className="text-lg text-muted-foreground">{t('marketing.blog.subtitle')}</p>
           </Reveal>
+</div>
+</section>
+<div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
 
           {/* Uitgelicht artikel */}
           <Reveal className="mb-16 md:mb-20">
             <Link
               to={`${prefix}/blog/${featured.slug}`}
-              className="group grid lg:grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
+              className="group grid lg:grid-cols-2 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-input transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg hover:border-primary/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
             >
               <CategoryVisual category={featured.category} className="min-h-[240px] lg:min-h-[380px]" priority alt={`${featured.title} — ${CATEGORY_META[featured.category].imageAlt}`} />
               <div className="flex flex-col p-8 md:p-12">
@@ -218,6 +225,8 @@ export default function Blog() {
               </StaggerItem>
             ))}
           </StaggerGroup>
+</div>
+          <LampCTA />
         </main>
         <LandingFooter />
       </div>

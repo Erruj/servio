@@ -1,6 +1,6 @@
+import { LampCTA, HomeBento } from '@/components/landing/HomeSections';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import { CTASection } from '@/components/landing/CTASection';
 import { SeoHead } from '@/components/SeoHead';
 import { Mail, BarChart3, FileText, Bot, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -32,11 +32,12 @@ export default function Features() {
         <LandingHeader />
 
         <main>
-          <section className="pt-32 pb-20 md:pt-44 md:pb-28">
-            <div className="container mx-auto px-6">
+          <section className="relative overflow-hidden bg-[#F4F4F6] pt-32 pb-20 md:pt-44 md:pb-28">
+<div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:24px_24px]" /><div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_60%)]" />
+            <div className="container relative mx-auto px-6">
               <Reveal className="max-w-3xl mx-auto text-center">
                 <span className="text-sm font-medium text-primary mb-4 block">{t('marketing.featuresPage.eyebrow')}</span>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-6 leading-tight">
                   {t('marketing.featuresPage.h1Top')}
                   <br />
                   <span className="text-primary">{t('marketing.featuresPage.h1Bottom')}</span>
@@ -48,6 +49,7 @@ export default function Features() {
 
             </div>
           </section>
+          <HomeBento />
 
           {items.map((feature, index) => {
             const Icon = icons[index] || Mail;
@@ -83,7 +85,7 @@ export default function Features() {
 
                     <Reveal delay={0.12} className={index % 2 === 1 ? 'lg:order-1' : ''}>
 
-                      <div className="rounded-2xl border border-border/60 bg-card shadow-xl-soft overflow-hidden">
+                      <div className="rounded-3xl border border-neutral-200 bg-white shadow-input overflow-hidden">
                         <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/30">
                           <div className="flex gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full bg-border" />
@@ -147,7 +149,7 @@ export default function Features() {
             </div>
           </section>
 
-          <CTASection />
+          <LampCTA />
         </main>
 
         <LandingFooter />

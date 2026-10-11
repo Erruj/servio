@@ -1,3 +1,5 @@
+import { GlowingEffect } from '@/components/aceternity/glowing-effect';
+import { LampCTA, HomeBento } from '@/components/landing/HomeSections';
 import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -217,11 +219,12 @@ export default function MarketingPricing() {
         <LandingHeader />
 
         <main>
-          <section className="pt-32 pb-12 md:pt-44 md:pb-16">
-            <div className="container mx-auto px-6">
+          <section className="relative overflow-hidden bg-[#F4F4F6] pt-32 pb-12 md:pt-44 md:pb-16">
+<div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:24px_24px]" /><div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_60%)]" />
+            <div className="container relative mx-auto px-6">
               <Reveal className="max-w-3xl mx-auto text-center">
                 <span className="text-sm font-medium text-primary mb-4 block">Prijzen</span>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-6 leading-tight">
                   Transparante prijzen,
                   <br />
                   <span className="text-primary">geen verrassingen</span>
@@ -285,16 +288,19 @@ export default function MarketingPricing() {
                       as="article"
                       key={plan.tier}
                       className={cn(
-                        'relative rounded-2xl p-8 transition-all duration-200 ease-out hover:-translate-y-1',
+                        'relative rounded-3xl p-8 transition-all duration-200 ease-out hover:-translate-y-1',
                         plan.popular
                           ? 'bg-foreground text-background border-2 border-foreground shadow-2xl md:scale-[1.03]'
-                          : 'bg-card border border-border/40 hover:border-border hover:shadow-elevated'
+                          : 'bg-white border border-neutral-200 shadow-input hover:shadow-elevated'
                       )}
                     >
                       {plan.popular && (
+                        <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} />
+                      )}
+                      {plan.popular && (
                         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                           <span className="inline-flex px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-medium whitespace-nowrap">
-                            Meest gekozen
+                            {t('marketing.pricing.mostPopular')}
                           </span>
                         </div>
                       )}
@@ -370,7 +376,7 @@ export default function MarketingPricing() {
                 </p>
               </Reveal>
 
-              <div className="max-w-5xl mx-auto overflow-x-auto rounded-2xl border border-border/40 bg-card">
+              <div className="max-w-5xl mx-auto overflow-x-auto rounded-3xl border border-neutral-200 bg-white shadow-input">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/40">
@@ -434,6 +440,7 @@ export default function MarketingPricing() {
           </section>
 
           <FAQSection />
+          <LampCTA />
         </main>
 
         <LandingFooter />

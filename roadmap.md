@@ -5,4 +5,4 @@
 - [x] Deel 2: prijzen incl. btw (prijzenpagina + voorwaarden 5 talen)
 - [x] Deel 4: `/settings` en `/mailbox-setup` volledig vertaald in NL/EN/DE/FR/ES
 - [x] Marketing redesign blok 1: basis-onderdelen, nieuwe menubalk, homepage
-- [ ] Marketing redesign blok 2: features, prijzen, over ons, blog, contact, juridisch + footer
+- [x] Marketing redesign blok 2: features, prijzen, over ons, blog, contact, juridisch + footer

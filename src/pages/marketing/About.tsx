@@ -1,6 +1,6 @@
+import { LampCTA, HomeBento } from '@/components/landing/HomeSections';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import { CTASection } from '@/components/landing/CTASection';
 import { SeoHead } from '@/components/SeoHead';
 import { Heart, Lightbulb, Users, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -30,11 +30,12 @@ export default function About() {
         <LandingHeader />
 
         <main>
-          <section className="pt-32 pb-20 md:pt-44 md:pb-28">
-            <div className="container mx-auto px-6">
+          <section className="relative overflow-hidden bg-[#F4F4F6] pt-32 pb-20 md:pt-44 md:pb-28">
+<div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:24px_24px]" /><div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_60%)]" />
+            <div className="container relative mx-auto px-6">
               <Reveal className="max-w-3xl mx-auto text-center">
                 <span className="text-sm font-medium text-primary mb-4 block">{t('marketing.about.eyebrow')}</span>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.02em] text-foreground mb-6 leading-tight">
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-6 leading-tight">
                   {t('marketing.about.h1Top')}
                   <br />
                   <span className="text-primary">{t('marketing.about.h1Bottom')}</span>
@@ -90,7 +91,7 @@ export default function About() {
                 {values.map((value, index) => {
                   const Icon = icons[index] || Target;
                   return (
-                    <StaggerItem as="article" key={index} className="p-8 rounded-xl bg-card border border-border/40 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md hover:border-border">
+                    <StaggerItem as="article" key={index} className="p-8 rounded-3xl border border-neutral-200 bg-white shadow-input transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md hover:border-border">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
                         <Icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
                       </div>
@@ -119,7 +120,7 @@ export default function About() {
             </div>
           </section>
 
-          <CTASection />
+          <LampCTA />
         </main>
 
         <LandingFooter />
