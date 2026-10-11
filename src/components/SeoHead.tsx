@@ -24,7 +24,7 @@ export function SeoHead({ path, title, description, keywords, ogImage = 'https:/
 
   return (
     <Helmet>
-      <html lang={isEn ? 'en' : 'nl'} />
+      <html lang={(i18n.language || 'nl').slice(0, 2)} />
       <title>{title}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
