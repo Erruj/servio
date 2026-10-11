@@ -13,6 +13,7 @@ export interface PreviewCopy {
   upload: string; file: string; reading: string; recognized: string; sure: string;
   fields: [string, string, string, string, string, string, string, string];
   category: string; book: string; edit: string; linked: string;
+  fv: { tags: [string, string, string, string]; sorted: string; margin: string; best: string; reading: string; recognized: string; invNo: string; profReply: string; aiReply: string; shortReply: string };
 }
 
 const nl: PreviewCopy = {
@@ -36,6 +37,7 @@ const nl: PreviewCopy = {
   upload: 'Factuur uploaden', file: 'factuur-kpn-nov.pdf', reading: 'AI leest factuur uit...', recognized: 'Herkende gegevens', sure: '99% zeker',
   fields: ['Leverancier', 'Factuurnummer', 'Datum', 'Vervaldatum', 'Bedrag excl.', 'Btw (21%)', 'Totaal', 'Categorie'],
   category: 'Telecom & internet', book: 'Boeken', edit: 'Bewerken', linked: 'Gekoppeld',
+  fv: { tags: ['Klant', 'Financieel', 'Leverancier', 'Intern'], sorted: 'AI sorteerde 12 mails • bespaarde 18 min', margin: 'Marge', best: 'Beste maand van het jaar — automatisch gekoppeld', reading: 'AI leest uit...', recognized: 'Herkend', invNo: 'Factuurnr.', profReply: 'Professioneel antwoord', aiReply: 'AI-antwoord', shortReply: 'Hoi Anna,\n\nEind januari is haalbaar — we leveren in week 4. Ik stuur de aangepaste offerte vandaag door.\n\nGroet,\nMark' },
 };
 
 const en: PreviewCopy = {
@@ -59,6 +61,7 @@ const en: PreviewCopy = {
   upload: 'Upload invoice', file: 'invoice-kpn-nov.pdf', reading: 'AI is reading the invoice...', recognized: 'Recognised details', sure: '99% confident',
   fields: ['Supplier', 'Invoice number', 'Date', 'Due date', 'Amount excl.', 'VAT (21%)', 'Total', 'Category'],
   category: 'Telecom & internet', book: 'Book', edit: 'Edit', linked: 'Linked',
+  fv: { tags: ['Customer', 'Finance', 'Supplier', 'Internal'], sorted: 'AI sorted 12 emails • saved 18 min', margin: 'Margin', best: 'Best month of the year — matched automatically', reading: 'AI is reading...', recognized: 'Recognised', invNo: 'Invoice no.', profReply: 'Professional reply', aiReply: 'AI reply', shortReply: 'Hi Anna,\n\nEnd of January works — we deliver in week 4. I’ll send the updated quote today.\n\nBest,\nMark' },
 };
 
 const de: PreviewCopy = {
@@ -82,6 +85,7 @@ const de: PreviewCopy = {
   upload: 'Rechnung hochladen', file: 'rechnung-kpn-nov.pdf', reading: 'KI liest Rechnung aus...', recognized: 'Erkannte Daten', sure: '99% sicher',
   fields: ['Lieferant', 'Rechnungsnummer', 'Datum', 'Fälligkeit', 'Betrag netto', 'MwSt. (21%)', 'Gesamt', 'Kategorie'],
   category: 'Telekom & Internet', book: 'Buchen', edit: 'Bearbeiten', linked: 'Verknüpft',
+  fv: { tags: ['Kunde', 'Finanzen', 'Lieferant', 'Intern'], sorted: 'KI sortierte 12 Mails • 18 Min. gespart', margin: 'Marge', best: 'Bester Monat des Jahres — automatisch zugeordnet', reading: 'KI liest aus...', recognized: 'Erkannt', invNo: 'Rechnungsnr.', profReply: 'Professionelle Antwort', aiReply: 'KI-Antwort', shortReply: 'Hallo Anna,\n\nEnde Januar ist machbar — wir liefern in KW 4. Ich schicke das angepasste Angebot heute.\n\nGrüße\nMark' },
 };
 
 const fr: PreviewCopy = {
@@ -105,6 +109,7 @@ const fr: PreviewCopy = {
   upload: 'Importer une facture', file: 'facture-kpn-nov.pdf', reading: 'L’IA lit la facture...', recognized: 'Données reconnues', sure: '99 % sûr',
   fields: ['Fournisseur', 'N° de facture', 'Date', 'Échéance', 'Montant HT', 'TVA (21 %)', 'Total', 'Catégorie'],
   category: 'Télécom & internet', book: 'Comptabiliser', edit: 'Modifier', linked: 'Lié',
+  fv: { tags: ['Client', 'Finance', 'Fournisseur', 'Interne'], sorted: 'L’IA a trié 12 e-mails • 18 min gagnées', margin: 'Marge', best: 'Meilleur mois de l’année — rapproché automatiquement', reading: 'L’IA lit...', recognized: 'Reconnu', invNo: 'N° facture', profReply: 'Réponse professionnelle', aiReply: 'Réponse IA', shortReply: 'Bonjour Anne,\n\nFin janvier est possible — nous livrons en semaine 4. Je vous envoie le devis modifié aujourd’hui.\n\nCordialement,\nMark' },
 };
 
 const es: PreviewCopy = {
@@ -128,6 +133,7 @@ const es: PreviewCopy = {
   upload: 'Subir factura', file: 'factura-kpn-nov.pdf', reading: 'La IA está leyendo la factura...', recognized: 'Datos reconocidos', sure: '99 % seguro',
   fields: ['Proveedor', 'N.º de factura', 'Fecha', 'Vencimiento', 'Importe sin IVA', 'IVA (21 %)', 'Total', 'Categoría'],
   category: 'Telecom e internet', book: 'Contabilizar', edit: 'Editar', linked: 'Vinculado',
+  fv: { tags: ['Cliente', 'Finanzas', 'Proveedor', 'Interno'], sorted: 'La IA ordenó 12 correos • 18 min ahorrados', margin: 'Margen', best: 'Mejor mes del año — vinculado automáticamente', reading: 'La IA está leyendo...', recognized: 'Reconocido', invNo: 'N.º factura', profReply: 'Respuesta profesional', aiReply: 'Respuesta IA', shortReply: 'Hola Ana,\n\nFinales de enero es posible: entregamos en la semana 4. Hoy te envío el presupuesto actualizado.\n\nUn saludo,\nMark' },
 };
 
 const all: Record<string, PreviewCopy> = { nl, en, de, fr, es };
