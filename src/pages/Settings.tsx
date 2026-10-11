@@ -44,6 +44,7 @@ const Settings = () => {
   const { settings: personalization, updateSettings: updatePersonalization } = usePersonalization();
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [activeSection, setActiveSection] = useState('settings-appearance');
   const [settings, setSettings] = useState({
     language: 'nl',
     theme: 'light',
@@ -216,22 +217,50 @@ const Settings = () => {
     </div>
   );
 
+  const SETTINGS_NAV: { id: string; label: string; href?: string }[] = [
+    { id: 'settings-appearance', label: 'Uiterlijk' },
+    { id: 'settings-language', label: 'Taal & weergave' },
+    { id: 'settings-ai', label: 'AI' },
+    { id: 'settings-signature', label: 'Handtekening' },
+    { id: 'settings-automation', label: 'Automatisering' },
+    { id: 'mailboxes', label: 'Mailboxen', href: '/mailbox-setup' },
+    { id: 'subscription', label: 'Abonnement', href: '/profile#subscription' },
+    { id: 'account', label: 'Account', href: '/profile' },
+  ];
+
   return (
     <div className="min-h-full bg-background flex flex-col">
       <Header user={user} onLogout={signOut} />
       <div className="flex-1 flex">
         <Sidebar />
         <div className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-8 space-y-6 max-w-4xl">
-            <div className="space-y-1">
+          <div className="p-4 md:p-8 max-w-6xl">
+            <div className="space-y-1 mb-6">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
                 <Cog className="h-7 w-7 text-primary" /> {t('settingsTitle')}
               </h1>
               <p className="text-muted-foreground">{t('settingsSubtitle')}</p>
             </div>
+            <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+            <nav aria-label="Instellingen" className="md:w-52 md:flex-shrink-0 -mx-4 px-4 md:mx-0 md:px-0 sticky top-0 md:top-6 z-10 bg-background/95 backdrop-blur md:bg-transparent md:self-start">
+              <ul className="flex md:flex-col gap-1 overflow-x-auto py-2 md:py-0 [scrollbar-width:none]">
+                {SETTINGS_NAV.map((item) => (
+                  <li key={item.id} className="flex-shrink-0">
+                    <a
+                      href={item.href ?? `#${item.id}`}
+                      onClick={(e) => { if (!item.href) { e.preventDefault(); setActiveSection(item.id); document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+                      className={`flex items-center min-h-11 px-3 rounded-[10px] text-sm font-medium whitespace-nowrap transition-colors duration-200 ${activeSection === item.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className="flex-1 min-w-0 max-w-[760px] space-y-6">
 
             {/* UI Personalization */}
-            <Card className="shadow-card">
+            <Card id="settings-appearance" className="shadow-card scroll-mt-20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <Palette className="h-5 w-5 text-primary" />
@@ -262,7 +291,7 @@ const Settings = () => {
             </Card>
 
             {/* Language & Theme */}
-            <Card className="shadow-card">
+            <Card id="settings-language" className="shadow-card scroll-mt-20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2"><Globe className="h-5 w-5 text-primary" /><CardTitle className="text-lg">{t('languageAndDisplay')}</CardTitle></div>
                 <CardDescription>{t('languageAndDisplayDesc')}</CardDescription>
@@ -294,7 +323,7 @@ const Settings = () => {
             </Card>
 
             {/* AI Personality */}
-            <Card className="shadow-card">
+            <Card id="settings-ai" className="shadow-card scroll-mt-20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle className="text-lg">{t('aiPersonality')}</CardTitle></div>
                 <CardDescription>{t('aiPersonalityDesc')}</CardDescription>
@@ -337,7 +366,7 @@ const Settings = () => {
             </Card>
 
             {/* Email Signature */}
-            <Card className="shadow-card">
+            <Card id="settings-signature" className="shadow-card scroll-mt-20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2"><Pen className="h-5 w-5 text-primary" /><CardTitle className="text-lg">{t('emailSignature')}</CardTitle></div>
                 <CardDescription>{t('emailSignatureDesc')}</CardDescription>
@@ -354,7 +383,7 @@ const Settings = () => {
             </Card>
 
             {/* Quick Actions Customization */}
-            <Card className="shadow-card">
+            <Card id="settings-quick" className="shadow-card scroll-mt-20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /><CardTitle className="text-lg">{t('quickActionsTitle')}</CardTitle></div>
                 <CardDescription>{t('quickActionsDesc')}</CardDescription>
@@ -368,7 +397,7 @@ const Settings = () => {
             </Card>
 
             {/* Automations */}
-            <Card className="shadow-card">
+            <Card id="settings-automation" className="shadow-card scroll-mt-20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2"><Cog className="h-5 w-5 text-primary" /><CardTitle className="text-lg">{t('automationsTitle')}</CardTitle></div>
                 <CardDescription>{t('automationsDesc')}</CardDescription>
@@ -426,6 +455,8 @@ const Settings = () => {
                   t('saveSettings')
                 )}
               </Button>
+            </div>
+            </div>
             </div>
           </div>
         </div>

@@ -33,6 +33,7 @@ interface TopbarProps {
 
 export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
@@ -81,18 +82,28 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
     <div className={`bg-background border-b border-border min-h-14 px-2 sm:px-6 flex items-center justify-between gap-2 min-w-0 w-full ${className}`}>
       {/* Search and filters */}
       <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0 max-w-2xl">
-        <div className="relative flex-1 min-w-0">
+        <Button
+          variant="ghost" size="icon"
+          className={`sm:hidden h-11 w-11 shrink-0 ${mobileSearchOpen ? 'hidden' : ''}`}
+          aria-label={t('ui.searchPlaceholder')}
+          onClick={() => setMobileSearchOpen(true)}
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+        <div className={`relative flex-1 min-w-0 ${mobileSearchOpen ? 'block' : 'hidden sm:block'}`}>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('ui.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
+            autoFocus={mobileSearchOpen}
+            onBlur={() => { if (!searchQuery) setMobileSearchOpen(false); }}
           />
         </div>
         
         <Select defaultValue="all" onValueChange={onFilterChange}>
-          <SelectTrigger className="w-[4.5rem] sm:w-32 shrink-0 px-2 sm:px-3">
+          <SelectTrigger className="ml-auto sm:ml-0 w-[4.5rem] sm:w-32 shrink-0 px-2 sm:px-3">
             <Filter className="h-4 w-4 mr-1 sm:mr-2 hidden sm:block" />
             <SelectValue placeholder="Filter" />
           </SelectTrigger>

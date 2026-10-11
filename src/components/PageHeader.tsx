@@ -26,7 +26,7 @@ export const PageHeader = ({ title, description, actions, className }: PageHeade
           <p className="text-sm text-muted-foreground mt-1">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
+      {actions && <div className="flex w-full sm:w-auto items-center gap-2 flex-shrink-0 [&>*]:flex-1 [&>*]:min-w-0 sm:[&>*]:flex-none">{actions}</div>}
     </div>
   );
 };
