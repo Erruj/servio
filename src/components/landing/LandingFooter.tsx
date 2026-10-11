@@ -8,7 +8,7 @@ export function LandingFooter() {
 
   return (
     <footer className="py-20 md:py-24 border-t border-neutral-200 bg-white">
-      <div className="container mx-auto px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-5 gap-12 mb-12">
           <div className="md:col-span-2">
             <div className="flex items-center mb-4" aria-label="Servio logo">

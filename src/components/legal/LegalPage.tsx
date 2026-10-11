@@ -48,7 +48,7 @@ export function LegalPage({ docKey, path, seoTitleNl, seoTitleEn, seoDescription
         <LandingHeader />
 
         <main className="pt-32 pb-20">
-          <div className="container mx-auto px-6">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
               <Reveal>
                 <h1 className="text-4xl font-semibold tracking-tight text-foreground mb-8">{title}</h1>

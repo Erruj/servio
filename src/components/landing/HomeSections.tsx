@@ -107,7 +107,7 @@ export function HomeBento() {
 
   return (
     <section className="bg-white py-24 md:py-32">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-neutral-900">{t('marketing.product.title')}</h2>
           <p className="mt-4 text-neutral-600">{t('marketing.product.subtitle')}</p>
@@ -203,7 +203,7 @@ export function HomePricingTeaser() {
 
   return (
     <section className="bg-[#F4F4F6] py-24 md:py-32">
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-neutral-900">{t('marketing.landing.pricingTitle')}</h2>
           <p className="mt-4 text-neutral-600">{t('marketing.landing.pricingSubtitle')}</p>
