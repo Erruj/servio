@@ -1,0 +1,1 @@
+- Cron-aangeroepen edge functions valideren hun secret met isCronAuthorized() (edge-secret óf Vault CRON_SECRET via cron_secret_matches), zodat een afwijkende Vault-waarde de planner niet stil laat falen.
