@@ -43,7 +43,7 @@ export function HomeHero() {
               </span>
               <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-neutral-900 leading-[1.1]">
                 {t('marketing.landing.heroStop')}
-                <FlipWords words={words} />
+                <span className="block sm:inline"><FlipWords words={words} /></span>
                 <br />
                 <span className="text-primary">{t('marketing.landing.heroStart')}</span>
               </h1>
@@ -88,7 +88,7 @@ function IconDot({ Icon }: { Icon: typeof Inbox }) {
 }
 
 function VisualHeader({ children }: { children: React.ReactNode }) {
-  return <div className="relative z-10 h-40 overflow-hidden rounded-2xl [mask-image:linear-gradient(to_bottom,black_75%,transparent)] md:h-44">{children}</div>;
+  return <div className="relative z-10 h-40 overflow-hidden rounded-2xl [mask-image:linear-gradient(to_bottom,black_75%,transparent)] md:h-44 [&_[data-frame]]:aspect-auto [&_[data-frame]]:h-full">{children}</div>;
 }
 
 export function HomeBento() {

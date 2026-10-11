@@ -26,7 +26,7 @@ const useCopy = () => getPreviewCopy(useTranslation().i18n.language);
 function Frame({ children, label }: { children: React.ReactNode; label?: string }) {
   const c = useCopy();
   return (
-    <div className="relative w-full aspect-[16/10] rounded-lg border border-border/60 bg-card shadow-card overflow-hidden">
+    <div data-frame className="relative w-full aspect-[16/10] rounded-lg border border-border/60 bg-card shadow-card overflow-hidden">
       <div className="flex items-center gap-1.5 px-3 h-7 border-b border-border/40 bg-muted/40">
         <div className="w-2 h-2 rounded-full bg-border" />
         <div className="w-2 h-2 rounded-full bg-border" />

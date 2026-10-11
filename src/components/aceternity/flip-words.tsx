@@ -32,11 +32,22 @@ export const FlipWords = ({
     setCurrentWord(words[0]);
   }, [words]);
 
+  const sizer = words.map((w) => (
+    <span key={w} aria-hidden className="invisible whitespace-nowrap px-2 [grid-area:1/1]">{w}</span>
+  ));
+
   if (reduce) {
-    return <span className={cn("relative z-10 inline-block px-2 text-left text-primary", className)}>{words[0]}</span>;
+    return (
+      <span className="relative inline-grid justify-items-center sm:justify-items-start">
+        {sizer}
+        <span className={cn("relative z-10 whitespace-nowrap px-2 text-primary [grid-area:1/1]", className)}>{words[0]}</span>
+      </span>
+    );
   }
 
   return (
+    <span className="relative inline-grid justify-items-center sm:justify-items-start">
+    {sizer}
     <AnimatePresence onExitComplete={() => setIsAnimating(false)}>
       <motion.span
         key={currentWord}
@@ -44,7 +55,7 @@ export const FlipWords = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 10 }}
         exit={{ opacity: 0, y: -40, x: 40, scale: 2, position: "absolute" }}
-        className={cn("relative z-10 inline-block px-2 text-left text-primary", className)}
+        className={cn("relative z-10 inline-block whitespace-nowrap px-2 text-left text-primary [grid-area:1/1]", className)}
       >
         {currentWord.split(" ").map((word, wordIndex) => (
           <motion.span
@@ -65,10 +76,11 @@ export const FlipWords = ({
                 {letter}
               </motion.span>
             ))}
-            <span className="inline-block">&nbsp;</span>
+            {wordIndex < currentWord.split(" ").length - 1 && <span className="inline-block">&nbsp;</span>}
           </motion.span>
         ))}
       </motion.span>
     </AnimatePresence>
+    </span>
   );
 };
