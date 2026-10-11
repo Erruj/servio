@@ -237,7 +237,7 @@ function ReplyScene() {
           <Typewriter text={reply} />
           <div className="absolute bottom-2 right-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Gemini-3
+            AI
           </div>
         </div>
 
@@ -378,8 +378,8 @@ function InvoiceScene() {
           </div>
         </div>
         <div className="space-y-1.5 text-[11px]">
-          <Field label={c.fields[0]} value="KPN Zakelijk B.V." />
-          <Field label={c.fields[1]} value="KPN-2026-11-4421" />
+          <Field label={c.fields[0]} value="Telecom Noord B.V." />
+          <Field label={c.fields[1]} value="TN-2026-11-4421" />
           <Field label={c.fields[2]} value="01-11-2026" />
           <Field label={c.fields[3]} value="15-11-2026" />
           <Field label={c.fields[4]} value="€ 89,25" />
