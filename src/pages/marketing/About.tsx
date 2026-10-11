@@ -1,3 +1,4 @@
+import { AboutCollage } from '@/components/landing/AboutCollage';
 import { LampCTA, HomeBento } from '@/components/landing/HomeSections';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -63,6 +64,8 @@ export default function About() {
 
             </div>
           </section>
+
+          <AboutCollage />
 
           <section className="py-20 md:py-28">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">

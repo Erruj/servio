@@ -161,6 +161,7 @@ export function HomePricingTeaser() {
   const plans = t('marketing.pricing.plans', { returnObjects: true }) as Array<{ name: string; price: string; description: string }>;
   const fmt = (p: string) => (i18n.language?.startsWith('en') ? p : p.replace('.', ','));
   const all = [{ name: t('marketing.landing.freeName'), price: '0', description: t('marketing.landing.freeDesc') }, ...plans];
+  const points = t('marketing.landing.teaserPoints', { returnObjects: true }) as string[][];
 
   return (
     <section className="bg-[#F4F4F6] py-24 md:py-32">
@@ -170,14 +171,27 @@ export function HomePricingTeaser() {
           <p className="mt-4 text-neutral-600">{t('marketing.landing.pricingSubtitle')}</p>
         </div>
         <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {all.map((p) => (
-            <div key={p.name} className="relative rounded-3xl border border-neutral-200 bg-white p-6 shadow-input">
-              <p className="text-sm font-semibold text-neutral-900">{p.name}</p>
+          {all.map((p, i) => (
+            <div key={p.name} className={`relative rounded-3xl border bg-white p-6 shadow-input ${p.name === 'Pro' ? 'border-primary/40 ring-1 ring-primary/20' : 'border-neutral-200'}`}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-neutral-900">{p.name}</p>
+                {p.name === 'Pro' && (
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">{t('marketing.landing.recommended')}</span>
+                )}
+              </div>
               <p className="mt-3 text-3xl font-bold tracking-tight text-neutral-900">
                 €{fmt(p.price)}
                 <span className="text-sm font-normal text-neutral-500">{t('marketing.pricing.perMonth')}</span>
               </p>
               <p className="mt-3 text-sm text-neutral-600">{p.description}</p>
+              <ul className="mt-4 space-y-2 border-t border-neutral-100 pt-4">
+                {(points[i] ?? []).map((pt) => (
+                  <li key={pt} className="flex items-start gap-2 text-sm text-neutral-700">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    {pt}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>

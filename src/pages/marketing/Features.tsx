@@ -1,4 +1,5 @@
-import { LampCTA, HomeBento } from '@/components/landing/HomeSections';
+import { LampCTA } from '@/components/landing/HomeSections';
+import { AIReplyVisual, DocumentVisual, AnalyticsVisual, AssistantVisual } from '@/components/landing/FeatureVisuals';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { SeoHead } from '@/components/SeoHead';
@@ -7,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Reveal, StaggerGroup, StaggerItem } from '@/components/landing/motion';
 
 const icons = [Mail, FileText, BarChart3, Bot];
+const visuals = [AIReplyVisual, DocumentVisual, AnalyticsVisual, AssistantVisual];
 
 export default function Features() {
   const { t, i18n } = useTranslation();
@@ -49,15 +51,15 @@ export default function Features() {
 
             </div>
           </section>
-          <HomeBento />
 
           {items.map((feature, index) => {
             const Icon = icons[index] || Mail;
+            const Visual = visuals[index] || AIReplyVisual;
             return (
               <section
                 key={feature.id}
                 id={feature.id}
-                className={`py-20 md:py-28 ${index % 2 === 1 ? 'bg-muted/30' : ''}`}
+                className={`py-16 md:py-24 ${index % 2 === 1 ? 'bg-muted/30' : ''}`}
               >
                 <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
                   <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center max-w-6xl mx-auto">
@@ -77,44 +79,18 @@ export default function Features() {
                         ))}
                       </StaggerGroup>
 
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary font-medium">
-                        <ArrowRight className="w-4 h-4" />
-                        {feature.result}
-                      </div>
+                      {feature.result && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary font-medium">
+                          <ArrowRight className="w-4 h-4" />
+                          {feature.result}
+                        </div>
+                      )}
                     </Reveal>
 
                     <Reveal delay={0.12} className={index % 2 === 1 ? 'lg:order-1' : ''}>
 
-                      <div className="rounded-3xl border border-neutral-200 bg-white shadow-input overflow-hidden">
-                        <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/30">
-                          <div className="flex gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-full bg-border" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-border" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-border" />
-                          </div>
-                        </div>
-                        <div className="aspect-[4/3] bg-muted/20 p-6">
-                          <div className="h-full rounded-lg bg-card border border-border/40 p-5">
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                <Icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
-                              </div>
-                              <div className="space-y-1.5 flex-1">
-                                <div className="h-3 w-1/3 bg-muted rounded" />
-                                <div className="h-2 w-1/2 bg-muted/60 rounded" />
-                              </div>
-                            </div>
-                            <div className="space-y-3">
-                              <div className="h-10 bg-muted/40 rounded-lg" />
-                              <div className="h-10 bg-muted/40 rounded-lg" />
-                              <div className="h-10 bg-muted/40 rounded-lg" />
-                            </div>
-                            <div className="mt-6 flex gap-3">
-                              <div className="h-9 flex-1 bg-primary/20 rounded-lg" />
-                              <div className="h-9 w-24 bg-muted/40 rounded-lg" />
-                            </div>
-                          </div>
-                        </div>
+                      <div className="rounded-3xl border border-neutral-200 bg-white p-3 shadow-input md:p-4">
+                        <Visual />
                       </div>
                     </Reveal>
                   </div>
