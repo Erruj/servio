@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export const LampContainer = ({ children, className }: { children: React.ReactNode; className?: string }) => (
   <div
     className={cn(
-      "relative z-0 flex min-h-[40rem] md:min-h-[46rem] w-full flex-col items-center justify-center overflow-hidden rounded-none bg-[#0A0F1E]",
+      "relative z-0 flex min-h-[34rem] md:min-h-[40rem] w-full flex-col items-center justify-center overflow-hidden rounded-none bg-[#0A0F1E]",
       className,
     )}
   >
@@ -51,6 +51,6 @@ export const LampContainer = ({ children, className }: { children: React.ReactNo
       />
       <div className="absolute inset-auto z-40 h-44 w-full -translate-y-[12.5rem] bg-[#0A0F1E]" />
     </div>
-    <div className="relative z-50 flex -translate-y-56 md:-translate-y-72 flex-col items-center px-5">{children}</div>
+    <div className="relative z-50 flex -translate-y-28 md:-translate-y-40 flex-col items-center px-5">{children}</div>
   </div>
 );
