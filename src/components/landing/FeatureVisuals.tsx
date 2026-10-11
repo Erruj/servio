@@ -44,7 +44,7 @@ export function InboxVisual() {
   const c = useCopy();
   const items = [
     { from: c.mails[0].from, subj: c.mails[0].subj, tag: c.fv.tags[0], tagClass: 'bg-primary/10 text-primary', unread: true },
-    { from: 'Stripe', subj: c.mails[1].subj, tag: c.fv.tags[1], tagClass: 'bg-success/10 text-success' },
+    { from: 'Drukkerij De Vries', subj: c.mails[1].subj, tag: c.fv.tags[1], tagClass: 'bg-success/10 text-success' },
     { from: c.mails[2].from, subj: c.mails[2].subj, tag: c.fv.tags[2], tagClass: 'bg-warning/10 text-warning' },
     { from: c.mails[3].from, subj: c.mails[3].subj, tag: c.fv.tags[3], tagClass: 'bg-muted text-muted-foreground' },
   ];
@@ -172,8 +172,8 @@ export function DocumentVisual() {
             </span>
           </div>
           {[
-            { l: c.fields[0], v: 'KPN B.V.' },
-            { l: c.fv.invNo, v: 'KPN-11-4421' },
+            { l: c.fields[0], v: 'Telecom Noord B.V.' },
+            { l: c.fv.invNo, v: 'TN-11-4421' },
             { l: c.fields[2], v: '01-11-2026' },
             { l: c.fields[5], v: '€ 18,74' },
             { l: c.fields[6], v: '€ 107,99', h: true },
@@ -222,7 +222,7 @@ export function AIReplyVisual() {
           </div>
           <span className="text-[10px] font-semibold">{c.fv.profReply}</span>
           <span className="ml-auto text-[8px] text-success flex items-center gap-0.5">
-            <Bot className="w-2.5 h-2.5" /> Gemini-3
+            <Bot className="w-2.5 h-2.5" /> AI
           </span>
         </div>
         <div className="flex-1 rounded-md border border-border/50 bg-muted/20 p-2 text-[10px] leading-relaxed whitespace-pre-line text-foreground/90 overflow-hidden">

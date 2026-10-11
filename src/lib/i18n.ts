@@ -603,7 +603,7 @@ const resources = {
           badge: 'New: automate your inbox & admin today',
           title1: 'Stop doing admin.',
           title2: 'Start doing business.',
-          subtitle: 'Servio automates up to 80% of your emails, processes invoices automatically and gives you real-time insight into your finances — so you can focus on growing.',
+          subtitle: 'Servio sorts your email, drafts replies, processes invoices automatically and gives you real-time insight into your finances, so you can focus on growing.',
           checkAutoEmail: 'Automatic email replies',
           checkInvoice: 'AI invoice processing',
           checkDashboard: 'Financial dashboard',
@@ -629,7 +629,7 @@ const resources = {
         product: {
           eyebrow: 'Products',
           title: 'Everything you need, nothing you don\'t',
-          subtitle: 'Three powerful tools that work together to run your business.',
+          subtitle: 'One place for your email, bookkeeping and finances.',
           items: [
             { title: 'Smart Inbox', description: 'AI reads, categorizes and replies to your emails. You only approve.', metrics: ['80% less typing', 'Auto-categorization', 'Sentiment analysis'] },
             { title: 'Financial Dashboard', description: 'Real-time insight into revenue, expenses and profit. Never be surprised again.', metrics: ['Live revenue tracking', 'Expense analysis', 'Profit forecast'] },
@@ -1403,7 +1403,7 @@ const resources = {
           badge: 'Nieuw: automatiseer je mailbox & administratie vandaag nog',
           title1: 'Stop met administratie.',
           title2: 'Start met ondernemen.',
-          subtitle: 'Servio automatiseert tot 80% van je e-mails, verwerkt facturen automatisch en geeft je realtime inzicht in je financiën — zodat jij kunt focussen op groeien.',
+          subtitle: 'Servio sorteert je e-mail, schrijft antwoorden voor, verwerkt facturen automatisch en geeft je realtime inzicht in je financiën, zodat jij kunt focussen op groeien.',
           checkAutoEmail: 'Automatische e-mailreacties',
           checkInvoice: 'AI-factuurverwerking',
           checkDashboard: 'Financieel dashboard',
@@ -1429,7 +1429,7 @@ const resources = {
         product: {
           eyebrow: 'Producten',
           title: 'Alles wat je nodig hebt, niets dat je niet nodig hebt',
-          subtitle: 'Drie krachtige tools die samenwerken om je bedrijf te runnen.',
+          subtitle: 'Eén plek voor je mail, administratie en financiën.',
           items: [
             { title: 'Slimme Inbox', description: 'AI leest, categoriseert en beantwoordt je mails. Jij keurt alleen nog goed.', metrics: ['80% minder typewerk', 'Auto-categorisatie', 'Sentiment analyse'] },
             { title: 'Financieel Dashboard', description: 'Realtime inzicht in omzet, uitgaven en winst. Nooit meer verrast worden.', metrics: ['Live omzet tracking', 'Uitgaven analyse', 'Winst prognose'] },
@@ -2179,7 +2179,7 @@ const resources = {
           badge: 'Neu: Automatisieren Sie noch heute Ihr Postfach & Ihre Verwaltung',
           title1: 'Schluss mit Verwaltung.',
           title2: 'Zeit für Ihr Geschäft.',
-          subtitle: 'Servio automatisiert bis zu 80 % Ihrer E-Mails, verarbeitet Rechnungen automatisch und gibt Ihnen Echtzeit-Einblick in Ihre Finanzen — damit Sie sich aufs Wachsen konzentrieren können.',
+          subtitle: 'Servio sortiert Ihre E-Mails, schlägt Antworten vor, verarbeitet Rechnungen automatisch und gibt Ihnen Echtzeit-Einblick in Ihre Finanzen, damit Sie sich aufs Wachsen konzentrieren können.',
           checkAutoEmail: 'Automatische E-Mail-Antworten',
           checkInvoice: 'KI-Rechnungsverarbeitung',
           checkDashboard: 'Finanz-Dashboard',
@@ -2204,7 +2204,7 @@ const resources = {
         product: {
           eyebrow: 'Produkte',
           title: 'Alles, was Sie brauchen, nichts, was Sie nicht brauchen',
-          subtitle: 'Drei leistungsstarke Tools, die zusammenarbeiten, um Ihr Unternehmen zu führen.',
+          subtitle: 'Ein Ort für Ihre E-Mails, Buchhaltung und Finanzen.',
           items: [
             { title: 'Intelligenter Posteingang', description: 'KI liest, kategorisiert und beantwortet Ihre E-Mails. Sie genehmigen nur noch.', metrics: ['80 % weniger Tipparbeit', 'Auto-Kategorisierung', 'Sentiment-Analyse'] },
             { title: 'Finanz-Dashboard', description: 'Echtzeit-Einblick in Umsatz, Ausgaben und Gewinn. Nie wieder überrascht werden.', metrics: ['Live-Umsatzverfolgung', 'Ausgabenanalyse', 'Gewinnprognose'] },
@@ -2950,7 +2950,7 @@ const resources = {
           badge: 'Nouveau : automatisez dès aujourd\'hui votre boîte mail et votre administration',
           title1: 'Arrêtez l\'administratif.',
           title2: 'Concentrez-vous sur votre activité.',
-          subtitle: 'Servio automatise jusqu\'à 80 % de vos e-mails, traite automatiquement les factures et vous donne une vision en temps réel de vos finances — pour que vous puissiez vous concentrer sur votre croissance.',
+          subtitle: 'Servio trie vos e-mails, propose des réponses, traite automatiquement les factures et vous donne une vision en temps réel de vos finances, pour que vous puissiez vous concentrer sur votre croissance.',
           checkAutoEmail: 'Réponses automatiques aux e-mails',
           checkInvoice: 'Traitement des factures par IA',
           checkDashboard: 'Tableau de bord financier',
@@ -2975,7 +2975,7 @@ const resources = {
         product: {
           eyebrow: 'Produits',
           title: 'Tout ce dont vous avez besoin, rien de superflu',
-          subtitle: 'Trois outils puissants qui travaillent ensemble pour gérer votre entreprise.',
+          subtitle: 'Un seul endroit pour vos e-mails, votre administration et vos finances.',
           items: [
             { title: 'Boîte de réception intelligente', description: 'L\'IA lit, catégorise et répond à vos e-mails. Vous n\'avez plus qu\'à approuver.', metrics: ['80 % de saisie en moins', 'Catégorisation automatique', 'Analyse de sentiment'] },
             { title: 'Tableau de bord financier', description: 'Visibilité en temps réel sur les revenus, dépenses et bénéfices. Plus jamais de surprise.', metrics: ['Suivi des revenus en direct', 'Analyse des dépenses', 'Prévision des bénéfices'] },
@@ -3721,7 +3721,7 @@ const resources = {
           badge: 'Nuevo: automatiza hoy mismo tu buzón y tu administración',
           title1: 'Deja de hacer papeleo.',
           title2: 'Empieza a hacer negocio.',
-          subtitle: 'Servio automatiza hasta el 80 % de tus correos, procesa facturas automáticamente y te ofrece información financiera en tiempo real — para que puedas centrarte en crecer.',
+          subtitle: 'Servio ordena tu correo, sugiere respuestas, procesa facturas automáticamente y te ofrece información financiera en tiempo real, para que puedas centrarte en crecer.',
           checkAutoEmail: 'Respuestas automáticas por correo',
           checkInvoice: 'Procesamiento de facturas con IA',
           checkDashboard: 'Panel financiero',
@@ -3746,7 +3746,7 @@ const resources = {
         product: {
           eyebrow: 'Productos',
           title: 'Todo lo que necesitas, nada de lo que no',
-          subtitle: 'Tres herramientas potentes que trabajan juntas para gestionar tu negocio.',
+          subtitle: 'Un solo lugar para tu correo, administración y finanzas.',
           items: [
             { title: 'Bandeja de entrada inteligente', description: 'La IA lee, categoriza y responde tus correos. Tú solo apruebas.', metrics: ['80 % menos de escritura', 'Categorización automática', 'Análisis de sentimiento'] },
             { title: 'Panel financiero', description: 'Información en tiempo real sobre ingresos, gastos y beneficios. Nunca más te llevarás una sorpresa.', metrics: ['Seguimiento de ingresos en vivo', 'Análisis de gastos', 'Previsión de beneficios'] },
