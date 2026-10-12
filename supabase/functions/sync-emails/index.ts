@@ -633,9 +633,10 @@ async function persistMessages(
     const baseRecord = { ...message, user_id: connection.user_id, connection_id: connection.id };
     const existingId = existingByExternalId.get(message.external_id);
     if (existingId) {
-      // Lees-/sterstatus en map worden in Servio beheerd; een sync mag die niet terugzetten
-      // (terug-synchroniseren naar de mailbox volgt later).
-      const { is_read: _r, is_starred: _s, folder: _f, ...rest } = baseRecord as any;
+      // Gelezen/ster komen uit de echte mailbox (Servio-acties gaan via mail-action eerst
+      // naar de mailbox). De map (folder) wordt nooit door de sync aangepast, zodat een
+      // in Servio gearchiveerde of verwijderde mail niet terug in de inbox komt.
+      const { folder: _f, ...rest } = baseRecord as any;
       updates.push({ ...rest, id: existingId });
     } else {
       inserts.push(baseRecord);
