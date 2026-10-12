@@ -3,6 +3,7 @@ import type { i18n as I18n } from 'i18next';
 type Dict = Record<string, string>;
 
 const nl: Dict = {
+  mailboxFailed: 'Kon niet bijwerken in je mailbox',
   archive: 'Archiveren', delete: 'Verwijderen', markUnread: 'Markeer als ongelezen', markRead: 'Markeer als gelezen',
   star: 'Ster toevoegen', unstar: 'Ster verwijderen', more: 'Meer acties', labels: 'Labels', print: 'Afdrukken',
   viewOriginal: 'Origineel bekijken', downloadEml: 'Downloaden als .eml', markSpam: 'Markeer als spam',
@@ -15,6 +16,7 @@ const nl: Dict = {
   phishingTitle: 'Afzender geblokkeerd', phishingDesc: '{{from}} is gemarkeerd als phishing en geblokkeerd.',
 };
 const en: Dict = {
+  mailboxFailed: 'Could not update your mailbox',
   archive: 'Archive', delete: 'Delete', markUnread: 'Mark as unread', markRead: 'Mark as read',
   star: 'Add star', unstar: 'Remove star', more: 'More actions', labels: 'Labels', print: 'Print',
   viewOriginal: 'View original', downloadEml: 'Download as .eml', markSpam: 'Mark as spam',
@@ -27,6 +29,7 @@ const en: Dict = {
   phishingTitle: 'Sender blocked', phishingDesc: '{{from}} has been marked as phishing and blocked.',
 };
 const de: Dict = {
+  mailboxFailed: 'Konnte dein Postfach nicht aktualisieren',
   archive: 'Archivieren', delete: 'Löschen', markUnread: 'Als ungelesen markieren', markRead: 'Als gelesen markieren',
   star: 'Stern hinzufügen', unstar: 'Stern entfernen', more: 'Weitere Aktionen', labels: 'Labels', print: 'Drucken',
   viewOriginal: 'Original anzeigen', downloadEml: 'Als .eml herunterladen', markSpam: 'Als Spam markieren',
@@ -39,6 +42,7 @@ const de: Dict = {
   phishingTitle: 'Absender blockiert', phishingDesc: '{{from}} wurde als Phishing markiert und blockiert.',
 };
 const fr: Dict = {
+  mailboxFailed: 'Impossible de mettre à jour votre boîte mail',
   archive: 'Archiver', delete: 'Supprimer', markUnread: 'Marquer comme non lu', markRead: 'Marquer comme lu',
   star: 'Ajouter une étoile', unstar: "Retirer l'étoile", more: "Plus d'actions", labels: 'Libellés', print: 'Imprimer',
   viewOriginal: "Afficher l'original", downloadEml: 'Télécharger en .eml', markSpam: 'Signaler comme spam',
@@ -51,6 +55,7 @@ const fr: Dict = {
   phishingTitle: 'Expéditeur bloqué', phishingDesc: '{{from}} a été signalé comme hameçonnage et bloqué.',
 };
 const es: Dict = {
+  mailboxFailed: 'No se pudo actualizar tu buzón',
   archive: 'Archivar', delete: 'Eliminar', markUnread: 'Marcar como no leído', markRead: 'Marcar como leído',
   star: 'Destacar', unstar: 'Quitar destacado', more: 'Más acciones', labels: 'Etiquetas', print: 'Imprimir',
   viewOriginal: 'Ver original', downloadEml: 'Descargar como .eml', markSpam: 'Marcar como spam',

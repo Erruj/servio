@@ -23,7 +23,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Helmet } from 'react-helmet-async';
 import { ToastAction } from '@/components/ui/toast';
 import type { MailActions } from '@/components/MailDetail';
-import type { EmailFolder } from '@/hooks/useEmailConnections';
 
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
@@ -161,16 +160,20 @@ const Inbox = () => {
   const handleMailSelect = (mail: MailItem) => {
     setSelectedMail(mail);
     localStorage.setItem('servio_inbox_last_email', mail.id);
-    if (mail.unread) markAsRead(mail.id);
+    if (mail.unread) markAsRead(mail.id).catch(failToast);
   };
 
-  const failToast = () => toast({ title: t('mailActions.actionFailed'), description: t('mailActions.actionFailedDesc'), variant: 'destructive' });
+  const failToast = (e?: unknown) => toast({
+    title: t('mailActions.mailboxFailed'),
+    description: e instanceof Error && e.message ? e.message : t('mailActions.actionFailedDesc'),
+    variant: 'destructive',
+  });
 
   const handleToggleStar = async (mail: MailItem) => {
-    try { await setStarred(mail.id, !mail.starred); } catch { failToast(); }
+    try { await setStarred(mail.id, !mail.starred); } catch (e) { failToast(e); }
   };
 
-  const handleMove = async (mail: MailItem, folder: EmailFolder) => {
+  const handleMove = async (mail: MailItem, folder: 'archive' | 'trash' | 'spam') => {
     const titleKey = folder === 'archive' ? 'archived' : folder === 'trash' ? 'deleted' : 'movedSpam';
     if (folder === 'archive' || folder === 'trash') setSelectedMail(null);
     try {
@@ -180,11 +183,11 @@ const Inbox = () => {
         duration: 5000,
         action: (
           <ToastAction altText={t('mailActions.undo')} onClick={async () => {
-            try { await undo(); toast({ title: t('mailActions.undone'), duration: 2500 }); } catch { failToast(); }
+            try { await undo(); toast({ title: t('mailActions.undone'), duration: 2500 }); } catch (e) { failToast(e); }
           }}>{t('mailActions.undo')}</ToastAction>
         ),
       });
-    } catch { failToast(); }
+    } catch (e) { failToast(e); }
   };
 
   const mailActions: MailActions = {
@@ -192,7 +195,7 @@ const Inbox = () => {
     onDelete: (m) => handleMove(m, 'trash'),
     onSpam: (m) => handleMove(m, 'spam'),
     onToggleStar: handleToggleStar,
-    onToggleRead: async (m) => { try { await setReadState(m.id, m.unread); } catch { failToast(); } },
+    onToggleRead: async (m) => { try { await setReadState(m.id, m.unread); } catch (e) { failToast(e); } },
     onSaveLabels: async (m, labels) => { try { await setLabels(m.id, labels); toast({ title: t('mailActions.labelsSaved') }); } catch { failToast(); } },
   };
 
@@ -365,7 +368,7 @@ const Inbox = () => {
                   })()}
                   <div className="flex-1 overflow-hidden">
                     <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
-                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
+                      onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
                   </div>
                 </div>
                 <div className="flex-1">
@@ -402,7 +405,7 @@ const Inbox = () => {
                       </div>
                     )}
                     <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
-                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
+                      onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
                   </>
                 )}
               </div>

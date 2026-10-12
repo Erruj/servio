@@ -178,6 +178,21 @@ export interface EmailThread {
   participantCount: number;
 }
 
+export type MailActionName = 'read' | 'unread' | 'star' | 'unstar' | 'archive' | 'trash' | 'spam' | 'inbox';
+
+export class MailActionError extends Error {}
+
+/** Voert de actie uit in de echte mailbox én in Servio (edge function mail-action). */
+async function runMailAction(emailId: string, action: MailActionName): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('mail-action', { body: { email_id: emailId, action } });
+  if (error) {
+    let detail = error.message;
+    try { const ctx = (error as any).context; if (ctx?.json) detail = (await ctx.json())?.error || detail; } catch { /* ignore */ }
+    throw new MailActionError(detail);
+  }
+  if (data && (data as any).error) throw new MailActionError((data as any).error);
+}
+
 export type EmailFolder = 'inbox' | 'archive' | 'trash' | 'spam' | 'sent' | 'drafts';
 
 export function useEmails() {
@@ -217,31 +232,14 @@ export function useEmails() {
 
   useEffect(() => { fetchEmails(); }, [fetchEmails]);
 
-  const markAsRead = async (emailId: string) => {
-    try {
-      await supabase.from('emails').update({ is_read: true }).eq('id', emailId);
-      setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_read: true } : e));
-    } catch (error) {
-      console.error('Error marking email as read:', error);
-    }
-  };
+  const markAsRead = async (emailId: string) => { await setReadState(emailId, true); };
 
   const markMultipleAsRead = async (emailIds: string[]) => {
-    try {
-      for (const id of emailIds) {
-        await supabase.from('emails').update({ is_read: true }).eq('id', id);
-      }
-      setEmails(prev => prev.map(e => emailIds.includes(e.id) ? { ...e, is_read: true } : e));
-    } catch (error) { console.error('Error:', error); }
+    await Promise.all(emailIds.map(id => setReadState(id, true)));
   };
 
   const markMultipleAsUnread = async (emailIds: string[]) => {
-    try {
-      for (const id of emailIds) {
-        await supabase.from('emails').update({ is_read: false }).eq('id', id);
-      }
-      setEmails(prev => prev.map(e => emailIds.includes(e.id) ? { ...e, is_read: false } : e));
-    } catch (error) { console.error('Error:', error); }
+    await Promise.all(emailIds.map(id => setReadState(id, false)));
   };
 
   const deleteMultiple = async (emailIds: string[]) => {
@@ -255,14 +253,14 @@ export function useEmails() {
 
   const setStarred = async (emailId: string, value: boolean) => {
     setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_starred: value } : e));
-    const { error } = await supabase.from('emails').update({ is_starred: value }).eq('id', emailId);
-    if (error) { setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_starred: !value } : e)); throw error; }
+    try { await runMailAction(emailId, value ? 'star' : 'unstar'); }
+    catch (e) { setEmails(prev => prev.map(m => m.id === emailId ? { ...m, is_starred: !value } : m)); throw e; }
   };
 
   const setReadState = async (emailId: string, value: boolean) => {
     setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_read: value } : e));
-    const { error } = await supabase.from('emails').update({ is_read: value }).eq('id', emailId);
-    if (error) { setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_read: !value } : e)); throw error; }
+    try { await runMailAction(emailId, value ? 'read' : 'unread'); }
+    catch (e) { setEmails(prev => prev.map(m => m.id === emailId ? { ...m, is_read: !value } : m)); throw e; }
   };
 
   const setLabels = async (emailId: string, labels: string[]) => {
@@ -271,21 +269,20 @@ export function useEmails() {
     setEmails(prev => prev.map(e => e.id === emailId ? { ...e, labels } : e));
   };
 
-  /** Verplaatst mails naar een map. Geeft een functie terug die de verplaatsing ongedaan maakt. */
-  const moveToFolder = async (emailIds: string[], folder: EmailFolder): Promise<() => Promise<void>> => {
+  /** Verplaatst mails naar een map (ook in de echte mailbox). Geeft een functie terug die het ongedaan maakt. */
+  const moveToFolder = async (emailIds: string[], folder: 'archive' | 'trash' | 'spam'): Promise<() => Promise<void>> => {
     const snapshot = emails.filter(e => emailIds.includes(e.id));
     const hides = folder === 'archive' || folder === 'trash';
     setEmails(prev => hides ? prev.filter(e => !emailIds.includes(e.id)) : prev.map(e => emailIds.includes(e.id) ? { ...e, folder } : e));
-    const { error } = await supabase.from('emails').update({ folder }).in('id', emailIds);
-    if (error) { await fetchEmails(); throw error; }
-    return async () => {
-      const groups = new Map<string, string[]>();
-      for (const e of snapshot) { const f = e.folder || 'inbox'; groups.set(f, [...(groups.get(f) || []), e.id]); }
-      for (const [f, ids] of groups) {
-        const { error: undoError } = await supabase.from('emails').update({ folder: f }).in('id', ids);
-        if (undoError) throw undoError;
-      }
+    try {
+      await Promise.all(emailIds.map(id => runMailAction(id, folder)));
+    } catch (e) {
       await fetchEmails();
+      throw e;
+    }
+    return async () => {
+      try { await Promise.all(snapshot.map(m => runMailAction(m.id, 'inbox'))); }
+      finally { await fetchEmails(); }
     };
   };
 
