@@ -51,3 +51,5 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = false
   [functions.send-review-requests]
     verify_jwt = false
+  [functions.email-image-proxy]
+    verify_jwt = false
