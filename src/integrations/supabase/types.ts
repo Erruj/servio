@@ -526,6 +526,7 @@ export type Database = {
           thread_summary: string | null
           thread_summary_updated_at: string | null
           to_emails: string[] | null
+          trashed_at: string | null
           updated_at: string
           user_id: string
         }
@@ -558,6 +559,7 @@ export type Database = {
           thread_summary?: string | null
           thread_summary_updated_at?: string | null
           to_emails?: string[] | null
+          trashed_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -590,6 +592,7 @@ export type Database = {
           thread_summary?: string | null
           thread_summary_updated_at?: string | null
           to_emails?: string[] | null
+          trashed_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1301,6 +1304,10 @@ export type Database = {
         }[]
       }
       get_dashboard_stats: { Args: never; Returns: Json }
+      get_mail_folder_counts: {
+        Args: { _connection_id?: string }
+        Returns: Json
+      }
       get_onboarding_status: { Args: never; Returns: Json }
       get_team_members: {
         Args: never
