@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { AccountMenu } from '@/components/shell/AccountMenu';
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -119,6 +120,7 @@ export function MobileNav() {
           </nav>
 
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-3 bg-background">
+            <AccountMenu />
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <LanguageSelector />
