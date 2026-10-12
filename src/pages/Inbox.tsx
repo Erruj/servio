@@ -40,6 +40,13 @@ const Inbox = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setIsDesktop(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
@@ -325,7 +332,7 @@ const Inbox = () => {
                 </div>
                 <div className="flex-1">
                   <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                    <MailDetail mail={selectedMail} className="h-full" />
+                    {isDesktop && <MailDetail mail={selectedMail} className="h-full" />}
                   </Suspense>
                 </div>
               </div>
@@ -342,7 +349,7 @@ const Inbox = () => {
                       )}
                     </div>
                     <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                      <MailDetail mail={selectedMail} className="flex-1 min-w-0" />
+                      {!isDesktop && <MailDetail mail={selectedMail} className="flex-1 min-w-0" />}
                     </Suspense>
                   </div>
                 ) : (
