@@ -10,7 +10,8 @@ import { nl } from 'date-fns/locale';
 import { searchQuerySchema, sanitizeText, SecurityError } from '@/lib/security';
 import { buildPreview } from '@/lib/emailText';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, MailOpen, Trash2, CheckSquare } from 'lucide-react';
+import { Mail, MailOpen, Trash2, CheckSquare, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNewItems } from '@/hooks/useNewItems';
 
 interface MailListProps {
@@ -24,11 +25,12 @@ interface MailListProps {
   onMarkAsRead?: (ids: string[]) => void;
   onMarkAsUnread?: (ids: string[]) => void;
   onDeleteMultiple?: (ids: string[]) => void;
+  onToggleStar?: (mail: MailItem) => void;
 }
 
 export function MailList({ 
   mails, selectedMailId, onSelectMail, searchQuery = '', filter = 'all', className,
-  onMarkAsRead, onMarkAsUnread, onDeleteMultiple
+  onMarkAsRead, onMarkAsUnread, onDeleteMultiple, onToggleStar
 }: MailListProps) {
   const { toast } = useToast();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -89,14 +91,14 @@ export function MailList({
     switch (filter) {
       case 'inbox':
         filtered = filtered.filter(m =>
-          !hasLabel(m, 'SPAM') && !hasLabel(m, 'SENT') && !hasLabel(m, 'TRASH')
+          m.folder !== 'spam' && !hasLabel(m, 'SPAM') && !hasLabel(m, 'SENT') && !hasLabel(m, 'TRASH')
         );
         break;
       case 'unread': filtered = filtered.filter(m => m.unread || hasLabel(m, 'UNREAD')); break;
-      case 'starred': filtered = filtered.filter(m => hasLabel(m, 'STARRED')); break;
+      case 'starred': filtered = filtered.filter(m => m.starred || hasLabel(m, 'STARRED')); break;
       case 'important': filtered = filtered.filter(m => hasLabel(m, 'IMPORTANT')); break;
       case 'snoozed': filtered = filtered.filter(m => hasLabel(m, 'SNOOZED')); break;
-      case 'spam': filtered = filtered.filter(m => hasLabel(m, 'SPAM')); break;
+      case 'spam': filtered = filtered.filter(m => m.folder === 'spam' || hasLabel(m, 'SPAM')); break;
       case 'sent': filtered = filtered.filter(m => hasLabel(m, 'SENT')); break;
       case 'blocked': filtered = filtered.filter(m => blockedSenders.includes(m.from)); break;
     }
@@ -222,6 +224,7 @@ export function MailList({
         onSelectMail={onSelectMail}
         newMailIds={newMailIds}
         toggleSelect={toggleSelect}
+        onToggleStar={onToggleStar}
         getEmailPreview={getEmailPreview}
         getMailAnalysis={getMailAnalysis}
         getCategoryClassName={getCategoryClassName}
@@ -241,6 +244,7 @@ interface VirtualMailListProps {
   onSelectMail: (mail: MailItem) => void;
   newMailIds: Set<string>;
   toggleSelect: (id: string) => void;
+  onToggleStar?: (mail: MailItem) => void;
   getEmailPreview: (mail: MailItem) => string;
   getMailAnalysis: (mail: MailItem) => { category: string | null; urgency: Urgency | null };
   getCategoryClassName: (c: string) => string;
@@ -250,7 +254,8 @@ interface VirtualMailListProps {
 }
 
 function VirtualMailList(props: VirtualMailListProps) {
-  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, newMailIds, toggleSelect, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
+  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, newMailIds, toggleSelect, onToggleStar, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
+  const { t } = useTranslation();
   const parentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: mails.length,
@@ -320,11 +325,24 @@ function VirtualMailList(props: VirtualMailListProps) {
                     )}>
                       {senderName}
                     </span>
-                    <span className="text-[11px] text-muted-foreground flex-shrink-0">{timeAgo}</span>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className="text-[11px] text-muted-foreground">{timeAgo}</span>
+                      {onToggleStar && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); onToggleStar(mail); }}
+                          aria-label={mail.starred ? t('mailActions.unstar') : t('mailActions.star')}
+                          title={mail.starred ? t('mailActions.unstar') : t('mailActions.star')}
+                          className="-m-2 p-2 rounded-[10px] text-muted-foreground hover:text-foreground"
+                        >
+                          <Star className={cn('h-4 w-4', mail.starred && 'fill-warning text-warning')} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className={cn(
                     'text-[13px] truncate mb-0.5',
-                    mail.unread ? 'text-foreground' : 'text-foreground/80'
+                    mail.unread ? 'font-semibold text-foreground' : 'text-foreground/80'
                   )}>
                     {mail.subject}
                   </div>

@@ -29,6 +29,7 @@ export interface Email {
   labels: string[];
   is_read: boolean;
   is_starred: boolean;
+  folder?: string;
   has_attachments: boolean;
   received_at: string;
   created_at: string;

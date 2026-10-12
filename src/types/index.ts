@@ -16,6 +16,10 @@ export interface MailItem {
   bodyText?: string;
   receivedAt: string; // ISO
   unread: boolean;
+  starred?: boolean;
+  folder?: string;
+  cc?: string[];
+  externalId?: string;
   labels: string[];
   attachments?: { name: string; url?: string; sizeKB?: number }[];
   aiCategory?: string;
