@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { registerMailActionTranslations } from './i18n-mail-actions';
 
 /**
  * Detect the user's preferred language from:
@@ -3713,5 +3714,7 @@ i18n.on('languageChanged', (lng) => {
     // ignore
   }
 });
+
+registerMailActionTranslations(i18n);
 
 export default i18n;
