@@ -1,0 +1,1 @@
+ALTER FUNCTION public.get_mail_folder_counts(uuid) SECURITY INVOKER;
