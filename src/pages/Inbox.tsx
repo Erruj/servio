@@ -211,7 +211,7 @@ const Inbox = () => {
   const handleViewChange = (v: MailView) => {
     setView(v);
     setSelectedMail(null);
-    hasAutoSelectedRef.current = view !== v ? true : hasAutoSelectedRef.current;
+    hasAutoSelectedRef.current = true;
   };
 
   const folderToolbar = view === 'trash' ? (
