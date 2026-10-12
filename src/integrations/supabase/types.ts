@@ -457,6 +457,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_image_preferences: {
+        Row: {
+          mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          mode?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_image_trusted_senders: {
+        Row: {
+          created_at: string
+          id: string
+          sender_email: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sender_email: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sender_email?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       emails: {
         Row: {
           ai_category: string | null
