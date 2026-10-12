@@ -39,28 +39,90 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import type { TemplateItem } from '@/types';
 import { FileText, MoreHorizontal } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Archive, Star, MailOpen, Tag, Printer, Code, Download, Ban, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import type React from 'react';
 
-const MailMoreMenu = ({ onPhishing, onResolved }: { onPhishing: () => void; onResolved: () => void }) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="outline" size="icon" className="h-11 w-11 flex-shrink-0" aria-label="Meer acties">
-        <MoreHorizontal className="h-4 w-4" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuItem onClick={onResolved}>Markeer als afgehandeld</DropdownMenuItem>
-      <DropdownMenuItem onClick={onPhishing} className="text-destructive focus:text-destructive">Markeer als phishing</DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
+export interface MailActions {
+  onArchive: (mail: MailItem) => void;
+  onDelete: (mail: MailItem) => void;
+  onSpam: (mail: MailItem) => void;
+  onToggleStar: (mail: MailItem) => void;
+  onToggleRead: (mail: MailItem) => void;
+  onSaveLabels: (mail: MailItem, labels: string[]) => void;
+}
+
+const escapeHtml = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
+function buildEml(mail: MailItem): string {
+  const lines = [
+    `From: ${mail.from}${mail.fromEmail && mail.fromEmail !== mail.from ? ` <${mail.fromEmail}>` : ''}`,
+    `To: ${mail.to.join(', ')}`,
+    ...(mail.cc && mail.cc.length ? [`Cc: ${mail.cc.join(', ')}`] : []),
+    `Subject: ${mail.subject}`,
+    `Date: ${new Date(mail.receivedAt).toUTCString()}`,
+    ...(mail.externalId ? [`Message-ID: <${mail.externalId}>`] : []),
+    'MIME-Version: 1.0',
+  ];
+  if (mail.bodyHtml) {
+    lines.push('Content-Type: text/html; charset=UTF-8', '', mail.bodyHtml);
+  } else {
+    lines.push('Content-Type: text/plain; charset=UTF-8', '', mail.bodyText || mail.body || '');
+  }
+  return lines.join('\r\n');
+}
+
+const MailMoreMenu = ({ onPhishing, onResolved, onLabels, onPrint, onOriginal, onDownload, onSpam }: {
+  onPhishing: () => void; onResolved: () => void; onLabels?: () => void; onPrint?: () => void;
+  onOriginal?: () => void; onDownload?: () => void; onSpam?: () => void;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon" className="h-11 w-11 flex-shrink-0" aria-label={t('mailActions.more')} title={t('mailActions.more')}>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {onLabels && <DropdownMenuItem onClick={onLabels}><Tag className="h-4 w-4 mr-2" />{t('mailActions.labels')}</DropdownMenuItem>}
+        {onPrint && <DropdownMenuItem onClick={onPrint}><Printer className="h-4 w-4 mr-2" />{t('mailActions.print')}</DropdownMenuItem>}
+        {onOriginal && <DropdownMenuItem onClick={onOriginal}><Code className="h-4 w-4 mr-2" />{t('mailActions.viewOriginal')}</DropdownMenuItem>}
+        {onDownload && <DropdownMenuItem onClick={onDownload}><Download className="h-4 w-4 mr-2" />{t('mailActions.downloadEml')}</DropdownMenuItem>}
+        <DropdownMenuSeparator />
+        {onSpam && <DropdownMenuItem onClick={onSpam}><Ban className="h-4 w-4 mr-2" />{t('mailActions.markSpam')}</DropdownMenuItem>}
+        <DropdownMenuItem onClick={onPhishing} className="text-destructive focus:text-destructive"><ShieldAlert className="h-4 w-4 mr-2" />{t('mailActions.markPhishing')}</DropdownMenuItem>
+        <DropdownMenuItem onClick={onResolved}><CheckCircle2 className="h-4 w-4 mr-2" />{t('mailActions.markResolved')}</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+const ActionIcon = ({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={label} onClick={onClick}>{children}</Button>
+    </TooltipTrigger>
+    <TooltipContent>{label}</TooltipContent>
+  </Tooltip>
 );
 
 interface MailDetailProps {
   mail: MailItem | null;
   className?: string;
+  actions?: MailActions;
 }
 
-export function MailDetail({ mail, className }: MailDetailProps) {
+export function MailDetail({ mail, className, actions }: MailDetailProps) {
+  const { t } = useTranslation();
+  const [labelsOpen, setLabelsOpen] = useState(false);
+  const [labelDraft, setLabelDraft] = useState<string[]>([]);
+  const [newLabel, setNewLabel] = useState('');
+  const [originalOpen, setOriginalOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
@@ -456,7 +518,51 @@ export function MailDetail({ mail, className }: MailDetailProps) {
     blocked.push(mail.from);
     localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
   }
-  toast({ title: "Afzender geblokkeerd", description: `${mail.from} is gemarkeerd als phishing en geblokkeerd.` });
+  toast({ title: t('mailActions.phishingTitle'), description: t('mailActions.phishingDesc', { from: mail.from }) });
+};
+
+const openLabels = () => { if (!mail) return; setLabelDraft(mail.labels.filter(l => l === l.toLowerCase() || !/^[A-Z_]+$/.test(l))); setNewLabel(''); setLabelsOpen(true); };
+const saveLabels = () => {
+  if (!mail || !actions) return;
+  const system = mail.labels.filter(l => /^[A-Z_]+$/.test(l) && l !== l.toLowerCase());
+  actions.onSaveLabels(mail, [...system, ...labelDraft]);
+  setLabelsOpen(false);
+};
+const addDraftLabel = () => {
+  const v = newLabel.trim().slice(0, 40);
+  if (v && !labelDraft.includes(v)) setLabelDraft([...labelDraft, v]);
+  setNewLabel('');
+};
+
+const printMail = () => {
+  if (!mail) return;
+  const w = window.open('', '_blank', 'noopener=no,width=800,height=900');
+  if (!w) return;
+  const body = escapeHtml(mail.bodyText || buildEml(mail).split('\r\n\r\n').slice(1).join('\n').replace(/<[^>]+>/g, ''));
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(mail.subject)}</title><style>body{font-family:Inter,system-ui,sans-serif;padding:32px;color:#111}h1{font-size:20px}dl{font-size:13px;color:#555}pre{white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.6}</style></head><body><h1>${escapeHtml(mail.subject)}</h1><dl><div>${escapeHtml(mail.from)}</div><div>${escapeHtml(mail.to.join(', '))}</div><div>${escapeHtml(new Date(mail.receivedAt).toLocaleString())}</div></dl><hr><pre>${body}</pre></body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
+};
+
+const downloadEml = () => {
+  if (!mail) return;
+  const blob = new Blob([buildEml(mail)], { type: 'message/rfc822' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(mail.subject || 'email').replace(/[^\w\- ]+/g, '').trim().slice(0, 60) || 'email'}.eml`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+const moreMenuProps = {
+  onPhishing: markAsPhishing,
+  onResolved: handleMarkAsResolved,
+  ...(actions && mail ? {
+    onLabels: openLabels, onPrint: printMail, onOriginal: () => setOriginalOpen(true), onDownload: downloadEml,
+    onSpam: () => actions.onSpam(mail),
+  } : {}),
 };
 
 const sentimentLabel = (v?: string) => {
@@ -483,6 +589,21 @@ const sentimentLabel = (v?: string) => {
               </div>
             </div>
             <div className="text-right flex-shrink-0">
+              {actions && (
+                <TooltipProvider delayDuration={300}>
+                  <div className="flex items-center justify-end gap-0.5 mb-1 -mr-2" role="toolbar" aria-label={t('mailActions.more')}>
+                    <ActionIcon label={t('mailActions.archive')} onClick={() => actions.onArchive(mail)}><Archive className="h-4 w-4" /></ActionIcon>
+                    <ActionIcon label={t('mailActions.delete')} onClick={() => actions.onDelete(mail)}><Trash2 className="h-4 w-4" /></ActionIcon>
+                    <ActionIcon label={mail.unread ? t('mailActions.markRead') : t('mailActions.markUnread')} onClick={() => actions.onToggleRead(mail)}>
+                      {mail.unread ? <MailOpen className="h-4 w-4" /> : <MailIcon className="h-4 w-4" />}
+                    </ActionIcon>
+                    <ActionIcon label={mail.starred ? t('mailActions.unstar') : t('mailActions.star')} onClick={() => actions.onToggleStar(mail)}>
+                      <Star className={`h-4 w-4 ${mail.starred ? 'fill-warning text-warning' : ''}`} />
+                    </ActionIcon>
+                    <MailMoreMenu {...moreMenuProps} />
+                  </div>
+                </TooltipProvider>
+              )}
               <div className="text-[13px] text-muted-foreground" title={fullDate}>{timeAgo}</div>
               {mail.unread && (
                 <Badge variant="default" className="bg-primary mt-1.5 text-[10px]">Nieuw</Badge>
@@ -593,7 +714,7 @@ const sentimentLabel = (v?: string) => {
                   <Button size="sm" variant="outline" className="flex-1 sm:flex-none h-11 sm:h-9" onClick={analyzeCurrentMail}>
                     <Brain className="h-4 w-4 mr-2" />Samenvatten
                   </Button>
-                  <MailMoreMenu onPhishing={markAsPhishing} onResolved={handleMarkAsResolved} />
+                  <MailMoreMenu {...moreMenuProps} />
                 </div>
               </CardContent>
             </Card>
@@ -824,11 +945,42 @@ const sentimentLabel = (v?: string) => {
             <Edit className="h-5 w-5 mr-2" />
             {isEditingReply ? 'Klaar met bewerken' : 'Aanpassen'}
           </Button>
-          {analysis && <MailMoreMenu onPhishing={markAsPhishing} onResolved={handleMarkAsResolved} />}
+          {analysis && <MailMoreMenu {...moreMenuProps} />}
           
         </div>
         </div>
       </div>
+      <Dialog open={labelsOpen} onOpenChange={setLabelsOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{t('mailActions.labelsTitle')}</DialogTitle></DialogHeader>
+          <div className="flex flex-wrap gap-2 min-h-[2rem]">
+            {labelDraft.map(l => (
+              <Badge key={l} variant="secondary" className="gap-1 pr-1">
+                {l}
+                <button type="button" aria-label={`${t('mailActions.delete')} ${l}`} className="p-1" onClick={() => setLabelDraft(labelDraft.filter(x => x !== l))}><X className="h-3 w-3" /></button>
+              </Badge>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input value={newLabel} maxLength={40} placeholder={t('mailActions.labelsPlaceholder')} onChange={(e) => setNewLabel(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDraftLabel(); } }} />
+            <Button variant="outline" onClick={addDraftLabel}>{t('mailActions.add')}</Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setLabelsOpen(false)}>{t('mailActions.cancel')}</Button>
+            <Button onClick={saveLabels}>{t('mailActions.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={originalOpen} onOpenChange={setOriginalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('mailActions.originalTitle')}</DialogTitle>
+            <DialogDescription>{t('mailActions.originalNote')}</DialogDescription>
+          </DialogHeader>
+          <pre className="text-xs bg-muted rounded-[10px] p-4 overflow-auto max-h-[50vh] whitespace-pre-wrap break-all">{mail ? buildEml(mail).split('\r\n\r\n')[0] : ''}</pre>
+          <DialogFooter><Button variant="outline" onClick={() => setOriginalOpen(false)}>{t('mailActions.close')}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ErrorBoundary>
   );
 }
