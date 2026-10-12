@@ -18,11 +18,12 @@ interface ComposeEmailProps {
   onOpenChange: (open: boolean) => void;
   hasConnection: boolean;
   replyTo?: { to: string; subject: string; emailId: string } | null;
+  initialTo?: string;
 }
 
-export function ComposeEmail({ open, onOpenChange, hasConnection, replyTo }: ComposeEmailProps) {
+export function ComposeEmail({ open, onOpenChange, hasConnection, replyTo, initialTo }: ComposeEmailProps) {
   const { toast } = useToast();
-  const [to, setTo] = useState(replyTo?.to || '');
+  const [to, setTo] = useState(replyTo?.to || initialTo || '');
   const [cc, setCc] = useState('');
   const [subject, setSubject] = useState(replyTo ? `Re: ${replyTo.subject}` : '');
   const [body, setBody] = useState('');

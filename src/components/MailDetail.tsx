@@ -550,6 +550,7 @@ const sentimentLabel = (v?: string) => {
           <EmailBodyRenderer
             bodyHtml={mail.bodyHtml}
             bodyText={mail.bodyText || mail.body}
+            fromEmail={mail.fromEmail}
           />
         </div>
 
