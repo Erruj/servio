@@ -23,6 +23,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Helmet } from 'react-helmet-async';
 import { ToastAction } from '@/components/ui/toast';
 import type { MailActions } from '@/components/MailDetail';
+import type { MailView } from '@/hooks/useEmailConnections';
+import { FolderNav, FolderSelect } from '@/components/inbox/FolderNav';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
@@ -39,6 +42,8 @@ const Inbox = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const initialFilter = searchParams.get('filter') || 'all';
   const [filter, setFilter] = useState(initialFilter);
+  const [view, setView] = useState<MailView>(initialFilter === 'starred' ? 'starred' : 'inbox');
+  const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -52,7 +57,7 @@ const Inbox = () => {
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
-  const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder } = useEmails();
+  const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts } = useEmails(view);
 
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
@@ -173,9 +178,9 @@ const Inbox = () => {
     try { await setStarred(mail.id, !mail.starred); } catch (e) { failToast(e); }
   };
 
-  const handleMove = async (mail: MailItem, folder: 'archive' | 'trash' | 'spam') => {
-    const titleKey = folder === 'archive' ? 'archived' : folder === 'trash' ? 'deleted' : 'movedSpam';
-    if (folder === 'archive' || folder === 'trash') setSelectedMail(null);
+  const handleMove = async (mail: MailItem, folder: 'archive' | 'trash' | 'spam' | 'inbox') => {
+    const titleKey = folder === 'archive' ? 'archived' : folder === 'trash' ? 'deleted' : folder === 'inbox' ? 'restored' : 'movedSpam';
+    if (!(view === 'starred' && (folder === 'archive' || folder === 'inbox'))) setSelectedMail(null);
     try {
       const undo = await moveToFolder([mail.id], folder);
       toast({
@@ -194,6 +199,7 @@ const Inbox = () => {
     onArchive: (m) => handleMove(m, 'archive'),
     onDelete: (m) => handleMove(m, 'trash'),
     onSpam: (m) => handleMove(m, 'spam'),
+    onRestore: (m) => handleMove(m, 'inbox'),
     onToggleStar: handleToggleStar,
     onToggleRead: async (m) => { try { await setReadState(m.id, m.unread); } catch (e) { failToast(e); } },
     onSaveLabels: async (m, labels) => { try { await setLabels(m.id, labels); toast({ title: t('mailActions.labelsSaved') }); } catch { failToast(); } },
@@ -201,6 +207,21 @@ const Inbox = () => {
 
   // Altijd de actuele versie van de geselecteerde mail tonen (ster/gelezen live).
   const currentMail = selectedMail ? (mails.find(m => m.id === selectedMail.id) ?? selectedMail) : null;
+
+  const handleViewChange = (v: MailView) => {
+    setView(v);
+    setSelectedMail(null);
+    hasAutoSelectedRef.current = true;
+  };
+
+  const folderToolbar = view === 'trash' ? (
+    <div className="px-4 py-2.5 border-b border-border/60 bg-secondary/30 flex items-center gap-2">
+      <p className="text-[12px] text-muted-foreground flex-1">{t('mailActions.trashNote')}</p>
+      <Button size="sm" variant="outline" className="text-destructive min-h-11 sm:min-h-9" disabled={!counts?.trash} onClick={() => setEmptyTrashOpen(true)}>
+        {t('mailActions.emptyTrash')}
+      </Button>
+    </div>
+  ) : null;
 
   const handleFilterChange = (f: string) => {
     setFilter(f);
@@ -316,7 +337,7 @@ const Inbox = () => {
                 </Button>
               </div>
             </div>
-          ) : mails.length === 0 ? (
+          ) : mails.length === 0 && view === 'inbox' && !searchQuery ? (
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="text-center max-w-md">
                 <div className="p-6 bg-secondary/30 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
@@ -334,13 +355,15 @@ const Inbox = () => {
             <div className="flex-1 flex overflow-hidden">
               {/* Desktop */}
               <div className="hidden lg:flex flex-1">
-                <div className="w-[340px] min-w-[340px] flex flex-col">
+                <FolderNav view={view} counts={counts} onChange={handleViewChange} />
+                <div className="w-[340px] min-w-[340px] flex flex-col border-r border-border/60">
+                  {folderToolbar}
                   {/* Priority Inbox - top 3 urgent unread */}
                   {(() => {
                     const priority = visibleMails
                       .filter(m => m.unread && (m.aiUrgency === 'Hoog' || m.customerSentiment === 'unhappy'))
                       .slice(0, 3);
-                    if (priority.length === 0) return null;
+                    if (view !== 'inbox' || priority.length === 0) return null;
                     return (
                       <div className="border-b border-border bg-destructive/5 px-3 py-2">
                         <div className="flex items-center gap-2 mb-1.5">
@@ -367,7 +390,7 @@ const Inbox = () => {
                     );
                   })()}
                   <div className="flex-1 overflow-hidden">
-                    <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
+                    <MailList title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
                       onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
                   </div>
                 </div>
@@ -395,6 +418,8 @@ const Inbox = () => {
                   </div>
                 ) : (
                   <>
+                    <FolderSelect view={view} counts={counts} onChange={handleViewChange} />
+                    {folderToolbar}
                     {hasConnections && (
                       <div className="p-3 border-b border-border flex items-center justify-between gap-2">
                         <span className="text-sm font-medium text-foreground">Inbox</span>
@@ -404,7 +429,7 @@ const Inbox = () => {
                         </Button>
                       </div>
                     )}
-                    <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
+                    <MailList title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
                       onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
                   </>
                 )}
@@ -413,6 +438,21 @@ const Inbox = () => {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={emptyTrashOpen}
+        onOpenChange={setEmptyTrashOpen}
+        title={t('mailActions.emptyTrashTitle')}
+        description={t('mailActions.emptyTrashDesc')}
+        confirmLabel={t('mailActions.emptyTrash')}
+        cancelLabel={t('mailActions.cancel')}
+        variant="destructive"
+        onConfirm={async () => {
+          try { await emptyTrash(); setSelectedMail(null); toast({ title: t('mailActions.trashEmptied') }); }
+          catch (e) { failToast(e); }
+          setEmptyTrashOpen(false);
+        }}
+      />
 
       <ComposeEmail open={composeOpen} onOpenChange={setComposeOpen} hasConnection={hasConnections} />
 
