@@ -26,13 +26,15 @@ interface MailListProps {
   onMarkAsUnread?: (ids: string[]) => void;
   onDeleteMultiple?: (ids: string[]) => void;
   onToggleStar?: (mail: MailItem) => void;
+  title?: string;
 }
 
 export function MailList({ 
   mails, selectedMailId, onSelectMail, searchQuery = '', filter = 'all', className,
-  onMarkAsRead, onMarkAsUnread, onDeleteMultiple, onToggleStar
+  onMarkAsRead, onMarkAsUnread, onDeleteMultiple, onToggleStar, title
 }: MailListProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
   // Alleen nieuw binnengekomen mails krijgen een korte entrance.
@@ -175,7 +177,7 @@ export function MailList({
       <div className="px-5 py-4 border-b border-border/60">
         <div className="flex items-center justify-between">
           <h2 className="text-[15px] font-semibold text-foreground">
-            {filterLabels[filter] || 'Inbox'} <span className="text-muted-foreground font-normal">({filteredMails.length})</span>
+            {filter !== 'all' ? (filterLabels[filter] || title) : (title || 'Inbox')} <span className="text-muted-foreground font-normal">({filteredMails.length})</span>
           </h2>
           <Button variant="ghost" size="sm" onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}>
             <CheckSquare className="h-4 w-4" />
@@ -229,8 +231,8 @@ export function MailList({
         getMailAnalysis={getMailAnalysis}
         getCategoryClassName={getCategoryClassName}
         getUrgencyClassName={getUrgencyClassName}
-        emptyMessage={safeSearchQuery ? `Geen emails gevonden voor "${safeSearchQuery}"` : 'Er zijn momenteel geen emails in je inbox'}
-        emptyTitle={safeSearchQuery ? 'Geen resultaten' : 'Geen nieuwe mails'}
+        emptyMessage={safeSearchQuery ? `Geen emails gevonden voor "${safeSearchQuery}"` : t('mailActions.emptyFolderDesc')}
+        emptyTitle={safeSearchQuery ? 'Geen resultaten' : t('mailActions.emptyFolderTitle')}
       />
     </div>
   );

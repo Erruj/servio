@@ -43,7 +43,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Archive, Star, MailOpen, Tag, Printer, Code, Download, Ban, X } from 'lucide-react';
+import { Undo2, Inbox, Archive, Star, MailOpen, Tag, Printer, Code, Download, Ban, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type React from 'react';
 
@@ -51,6 +51,7 @@ export interface MailActions {
   onArchive: (mail: MailItem) => void;
   onDelete: (mail: MailItem) => void;
   onSpam: (mail: MailItem) => void;
+  onRestore: (mail: MailItem) => void;
   onToggleStar: (mail: MailItem) => void;
   onToggleRead: (mail: MailItem) => void;
   onSaveLabels: (mail: MailItem, labels: string[]) => void;
@@ -592,8 +593,19 @@ const sentimentLabel = (v?: string) => {
               {actions && (
                 <TooltipProvider delayDuration={300}>
                   <div className="flex items-center justify-end gap-0.5 mb-1 -mr-2" role="toolbar" aria-label={t('mailActions.more')}>
-                    <ActionIcon label={t('mailActions.archive')} onClick={() => actions.onArchive(mail)}><Archive className="h-4 w-4" /></ActionIcon>
-                    <ActionIcon label={t('mailActions.delete')} onClick={() => actions.onDelete(mail)}><Trash2 className="h-4 w-4" /></ActionIcon>
+                    {mail.folder === 'trash' ? (
+                      <Button variant="outline" size="sm" className="h-11 mr-1" onClick={() => actions.onRestore(mail)}><Undo2 className="h-4 w-4 mr-1.5" />{t('mailActions.restore')}</Button>
+                    ) : mail.folder === 'spam' ? (
+                      <>
+                        <Button variant="outline" size="sm" className="h-11 mr-1" onClick={() => actions.onRestore(mail)}><Inbox className="h-4 w-4 mr-1.5" />{t('mailActions.notSpam')}</Button>
+                        <ActionIcon label={t('mailActions.delete')} onClick={() => actions.onDelete(mail)}><Trash2 className="h-4 w-4" /></ActionIcon>
+                      </>
+                    ) : (
+                      <>
+                        {mail.folder !== 'archive' && <ActionIcon label={t('mailActions.archive')} onClick={() => actions.onArchive(mail)}><Archive className="h-4 w-4" /></ActionIcon>}
+                        <ActionIcon label={t('mailActions.delete')} onClick={() => actions.onDelete(mail)}><Trash2 className="h-4 w-4" /></ActionIcon>
+                      </>
+                    )}
                     <ActionIcon label={mail.unread ? t('mailActions.markRead') : t('mailActions.markUnread')} onClick={() => actions.onToggleRead(mail)}>
                       {mail.unread ? <MailOpen className="h-4 w-4" /> : <MailIcon className="h-4 w-4" />}
                     </ActionIcon>
