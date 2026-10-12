@@ -21,6 +21,9 @@ import { emailToMailItem } from '@/types/email';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Helmet } from 'react-helmet-async';
+import { ToastAction } from '@/components/ui/toast';
+import type { MailActions } from '@/components/MailDetail';
+import type { EmailFolder } from '@/hooks/useEmailConnections';
 
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
@@ -50,7 +53,7 @@ const Inbox = () => {
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
-  const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails } = useEmails();
+  const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder } = useEmails();
 
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
@@ -160,6 +163,41 @@ const Inbox = () => {
     localStorage.setItem('servio_inbox_last_email', mail.id);
     if (mail.unread) markAsRead(mail.id);
   };
+
+  const failToast = () => toast({ title: t('mailActions.actionFailed'), description: t('mailActions.actionFailedDesc'), variant: 'destructive' });
+
+  const handleToggleStar = async (mail: MailItem) => {
+    try { await setStarred(mail.id, !mail.starred); } catch { failToast(); }
+  };
+
+  const handleMove = async (mail: MailItem, folder: EmailFolder) => {
+    const titleKey = folder === 'archive' ? 'archived' : folder === 'trash' ? 'deleted' : 'movedSpam';
+    if (folder === 'archive' || folder === 'trash') setSelectedMail(null);
+    try {
+      const undo = await moveToFolder([mail.id], folder);
+      toast({
+        title: t(`mailActions.${titleKey}`),
+        duration: 5000,
+        action: (
+          <ToastAction altText={t('mailActions.undo')} onClick={async () => {
+            try { await undo(); toast({ title: t('mailActions.undone'), duration: 2500 }); } catch { failToast(); }
+          }}>{t('mailActions.undo')}</ToastAction>
+        ),
+      });
+    } catch { failToast(); }
+  };
+
+  const mailActions: MailActions = {
+    onArchive: (m) => handleMove(m, 'archive'),
+    onDelete: (m) => handleMove(m, 'trash'),
+    onSpam: (m) => handleMove(m, 'spam'),
+    onToggleStar: handleToggleStar,
+    onToggleRead: async (m) => { try { await setReadState(m.id, m.unread); } catch { failToast(); } },
+    onSaveLabels: async (m, labels) => { try { await setLabels(m.id, labels); toast({ title: t('mailActions.labelsSaved') }); } catch { failToast(); } },
+  };
+
+  // Altijd de actuele versie van de geselecteerde mail tonen (ster/gelezen live).
+  const currentMail = selectedMail ? (mails.find(m => m.id === selectedMail.id) ?? selectedMail) : null;
 
   const handleFilterChange = (f: string) => {
     setFilter(f);
@@ -327,12 +365,12 @@ const Inbox = () => {
                   })()}
                   <div className="flex-1 overflow-hidden">
                     <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
-                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
+                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
                   </div>
                 </div>
                 <div className="flex-1">
                   <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                    {isDesktop && <MailDetail mail={selectedMail} className="h-full" />}
+                    {isDesktop && <MailDetail mail={currentMail} className="h-full" actions={mailActions} />}
                   </Suspense>
                 </div>
               </div>
@@ -349,7 +387,7 @@ const Inbox = () => {
                       )}
                     </div>
                     <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                      {!isDesktop && <MailDetail mail={selectedMail} className="flex-1 min-w-0" />}
+                      {!isDesktop && <MailDetail mail={currentMail} className="flex-1 min-w-0" actions={mailActions} />}
                     </Suspense>
                   </div>
                 ) : (
@@ -364,7 +402,7 @@ const Inbox = () => {
                       </div>
                     )}
                     <MailList mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
-                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} />
+                      onMarkAsRead={markMultipleAsRead} onMarkAsUnread={markMultipleAsUnread} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
                   </>
                 )}
               </div>

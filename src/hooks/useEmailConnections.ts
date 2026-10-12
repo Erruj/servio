@@ -29,6 +29,7 @@ export interface Email {
   labels: string[];
   is_read: boolean;
   is_starred: boolean;
+  folder?: string;
   has_attachments: boolean;
   received_at: string;
   created_at: string;
@@ -177,6 +178,8 @@ export interface EmailThread {
   participantCount: number;
 }
 
+export type EmailFolder = 'inbox' | 'archive' | 'trash' | 'spam' | 'sent' | 'drafts';
+
 export function useEmails() {
   const { user } = useAuth();
   const [emails, setEmails] = useState<Email[]>([]);
@@ -190,6 +193,7 @@ export function useEmails() {
         .from('emails')
         .select('*, email_connections_safe(email_address, provider)')
         .eq('user_id', user.id)
+        .not('folder', 'in', '(archive,trash)')
         .order('received_at', { ascending: false })
         .limit(200);
 
@@ -249,6 +253,42 @@ export function useEmails() {
     } catch (error) { console.error('Error:', error); }
   };
 
+  const setStarred = async (emailId: string, value: boolean) => {
+    setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_starred: value } : e));
+    const { error } = await supabase.from('emails').update({ is_starred: value }).eq('id', emailId);
+    if (error) { setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_starred: !value } : e)); throw error; }
+  };
+
+  const setReadState = async (emailId: string, value: boolean) => {
+    setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_read: value } : e));
+    const { error } = await supabase.from('emails').update({ is_read: value }).eq('id', emailId);
+    if (error) { setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_read: !value } : e)); throw error; }
+  };
+
+  const setLabels = async (emailId: string, labels: string[]) => {
+    const { error } = await supabase.from('emails').update({ labels }).eq('id', emailId);
+    if (error) throw error;
+    setEmails(prev => prev.map(e => e.id === emailId ? { ...e, labels } : e));
+  };
+
+  /** Verplaatst mails naar een map. Geeft een functie terug die de verplaatsing ongedaan maakt. */
+  const moveToFolder = async (emailIds: string[], folder: EmailFolder): Promise<() => Promise<void>> => {
+    const snapshot = emails.filter(e => emailIds.includes(e.id));
+    const hides = folder === 'archive' || folder === 'trash';
+    setEmails(prev => hides ? prev.filter(e => !emailIds.includes(e.id)) : prev.map(e => emailIds.includes(e.id) ? { ...e, folder } : e));
+    const { error } = await supabase.from('emails').update({ folder }).in('id', emailIds);
+    if (error) { await fetchEmails(); throw error; }
+    return async () => {
+      const groups = new Map<string, string[]>();
+      for (const e of snapshot) { const f = e.folder || 'inbox'; groups.set(f, [...(groups.get(f) || []), e.id]); }
+      for (const [f, ids] of groups) {
+        const { error: undoError } = await supabase.from('emails').update({ folder: f }).in('id', ids);
+        if (undoError) throw undoError;
+      }
+      await fetchEmails();
+    };
+  };
+
   const searchEmails = useCallback(async (query: string) => {
     if (!user || !query.trim()) { fetchEmails(); return; }
     try {
@@ -257,6 +297,7 @@ export function useEmails() {
         .from('emails')
         .select('*, email_connections_safe(email_address, provider)')
         .eq('user_id', user.id)
+        .not('folder', 'in', '(archive,trash)')
         .or(`subject.ilike.${q},from_email.ilike.${q},from_name.ilike.${q},snippet.ilike.${q}`)
         .order('received_at', { ascending: false })
         .limit(200);
@@ -271,7 +312,7 @@ export function useEmails() {
   // Group emails into threads
   const threads = groupIntoThreads(emails);
 
-  return { emails, threads, isLoading, refetch: fetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails };
+  return { emails, threads, isLoading, refetch: fetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder };
 }
 
 function groupIntoThreads(emails: Email[]): EmailThread[] {

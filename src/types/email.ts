@@ -27,6 +27,7 @@ export interface Email {
   labels: string[];
   is_read: boolean;
   is_starred: boolean;
+  folder?: string;
   has_attachments: boolean;
   received_at: string;
   created_at: string;
@@ -55,6 +56,10 @@ export function emailToMailItem(email: Email): MailItem {
     bodyText: email.body_text || undefined,
     receivedAt: email.received_at,
     unread: !email.is_read,
+    starred: !!email.is_starred,
+    folder: email.folder || 'inbox',
+    cc: email.cc_emails || [],
+    externalId: email.external_id,
     labels: email.labels || [],
     attachments: email.has_attachments ? [{ name: 'attachment' }] : undefined,
     aiCategory: email.ai_category || undefined,

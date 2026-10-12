@@ -509,6 +509,7 @@ export type Database = {
           created_at: string
           customer_sentiment: string | null
           external_id: string
+          folder: string
           follow_up_at: string | null
           from_email: string
           from_name: string | null
@@ -540,6 +541,7 @@ export type Database = {
           created_at?: string
           customer_sentiment?: string | null
           external_id: string
+          folder?: string
           follow_up_at?: string | null
           from_email: string
           from_name?: string | null
@@ -571,6 +573,7 @@ export type Database = {
           created_at?: string
           customer_sentiment?: string | null
           external_id?: string
+          folder?: string
           follow_up_at?: string | null
           from_email?: string
           from_name?: string | null

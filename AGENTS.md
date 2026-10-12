@@ -1,1 +1,2 @@
 - Cron-aangeroepen edge functions valideren hun secret met isCronAuthorized() (edge-secret óf Vault CRON_SECRET via cron_secret_matches), zodat een afwijkende Vault-waarde de planner niet stil laat falen.
+- Mail-sync overschrijft is_read, is_starred en folder van bestaande mails niet: Servio is leidend voor die status totdat terug-synchronisatie naar de mailbox bestaat.
