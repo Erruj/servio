@@ -45,6 +45,7 @@ function detectInitialLanguage(): SupportedLanguage {
 const resources = {
   en: {
     translation: {
+      emailView: {"imagesBlocked": "External images are blocked for your privacy.", "imagesNever": "External images are never shown (see Settings).", "showImages": "Show images", "alwaysForSender": "Always show for {{sender}}", "senderTrusted": "Images from {{sender}} will now always be shown.", "imagesError": "The images could not be loaded. Please try again later.", "showQuoted": "Show earlier email", "hideQuoted": "Hide earlier email", "iframeTitle": "Email content", "linkWarningTitle": "Heads up: different website", "linkWarning": "This link goes to {{domain}}. Continue?", "linkContinue": "Continue", "cancel": "Cancel", "settingLabel": "External images in emails", "settingDesc": "Choose whether images from senders load automatically.", "settingSaved": "Image preference saved", "modeAsk": "Ask", "modeAlways": "Always show", "modeNever": "Never show"},
       ui: {
         totalCount: "{{count}} total",
         waitingAction: "awaiting action",
@@ -830,6 +831,7 @@ const resources = {
   },
   nl: {
     translation: {
+      emailView: {"imagesBlocked": "Externe afbeeldingen zijn geblokkeerd voor je privacy.", "imagesNever": "Externe afbeeldingen worden nooit getoond (zie Instellingen).", "showImages": "Toon afbeeldingen", "alwaysForSender": "Altijd tonen voor {{sender}}", "senderTrusted": "Afbeeldingen van {{sender}} worden voortaan altijd getoond.", "imagesError": "De afbeeldingen konden niet worden geladen. Probeer het later opnieuw.", "showQuoted": "Toon eerdere e-mail", "hideQuoted": "Verberg eerdere e-mail", "iframeTitle": "E-mailinhoud", "linkWarningTitle": "Let op: andere website", "linkWarning": "Deze link gaat naar {{domain}}. Doorgaan?", "linkContinue": "Doorgaan", "cancel": "Annuleren", "settingLabel": "Externe afbeeldingen in e-mails", "settingDesc": "Kies of afbeeldingen van afzenders automatisch laden.", "settingSaved": "Voorkeur voor afbeeldingen opgeslagen", "modeAsk": "Vragen", "modeAlways": "Altijd tonen", "modeNever": "Nooit tonen"},
       ui: {
         totalCount: "{{count}} totaal",
         waitingAction: "wachtend op actie",
@@ -1562,6 +1564,7 @@ const resources = {
   },
   de: {
     translation: {
+      emailView: {"imagesBlocked": "Externe Bilder sind zum Schutz deiner Privatsphäre blockiert.", "imagesNever": "Externe Bilder werden nie angezeigt (siehe Einstellungen).", "showImages": "Bilder anzeigen", "alwaysForSender": "Immer anzeigen für {{sender}}", "senderTrusted": "Bilder von {{sender}} werden ab jetzt immer angezeigt.", "imagesError": "Die Bilder konnten nicht geladen werden. Bitte versuche es später erneut.", "showQuoted": "Frühere E-Mail anzeigen", "hideQuoted": "Frühere E-Mail ausblenden", "iframeTitle": "E-Mail-Inhalt", "linkWarningTitle": "Achtung: andere Website", "linkWarning": "Dieser Link führt zu {{domain}}. Fortfahren?", "linkContinue": "Fortfahren", "cancel": "Abbrechen", "settingLabel": "Externe Bilder in E-Mails", "settingDesc": "Wähle, ob Bilder von Absendern automatisch geladen werden.", "settingSaved": "Bildeinstellung gespeichert", "modeAsk": "Fragen", "modeAlways": "Immer anzeigen", "modeNever": "Nie anzeigen"},
       ui: {
         totalCount: "{{count}} insgesamt",
         waitingAction: "warten auf Aktion",
@@ -2268,6 +2271,7 @@ const resources = {
   },
   fr: {
     translation: {
+      emailView: {"imagesBlocked": "Les images externes sont bloquées pour protéger votre vie privée.", "imagesNever": "Les images externes ne sont jamais affichées (voir Paramètres).", "showImages": "Afficher les images", "alwaysForSender": "Toujours afficher pour {{sender}}", "senderTrusted": "Les images de {{sender}} seront désormais toujours affichées.", "imagesError": "Les images n'ont pas pu être chargées. Réessayez plus tard.", "showQuoted": "Afficher l'e-mail précédent", "hideQuoted": "Masquer l'e-mail précédent", "iframeTitle": "Contenu de l'e-mail", "linkWarningTitle": "Attention : autre site web", "linkWarning": "Ce lien mène à {{domain}}. Continuer ?", "linkContinue": "Continuer", "cancel": "Annuler", "settingLabel": "Images externes dans les e-mails", "settingDesc": "Choisissez si les images des expéditeurs se chargent automatiquement.", "settingSaved": "Préférence d'images enregistrée", "modeAsk": "Demander", "modeAlways": "Toujours afficher", "modeNever": "Ne jamais afficher"},
       ui: {
         totalCount: "{{count}} au total",
         waitingAction: "en attente d'action",
@@ -2971,6 +2975,7 @@ const resources = {
   },
   es: {
     translation: {
+      emailView: {"imagesBlocked": "Las imágenes externas están bloqueadas para proteger tu privacidad.", "imagesNever": "Las imágenes externas nunca se muestran (ver Ajustes).", "showImages": "Mostrar imágenes", "alwaysForSender": "Mostrar siempre para {{sender}}", "senderTrusted": "Las imágenes de {{sender}} se mostrarán siempre a partir de ahora.", "imagesError": "No se pudieron cargar las imágenes. Inténtalo más tarde.", "showQuoted": "Mostrar correo anterior", "hideQuoted": "Ocultar correo anterior", "iframeTitle": "Contenido del correo", "linkWarningTitle": "Atención: otro sitio web", "linkWarning": "Este enlace lleva a {{domain}}. ¿Continuar?", "linkContinue": "Continuar", "cancel": "Cancelar", "settingLabel": "Imágenes externas en correos", "settingDesc": "Elige si las imágenes de los remitentes se cargan automáticamente.", "settingSaved": "Preferencia de imágenes guardada", "modeAsk": "Preguntar", "modeAlways": "Mostrar siempre", "modeNever": "No mostrar nunca"},
       ui: {
         totalCount: "{{count}} en total",
         waitingAction: "esperando acción",

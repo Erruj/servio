@@ -16,7 +16,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from 'next-themes';
 import { usePersonalization } from '@/hooks/usePersonalization';
-import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap, Download } from 'lucide-react';
+import { useEmailImagePrefs, type EmailImageMode } from '@/hooks/useEmailImagePrefs';
+import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap, Download, Image } from 'lucide-react';
 
 const ACCENT_OPTIONS = [
   { value: 'blue', labelKey: 'colorBlue', class: 'bg-[hsl(217,91%,60%)]' },
@@ -39,6 +40,7 @@ const AI_PERSONALITIES = [
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
+  const imagePrefs = useEmailImagePrefs();
   const { user, signOut } = useAuth();
   const { setTheme: setAppTheme, theme: currentTheme } = useTheme();
   const { settings: personalization, updateSettings: updatePersonalization } = usePersonalization();
@@ -286,6 +288,20 @@ const Settings = () => {
                 <Separator />
                 <SettingItem icon={LayoutGrid} label={t('compactLayout')} description={t('compactLayoutDesc')}>
                   <Switch checked={compactLayout} onCheckedChange={handleCompactToggle} />
+                </SettingItem>
+                <Separator />
+                <SettingItem icon={Image} label={t('emailView.settingLabel')} description={t('emailView.settingDesc')}>
+                  <Select value={imagePrefs.mode} onValueChange={(v) => imagePrefs.setMode.mutate(v as EmailImageMode, {
+                    onSuccess: () => toast.success(t('emailView.settingSaved')),
+                    onError: (e) => toast.error((e as Error).message),
+                  })}>
+                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ask">{t('emailView.modeAsk')}</SelectItem>
+                      <SelectItem value="always">{t('emailView.modeAlways')}</SelectItem>
+                      <SelectItem value="never">{t('emailView.modeNever')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </SettingItem>
               </CardContent>
             </Card>

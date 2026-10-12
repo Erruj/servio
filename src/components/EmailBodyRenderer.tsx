@@ -304,6 +304,8 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '', fromEmai
         title={t('emailView.linkWarningTitle')}
         description={t('emailView.linkWarning', { domain: pendingLink?.domain ?? '' })}
         confirmLabel={t('emailView.linkContinue')}
+        cancelLabel={t('emailView.cancel')}
+        variant="default"
         onConfirm={() => { if (pendingLink) openExternal(pendingLink.url); setPendingLink(null); }}
       />
       {compose}
