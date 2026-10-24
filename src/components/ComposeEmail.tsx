@@ -54,7 +54,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     ...composeRecipients(mail, mode, []), bcc: [],
     to: initialTo ? addresses([initialTo]) : replyTo ? addresses([replyTo.to]) : composeRecipients(mail, mode, []).to,
     subject: composeSubject(mail?.subject || replyTo?.subject || '', mode), html: textToComposeHtml(initialBody || ''),
-    quote: mail?.bodyText || plainText(mail?.bodyHtml || mail?.body || ''),
+    quote: mail ? (mode === 'forward' ? `${t('compose.from')}: ${mail.fromEmail || mail.from}\n${t('compose.to')}: ${mail.to.join(', ')}\n${t('compose.subject')}: ${mail.subject}\n${new Date(mail.receivedAt).toLocaleString(i18n.language)}\n\n` : '') + (mail.bodyText || plainText(mail.bodyHtml || mail.body || '')) : '',
     quoteHeading: mail ? mode === 'forward' ? t('compose.forwarded') : t('compose.quoted', { date: new Date(mail.receivedAt).toLocaleString(i18n.language), name: mail.from }) : '',
     attachments: [], originalAttachments: mode === 'forward' ? (mail?.attachments || []).map(a => ({ name: a.name, url: a.url, selected: false })) : [],
   });
