@@ -1,7 +1,8 @@
 # Roadmap
 
-- [ ] Mail-prompt 8: snoozen, opvolg-herinneringen, vijfminutencontrole en tests
+- [x] Mail-prompt 8: snoozen, opvolg-herinneringen, vijfminutencontrole en tests
 - [ ] Mail-prompt 8: echte accountcontrole van snooze en opvolging (externe Supabase zonder beschikbare inlogsessie)
+- [ ] Mail-prompt 8: echte AI-generatie van herinneringsconcept (generate-reply geeft 401 zonder beschikbare sessie)
 
 - [x] Mail-prompt 7: selectie, bulkacties, sneltoetsen en instelling
 - [x] Mail-prompt 7: regeltests en gesimuleerde inboxcontrole
