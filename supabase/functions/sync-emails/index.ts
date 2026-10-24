@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { safeLogBody, timingSafeEqual } from "../_shared/security.ts";
 import { mailboxUpdate, OUTLOOK_MESSAGE_FIELDS, parseOutlookMessage } from "./message-state.ts";
 import { unsubscribeHeaders, newSenderMail } from './sender-rules.ts';
@@ -602,7 +602,7 @@ function decodeRFC2047(str: string): string {
 // ─── Persist Messages ────────────────────────────────────────────────────
 
 async function persistMessages(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<any>,
   connection: { id: string; user_id: string },
   messages: any[]
 ): Promise<{ insertedCount: number; updatedCount: number; insertedExternalIds: string[] }> {
@@ -723,7 +723,7 @@ async function callAiExtract(dataUrl: string, mime: string, docType: "invoice" |
 }
 
 async function processGmailAttachmentsForEmail(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<any>,
   userId: string,
   emailId: string,
   emailSubject: string,
