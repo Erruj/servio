@@ -220,6 +220,8 @@ export function useEmails(view: MailView = 'inbox', searchQuery = '', connection
   const [searchError, setSearchError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const requestRef = useRef(0);
+  const emailsRef = useRef(emails);
+  emailsRef.current=emails;
   const prevEmailCountRef = useRef(0);
 
   const fetchEmails = useCallback(async (append = false) => {
@@ -227,7 +229,7 @@ export function useEmails(view: MailView = 'inbox', searchQuery = '', connection
     const request = ++requestRef.current;
     try {
       if(searchQuery.trim()) {
-        const offset=append ? emails.length : 0;
+        const offset=append ? emailsRef.current.length : 0;
         const {data,error}=await supabase.rpc('search_mail',{_filters:parseMailSearch(searchQuery),_view:view,_connection_id:connectionId ?? undefined,_offset:offset,_limit:50});
         if(request!==requestRef.current)return;
         if(error)throw error;
@@ -356,7 +358,8 @@ export function useEmails(view: MailView = 'inbox', searchQuery = '', connection
   // Group emails into threads
   const threads = groupIntoThreads(emails);
 
-  return { emails, threads, isLoading, searchError, hasMore, loadMore:()=>fetchEmails(true), refetch: ()=>fetchEmails(), snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts, refetchCounts: fetchCounts };
+  const refetch=useCallback(()=>fetchEmails(),[fetchEmails]);
+  return { emails, threads, isLoading, searchError, hasMore, loadMore:()=>fetchEmails(true), refetch, snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts, refetchCounts: fetchCounts };
 }
 
 function groupIntoThreads(emails: Email[]): EmailThread[] {
