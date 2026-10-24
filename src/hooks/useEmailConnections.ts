@@ -193,14 +193,14 @@ async function runMailAction(emailId: string, action: MailActionName): Promise<v
   if (data && (data as any).error) throw new MailActionError((data as any).error);
 }
 
-export type EmailFolder = 'inbox' | 'archive' | 'trash' | 'spam' | 'sent' | 'drafts';
+export type EmailFolder = 'inbox' | 'archive' | 'trash' | 'spam' | 'sent' | 'drafts' | 'scheduled';
 
-export type MailView = 'inbox' | 'starred' | 'drafts' | 'sent' | 'archive' | 'spam' | 'trash';
+export type MailView = 'inbox' | 'starred' | 'drafts' | 'sent' | 'archive' | 'spam' | 'trash' | 'scheduled';
 export type FolderCounts = Record<MailView, number>;
 
 // deno-lint-ignore no-explicit-any
 function applyView(query: any, view: MailView) {
-  if (view === 'starred') return query.eq('is_starred', true).not('folder', 'in', '(trash,spam)');
+  if (view === 'starred') return query.eq('is_starred', true).not('folder', 'in', '(trash,spam,drafts,scheduled)');
   return query.eq('folder', view);
 }
 

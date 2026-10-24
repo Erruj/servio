@@ -12,6 +12,7 @@ import { SyncErrorBanner } from '@/components/SyncErrorBanner';
 
 import { HelpTooltip } from '@/components/HelpTooltip';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell, Keyboard } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
@@ -35,7 +36,7 @@ const AUTO_SYNC_INTERVAL = 5 * 60 * 1000;
 const Inbox = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
@@ -163,7 +164,15 @@ const Inbox = () => {
     }
   };
 
+  useEffect(()=>{const reopen=(event:Event)=>{const detail=(event as CustomEvent<{id:string;draft:import('@/lib/mail-compose').DraftData}>).detail;setDraftMail({id:detail.id,draftData:detail.draft} as MailItem);setComposeOpen(true);};window.addEventListener('servio-reopen-draft',reopen);return()=>window.removeEventListener('servio-reopen-draft',reopen);},[]);
+  useEffect(()=>{if(view!=='scheduled')return;const timer=setInterval(()=>void refetchEmails(),5000);return()=>clearInterval(timer);},[view,refetchEmails]);
+  const scheduledAction=async(mail:MailItem,action:'cancel'|'now',edit=false)=>{
+    const {data,error}=await supabase.functions.invoke('scheduled-mail',{body:{action,draftId:mail.id}});
+    if(error||data?.errorCode){toast({title:t('mailSchedule.error'),variant:'destructive'});return;}
+    await refetchEmails();if(edit){setDraftMail({...mail,folder:'drafts'});setComposeOpen(true);}else toast({title:t(action==='cancel'?'mailSchedule.cancelled':'mailSchedule.scheduled')});
+  };
   const handleMailSelect = (mail: MailItem) => {
+    if(mail.folder==='scheduled'){setSelectedMail(mail);return;}
     if (mail.folder === 'drafts') {
       setDraftMail(mail);
       setComposeOpen(true);
@@ -461,6 +470,7 @@ const Inbox = () => {
         }}
       />
 
+      {selectedMail?.folder==='scheduled' && <Dialog open onOpenChange={open=>{if(!open)setSelectedMail(null);}}><DialogContent><DialogHeader><DialogTitle>{selectedMail.subject}</DialogTitle></DialogHeader><p>{t('mailSchedule.plannedFor',{date:new Date(selectedMail.sendAt || selectedMail.receivedAt).toLocaleString(i18n.language)})}</p>{selectedMail.sendError && <p role="alert" className="text-destructive">{t('mailSchedule.failed')}</p>}<div className="flex flex-wrap gap-2"><Button onClick={()=>{void scheduledAction(selectedMail,'cancel',true);setSelectedMail(null);}}>{t('mailSchedule.edit')}</Button><Button onClick={()=>{void scheduledAction(selectedMail,'now');setSelectedMail(null);}}>{t('mailSchedule.now')}</Button><Button variant="outline" onClick={()=>{void scheduledAction(selectedMail,'cancel');setSelectedMail(null);}}>{t('mailSchedule.cancel')}</Button></div></DialogContent></Dialog>}
       <ComposeEmail open={composeOpen} onOpenChange={open => { setComposeOpen(open); if (!open) setDraftMail(null); }} hasConnection={hasConnections} connections={connections} draftId={draftMail?.id} initialDraft={draftMail?.draftData} onSaved={refetchEmails} />
 
       {/* Keyboard shortcuts dialog */}
