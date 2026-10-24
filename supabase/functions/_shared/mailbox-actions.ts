@@ -245,6 +245,20 @@ async function outlookAction(supabase: any, conn: any, email: any, action: Actio
 export async function applyMailboxAction(db: any, conn: any, email: any, action: Action): Promise<string | null> {
   if(conn.provider==='imap') {await imapAction(conn,email,action);return null;}
   if(conn.provider==='outlook') return outlookAction(db,conn,email,action);
+  if(conn.provider==='gmail' && (action==='spam'||action==='archive')) {
+    let token=conn.access_token;
+    if(!token || new Date(conn.token_expires_at||0).getTime()<Date.now()+120000) {
+      if(!conn.refresh_token) throw new MailboxError('Koppel Gmail opnieuw.',409);
+      const response=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:Deno.env.get('GOOGLE_CLIENT_ID')||'',client_secret:Deno.env.get('GOOGLE_CLIENT_SECRET')||'',refresh_token:conn.refresh_token,grant_type:'refresh_token'})});
+      if(!response.ok) throw new MailboxError('Koppel Gmail opnieuw.',409);
+      const fresh=await response.json();token=fresh.access_token;
+      await db.from('email_connections').update({access_token:token,token_expires_at:new Date(Date.now()+fresh.expires_in*1000).toISOString()}).eq('id',conn.id).eq('user_id',conn.user_id);
+    }
+    const response=await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(email.external_id)}/modify`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({addLabelIds:action==='spam'?['SPAM']:[],removeLabelIds:action==='archive'?['INBOX','SPAM']:['INBOX']})});
+    await response.body?.cancel();
+    if(!response.ok) throw new MailboxError('Gmail kon deze mail niet verplaatsen. Controleer de schrijfrechten.',response.status===403?409:502);
+    return null;
+  }
   throw new MailboxError('Deze mailbox ondersteunt nog geen terug-synchronisatie.',409);
 }
 export { MailboxError };

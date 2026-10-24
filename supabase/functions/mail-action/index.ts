@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SERVICE);
   const { data: email } = await supabase
-    .from("emails").select("id, user_id, connection_id, external_id, folder, is_read, is_starred")
+    .from("emails").select("id, user_id, connection_id, external_id, folder, is_read, is_starred, spam_move_pending")
     .eq("id", emailId).eq("user_id", user.id).maybeSingle();
   if (!email) return json({ error: "Deze mail is niet gevonden." }, 404);
 
@@ -47,9 +47,10 @@ Deno.serve(async (req) => {
     if (email.connection_id) {
       const { data: conn } = await supabase.from("email_connections").select("*").eq("id", email.connection_id).eq("user_id", user.id).maybeSingle();
       if (conn?.provider === "imap" || conn?.provider === "outlook") {
-        const newId = await applyMailboxAction(supabase,conn,email,action);
+        const newId = await applyMailboxAction(supabase,conn,email.spam_move_pending?{...email,folder:'inbox'}:email,action);
         if(newId) update.external_id=newId;
         mailboxSynced=true;
+        if(MOVE_TARGET[action]) update.spam_move_pending=false;
       }
       // Gmail: (nog) geen terug-synchronisatie; alleen Servio wordt bijgewerkt.
     }

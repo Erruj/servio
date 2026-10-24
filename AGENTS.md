@@ -1,6 +1,9 @@
 - Cron-aangeroepen edge functions valideren hun secret met isCronAuthorized() (edge-secret óf Vault CRON_SECRET via cron_secret_matches), zodat een afwijkende Vault-waarde de planner niet stil laat falen.
 - Mailacties (gelezen, ster, map) lopen via edge function mail-action, die eerst de echte mailbox bijwerkt en daarna de database; de sync neemt gelezen/ster uit de mailbox over maar wijzigt folder nooit, zodat gearchiveerde/verwijderde mails niet terugkomen.
 - Mail sync uses partial UPDATEs for existing messages, excludes Servio-owned labels and folders, and reads Outlook stars from Graph flags; this preserves user edits without insert defaults resetting omitted fields.
+- New blocked-sender imports are hidden in Spam and moved through shared mailbox-actions with a persisted pending flag; existing mail folders remain untouched to preserve user actions and retry failed moves.
+- Unsubscribe endpoints accept owned email IDs rather than client URLs; RFC 8058 POSTs pin validated public DNS addresses and forbid redirects to prevent SSRF.
+- Legacy unscoped sender lists require account-owner confirmation before one-time import because their original owner cannot be inferred safely.
 - All mail compose modes use the shared composer and persist draft state in emails.draft_data with folder=drafts under existing user RLS; this makes drafts visible in folder counts and resumable without separate storage.
 - Mail sending claims an owned draft before delivery, preserves RFC threading, and converts that row to Sent after provider acceptance; post-delivery copy failures must never trigger another delivery, preventing duplicate sends.
 - Scheduled delivery uses the shared sender, atomically claims the queued version, and wakes on enqueue with minute retries only while queued mails exist; cancellation wins before a delivery claim and uncertain delivery is never automatically retried.
