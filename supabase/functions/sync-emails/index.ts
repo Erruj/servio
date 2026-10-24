@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { safeLogBody, timingSafeEqual } from "../_shared/security.ts";
+import { mailboxUpdate, OUTLOOK_MESSAGE_FIELDS, parseOutlookMessage } from "./message-state.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -109,7 +110,7 @@ async function fetchGmailMessages(accessToken: string, options: GmailFetchOption
 
 async function fetchOutlookMessages(accessToken: string, maxResults = 50) {
   const response = await fetch(
-    `https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=${maxResults}&$orderby=receivedDateTime desc&$select=id,conversationId,from,toRecipients,ccRecipients,subject,bodyPreview,body,isRead,hasAttachments,receivedDateTime`,
+    `https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=${maxResults}&$orderby=receivedDateTime desc&$select=${OUTLOOK_MESSAGE_FIELDS}`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
   if (!response.ok) throw new Error(`Outlook API error [${response.status}]: ${await response.text()}`);
@@ -150,26 +151,6 @@ function parseGmailMessage(msg: any) {
     is_starred: msg.labelIds?.includes("STARRED") || false,
     has_attachments: msg.payload?.parts?.some((p: any) => p.filename) || false,
     received_at: new Date(parseInt(msg.internalDate)).toISOString(),
-  };
-}
-
-function parseOutlookMessage(msg: any) {
-  return {
-    external_id: msg.id,
-    thread_id: msg.conversationId,
-    from_email: msg.from?.emailAddress?.address || "",
-    from_name: msg.from?.emailAddress?.name || null,
-    to_emails: (msg.toRecipients || []).map((r: any) => r.emailAddress?.address).filter(Boolean),
-    cc_emails: (msg.ccRecipients || []).map((r: any) => r.emailAddress?.address).filter(Boolean),
-    subject: msg.subject || "(No subject)",
-    snippet: msg.bodyPreview || "",
-    body_text: msg.body?.contentType === "text" ? msg.body?.content : "",
-    body_html: msg.body?.contentType === "html" ? msg.body?.content : "",
-    labels: [],
-    is_read: msg.isRead || false,
-    is_starred: false,
-    has_attachments: msg.hasAttachments || false,
-    received_at: msg.receivedDateTime,
   };
 }
 
@@ -636,8 +617,8 @@ async function persistMessages(
       // Gelezen/ster komen uit de echte mailbox (Servio-acties gaan via mail-action eerst
       // naar de mailbox). De map (folder) wordt nooit door de sync aangepast, zodat een
       // in Servio gearchiveerde of verwijderde mail niet terug in de inbox komt.
-      const { folder: _f, ...rest } = baseRecord as any;
-      updates.push({ ...rest, id: existingId });
+      // Eigen labels blijven in Servio; providerlabels worden alleen bij import gezet.
+      updates.push({ ...mailboxUpdate(baseRecord), id: existingId });
     } else {
       inserts.push(baseRecord);
     }
@@ -651,8 +632,12 @@ async function persistMessages(
   }
   for (let i = 0; i < updates.length; i += chunkSize) {
     const chunk = updates.slice(i, i + chunkSize);
-    const { error } = await supabase.from("emails").upsert(chunk as any, { onConflict: "id" });
-    if (error) throw new Error(`Failed to update emails: ${error.message}`);
+    // UPDATE (not UPSERT): omitted fields must stay untouched, not receive insert defaults.
+    const results = await Promise.all(chunk.map(({ id, ...update }) =>
+      supabase.from("emails").update(update).eq("id", id).eq("connection_id", connection.id)
+    ));
+    const failed = results.find(({ error }) => error);
+    if (failed?.error) throw new Error(`Failed to update emails: ${failed.error.message}`);
   }
 
   return {
