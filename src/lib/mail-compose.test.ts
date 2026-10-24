@@ -1,3 +1,4 @@
+// @ts-ignore - tests run with Bun, matching the existing finance tests
 import { describe, expect, test } from 'bun:test';
 import { composeRecipients, composeSubject, canReplyAll, attachmentFits, MAX_ATTACHMENT_BYTES, DRAFT_SAVE_INTERVAL } from './mail-compose';
 import type { MailItem } from '@/types';

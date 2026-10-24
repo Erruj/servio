@@ -149,7 +149,6 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
 
   // Load user's real templates from Supabase
   useEffect(() => {
-    setComposeMode(null);
     if (!user) return;
     let cancelled = false;
     (async () => {
@@ -175,6 +174,7 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
 
   // Reset state when mail changes
   useEffect(() => {
+    setComposeMode(null);
     if (mail) {
       setReply('');
       setAnalysis(null);

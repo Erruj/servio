@@ -62,7 +62,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
   const [minimized, setMinimized] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showCopies, setShowCopies] = useState(!!initialDraft?.cc.length || !!initialDraft?.bcc.length);
-  const [showQuote, setShowQuote] = useState(mode === 'forward');
+  const [showQuote, setShowQuote] = useState((initialDraft?.mode || mode) === 'forward');
   const [status, setStatus] = useState<'saved' | 'saving' | 'error' | ''>('');
   const [sending, setSending] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
@@ -93,14 +93,15 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       supabase.from('templates').select('id,name,body').eq('user_id', user.id).order('name'),
     ]).then(([conn, settings, emails, customers, tmpl]) => {
       if (cancelled) return;
-      const active = provided || (conn.data || []) as unknown as EmailConnection[];
+      const active = (provided || (conn.data || []) as unknown as EmailConnection[]).filter(c => c.is_active);
       setConnections(active);
       setSuggestions(addresses([...(emails.data || []).flatMap(e => [e.from_email, ...(e.to_emails || []), ...(e.cc_emails || [])]), ...(customers.data || []).map(c => c.email || '')]));
       setTemplates(tmpl.data || []);
       setDraft(prev => {
         if (initialDraft) return prev;
         const recipients = mail ? composeRecipients(mail, mode, active.map(c => c.email_address)) : { to: prev.to, cc: prev.cc };
-        return { ...prev, ...recipients, connectionId: prev.connectionId || active[0]?.id || '', html: prev.html + (settings.data?.email_signature ? `<br><br>${textToComposeHtml(settings.data.email_signature)}` : '') };
+        const signature = settings.data?.email_signature;
+        return { ...prev, ...recipients, connectionId: prev.connectionId || active[0]?.id || '', html: prev.html + (signature && !plainText(prev.html).includes(signature) ? `<br><br>${textToComposeHtml(signature)}` : '') };
       });
       setReady(true);
     }).catch(() => { if (!cancelled) { setReady(true); setStatus('error'); } });
@@ -135,7 +136,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       lastSaved.current = serialized; setStatus('saved'); onSaved?.(); return true;
     })();
     saving.current = task;
-    try { return await task; } finally { saving.current = null; }
+    try { return await task; } catch { setStatus('error'); return false; } finally { saving.current = null; }
   }, [user?.id, connections, onSaved]);
   const saveRef = useRef(save); saveRef.current = save;
   useEffect(() => {
