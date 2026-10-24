@@ -1,4 +1,7 @@
 # Roadmap
+- [ ] Mail-prompt 11: browsermeldingen en samengevoegde Mail-instellingen
+- [ ] Mail-prompt 11: mailboxafzender/handtekening en veilige afwezigheidsberichten met audit
+- [ ] Mail-prompt 11: regels en browserflow testen; echte accounttest indien sessie beschikbaar
 - [x] Mail-prompt 10: full-text RPC, operatoren, suggesties en opgeslagen weergaven
 - [x] Mail-prompt 10: gesprekken en geciteerde tekst inklappen; 32 regeltests, tijdelijke Postgres-tests en gesimuleerde browsercontrole
 - [ ] Mail-prompt 10: echte ingelogde accountcontrole (externe Supabase; geen beschikbare browsersessie)
