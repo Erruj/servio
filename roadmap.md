@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Mail-prompt 7: selectie, bulkacties, sneltoetsen en instelling
+- [ ] Mail-prompt 7: regeltests en inboxcontrole
+
 - [x] Mail-prompt 6: ongedaan maken, wachttijd, later versturen en Gepland
 - [x] Mail-prompt 6: regeltests en gesimuleerde browsercontrole
 - [ ] Mail-prompt 6: echte geplande IMAP/Outlook bezorging (externe Supabase zonder beschikbare inlogsessie)
