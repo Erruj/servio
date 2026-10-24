@@ -11,4 +11,10 @@ IF public.claim_vacation_reply('00000000-0000-4000-8000-000000000001','00000000-
 IF public.claim_vacation_reply('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000023') IS NOT NULL THEN RAISE EXCEPTION 'Noreply allowed';END IF;
 IF (SELECT count(*) FROM public.audit_log WHERE endpoint='mail-vacation')<>1 THEN RAISE EXCEPTION 'Audit missing';END IF;
 END $$;
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000099',true);
+DO $$ BEGIN
+IF (SELECT count(*) FROM public.mailbox_preferences)<>0 THEN RAISE EXCEPTION 'Another account can read mailbox preferences';END IF;
+IF has_function_privilege(current_user,'public.claim_vacation_reply(uuid,uuid,uuid)','EXECUTE') THEN RAISE EXCEPTION 'Client can bypass the vacation cooldown';END IF;
+END $$;
 ROLLBACK;

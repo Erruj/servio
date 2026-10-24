@@ -14,6 +14,6 @@ export function useMailNotifications(){
  if(error||stopped)return;
  for(const mail of data||[]){if(!shouldNotify(mode,mail.ai_urgency)||seen.has(mail.id))continue;seen.add(mail.id);const key=`servio-notified:${owner}:${mail.id}`;try{if(localStorage.getItem(key))continue;localStorage.setItem(key,String(Date.now()));}catch{}
  const notification=new Notification(t('mailPrefs.newMail'),{body:`${mail.from_name||mail.from_email}: ${mail.subject||t('mailPrefs.newMail')}`,tag:mail.id});notification.onclick=()=>{window.focus();navigate(`/inbox?mail=${encodeURIComponent(mail.id)}`);notification.close();};}
- }finally{busy=false;}};void poll();const timer=setInterval(()=>void poll(),15000);return()=>{stopped=true;clearInterval(timer);};
+ }catch{/* Permission changes or unavailable browser notifications must not interrupt mail. */}finally{busy=false;}};void poll();const timer=setInterval(()=>void poll(),15000);return()=>{stopped=true;clearInterval(timer);};
  },[user?.id,prefs.data?.notification_mode,navigate,t]);
 }
