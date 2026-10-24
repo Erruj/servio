@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { NotificationBell } from '@/components/NotificationBell';
+import {MailSearchSuggestions} from '@/components/inbox/MailSearchSuggestions';
 
 import {
   DropdownMenu,
@@ -23,6 +24,9 @@ import {
 } from '@/components/ui/select';
 
 interface TopbarProps {
+  searchValue?: string;
+  mailView?: string;
+  onSavedView?: (query:string,view:string)=>void;
   onSearchChange?: (query: string) => void;
   onFilterChange?: (filter: string) => void;
   className?: string;
@@ -31,10 +35,14 @@ interface TopbarProps {
   onConnectionChange?: (id: string | null) => void;
 }
 
-export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange }: TopbarProps) {
+export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange, searchValue, mailView='inbox', onSavedView }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestionsOpen,setSuggestionsOpen]=useState(false);
+  useEffect(()=>{if(searchValue!==undefined)setSearchQuery(searchValue);},[searchValue]);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const searchAreaRef=useRef<HTMLDivElement>(null);
+  useEffect(()=>{const outside=(event:PointerEvent)=>{const node=event.target;if(node instanceof Element&&!searchAreaRef.current?.contains(node)&&!node.closest('[role="dialog"]'))setSuggestionsOpen(false);};document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside);},[]);
   useEffect(() => {
     const focus = () => { setMobileSearchOpen(true); requestAnimationFrame(() => searchRef.current?.focus()); };
     window.addEventListener('servio-mail-search', focus);
@@ -52,11 +60,12 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
   }, [user]);
 
   const loadDisplayName = async () => {
+    if(!user)return;
     try {
       const { data } = await supabase
         .from('profiles')
         .select('full_name, email')
-        .eq('id', user!.id)
+        .eq('id', user.id)
         .single();
       
       setDisplayName(data?.full_name || data?.email || user?.email || 'Gebruiker');
@@ -96,7 +105,7 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
         >
           <Search className="h-4 w-4" />
         </Button>
-        <div className={`relative flex-1 min-w-0 ${mobileSearchOpen ? 'block' : 'hidden sm:block'}`}>
+        <div ref={searchAreaRef} className={`relative flex-1 min-w-0 ${mobileSearchOpen ? 'block' : 'hidden sm:block'}`}>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             ref={searchRef}
@@ -105,8 +114,11 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
             autoFocus={mobileSearchOpen}
-            onBlur={() => { if (!searchQuery) setMobileSearchOpen(false); }}
+            onFocus={()=>setSuggestionsOpen(true)}
+            onKeyDown={e=>{if(e.key==='Escape'||e.key==='Enter')setSuggestionsOpen(false);}}
+            onBlur={() => { if (!searchQuery && !suggestionsOpen) setMobileSearchOpen(false); }}
           />
+          {suggestionsOpen&&<MailSearchSuggestions query={searchQuery} view={mailView} onClose={()=>setSuggestionsOpen(false)} onSelect={(query,view)=>{handleSearchChange(query);if(view)onSavedView?.(query,view);searchRef.current?.focus();}}/>}
         </div>
         
         <Select defaultValue="all" onValueChange={onFilterChange}>

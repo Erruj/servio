@@ -83,10 +83,10 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '', fromEmai
   const prefs = useEmailImagePrefs();
 
   const isHtml = Boolean(bodyHtml && bodyHtml.trim().length > 0);
-  const content = isHtml ? bodyHtml! : (bodyText || '');
+  const content = isHtml ? (bodyHtml || '') : (bodyText || '');
   const sender = (fromEmail || '').toLowerCase();
 
-  useEffect(() => { setShowOnce(false); setProxyMap(null); }, [content]);
+  useEffect(() => { setShowOnce(false); setProxyMap(null); setShowQuoted(false); }, [content]);
 
   const imageUrls = useMemo(() => (isHtml ? collectImageUrls(content) : []), [isHtml, content]);
   const hasExternalImages = imageUrls.length > 0;
@@ -109,7 +109,7 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '', fromEmai
 
   const htmlHasQuoted = useMemo(() => {
     if (!isHtml) return false;
-    return /class\s*=\s*["'][^"']*\bgmail_quote\b[^"']*["']|<blockquote\b|type\s*=\s*["']cite["']|-{2,}\s*(Original Message|Oorspronkelijk bericht|Ursprüngliche Nachricht|Message d'origine)\s*-{2,}/i.test(content);
+    return /class\s*=\s*["'][^"']*\bgmail_quote\b[^"']*["']|<blockquote\b|id\s*=\s*["']divRplyFwdMsg["']|type\s*=\s*["']cite["']/i.test(content);
   }, [isHtml, content]);
 
   const buildIframeDoc = useCallback((htmlContent: string): string => {
@@ -137,7 +137,8 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '', fromEmai
     blockquote { border-left: 3px solid #d1d5db; padding-left: 12px; margin: 8px 0; color: #4b5563; }
     body[data-hide-quoted="1"] .gmail_quote,
     body[data-hide-quoted="1"] blockquote,
-    body[data-hide-quoted="1"] [type="cite"] { display: none !important; }
+    body[data-hide-quoted="1"] [type="cite"],
+    body[data-hide-quoted="1"] .servio-quoted { display: none !important; }
   </style>
 </head>
 <body${!showQuoted ? ' data-hide-quoted="1"' : ''}>${processed}</body>
@@ -157,6 +158,8 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '', fromEmai
     doc.open();
     doc.write(buildIframeDoc(content));
     doc.close();
+    const outlook=doc.getElementById('divRplyFwdMsg');
+    if(outlook){let node:Element|null=outlook;while(node){node.classList.add('servio-quoted');node=node.nextElementSibling;}}
 
     // Alle links: nieuw tabblad, zonder opener/referrer.
     doc.querySelectorAll('a[href]').forEach((a) => {
@@ -237,8 +240,8 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '', fromEmai
         <pre className="whitespace-pre-wrap text-foreground leading-relaxed font-sans text-sm">{main}</pre>
         {quoted && (
           <div className="mt-3">
-            <Button variant="ghost" size="sm" onClick={() => setShowQuoted(v => !v)} className="text-xs h-7 -ml-2 text-muted-foreground hover:text-foreground">
-              {showQuoted ? <><ChevronUp className="h-3 w-3 mr-1" /> {t('emailView.hideQuoted')}</> : <><ChevronDown className="h-3 w-3 mr-1" /> {t('emailView.showQuoted')}</>}
+            <Button variant="ghost" size="icon" aria-expanded={showQuoted} aria-label={t(showQuoted?'mailSearch.hideQuotes':'mailSearch.quotes')} title={t(showQuoted?'mailSearch.hideQuotes':'mailSearch.quotes')} onClick={() => setShowQuoted(v => !v)} className="h-11 w-11 text-muted-foreground hover:text-foreground">
+              ⋯
             </Button>
             {showQuoted && (
               <pre className="mt-2 whitespace-pre-wrap font-sans text-xs leading-relaxed text-muted-foreground border-l-2 border-border pl-3">{quoted}</pre>
@@ -286,8 +289,8 @@ export function EmailBodyRenderer({ bodyHtml, bodyText, className = '', fromEmai
         />
         {htmlHasQuoted && (
           <div className="mt-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowQuoted(v => !v)} className="text-xs h-7 -ml-2 text-muted-foreground hover:text-foreground">
-              {showQuoted ? <><ChevronUp className="h-3 w-3 mr-1" /> {t('emailView.hideQuoted')}</> : <><ChevronDown className="h-3 w-3 mr-1" /> {t('emailView.showQuoted')}</>}
+            <Button variant="ghost" size="icon" aria-expanded={showQuoted} aria-label={t(showQuoted?'mailSearch.hideQuotes':'mailSearch.quotes')} title={t(showQuoted?'mailSearch.hideQuotes':'mailSearch.quotes')} onClick={() => setShowQuoted(v => !v)} className="h-11 w-11 text-muted-foreground hover:text-foreground">
+              ⋯
             </Button>
           </div>
         )}

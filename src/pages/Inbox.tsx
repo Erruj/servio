@@ -68,9 +68,8 @@ const Inbox = () => {
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
-  const { emails, isLoading: emailsLoading, refetch: refetchEmails, snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts } = useEmails(view);
-
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+  const { emails, isLoading: emailsLoading, searchError, hasMore, loadMore, refetch: refetchEmails, snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts } = useEmails(view, searchQuery, selectedConnectionId);
 
   const mails: MailItem[] = emails.map(emailToMailItem);
   const visibleMails: MailItem[] = selectedConnectionId
@@ -80,20 +79,10 @@ const Inbox = () => {
   // Request notification permission on mount
   useEffect(() => { requestNotificationPermission(); }, []);
 
-  // Handle search with debounce — query database
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query);
-    
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    searchTimeoutRef.current = setTimeout(() => {
-      if (query.trim().length >= 2) {
-        searchEmails(query);
-      } else if (query.trim().length === 0) {
-        refetchEmails();
-      }
-    }, 300);
-  }, [searchEmails, refetchEmails]);
+    setSelectedMail(null);
+  }, []);
 
   useEffect(() => {
     const connected = searchParams.get('connected');
@@ -329,6 +318,9 @@ const Inbox = () => {
             </div>
             <div className="flex-1 min-w-0">
               <Topbar
+                searchValue={searchQuery}
+                mailView={view}
+                onSavedView={(query,folder)=>{setView(folder as MailView);setFilter('all');handleSearchChange(query);}}
                 onSearchChange={handleSearchChange}
                 onFilterChange={handleFilterChange}
                 connections={connections}
@@ -351,6 +343,8 @@ const Inbox = () => {
             )}
           </div>
 
+          {searchError && <div role="alert" className="p-3 text-sm text-destructive">{searchError}<Button variant="ghost" onClick={()=>void refetchEmails()}>{t('mailSearch.retry')}</Button></div>}
+          {hasMore && <div className="border-b border-border"><Button variant="ghost" className="min-h-11" onClick={()=>void loadMore()}>{t('mailSearch.more')}</Button></div>}
           {isLoading ? (
             <div className="flex-1 flex">
               <div className="w-[340px] min-w-[340px] border-r border-border bg-card">
@@ -444,7 +438,7 @@ const Inbox = () => {
                     );
                   })()}
                   <div className="flex-1 overflow-hidden">
-                    <MailList title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
+                    <MailList serverSearch title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
                       onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} onBulkAction={handleBulkAction} onDisplayedMails={onDisplayedMails} focusedMailId={focusedMailId} />
                   </div>
                 </div>
@@ -483,7 +477,7 @@ const Inbox = () => {
                         </Button>
                       </div>
                     )}
-                    <MailList title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
+                    <MailList serverSearch title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
                       onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} onBulkAction={handleBulkAction} onDisplayedMails={onDisplayedMails} focusedMailId={focusedMailId} />
                   </>
                 )}

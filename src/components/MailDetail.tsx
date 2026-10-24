@@ -52,6 +52,7 @@ import { canReplyAll, type ComposeMode } from '@/lib/mail-compose';
 import { Reply, ReplyAll, Forward, Clock } from 'lucide-react';
 import { useBlockedSenders } from '@/hooks/useBlockedSenders';
 import { UnsubscribeSender } from '@/components/inbox/UnsubscribeSender';
+import { MailConversation } from '@/components/inbox/MailConversation';
 
 export interface MailActions {
   onSnooze: (mail: MailItem) => void;
@@ -131,7 +132,10 @@ interface MailDetailProps {
   composeRequest?: { id: string; mode: ComposeMode; nonce: number };
 }
 
-export function MailDetail({ mail, className, actions, connections = [], onDraftSaved, composeRequest }: MailDetailProps) {
+export function MailDetail({ mail: selectedMail, className, actions, connections = [], onDraftSaved, composeRequest }: MailDetailProps) {
+  const [latestMail,setLatestMail]=useState<MailItem|null>(null);
+  useEffect(()=>{setLatestMail(null);},[selectedMail?.id]);
+  const mail=latestMail && latestMail.threadId===selectedMail?.threadId && latestMail.connectionId===selectedMail?.connectionId ? (latestMail.id===selectedMail?.id?selectedMail:latestMail) : selectedMail;
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
   const [reminderCompose, setReminderCompose] = useState(false);
   const { t } = useTranslation();
@@ -644,11 +648,7 @@ const sentimentLabel = (v?: string) => {
 
         {/* Email body — 15px / 1.6 line-height */}
         <div className="text-[15px] leading-[1.6] text-foreground">
-          <EmailBodyRenderer
-            bodyHtml={mail.bodyHtml}
-            bodyText={mail.bodyText || mail.body}
-            fromEmail={mail.fromEmail}
-          />
+          <MailConversation mail={selectedMail || mail} onLatest={setLatestMail}/>
         </div>
 
         {/* Analysis Section */}

@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { mailInboxOrder } from '@/lib/mail-reminders';
+import { parseMailSearch } from '@/lib/mail-search';
+import { useTranslation } from 'react-i18next';
 
 export interface EmailConnection {
   id: string;
@@ -210,15 +212,31 @@ function applyView(query: any, view: MailView) {
   return query.eq('folder', view);
 }
 
-export function useEmails(view: MailView = 'inbox') {
+export function useEmails(view: MailView = 'inbox', searchQuery = '', connectionId: string | null = null) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [emails, setEmails] = useState<Email[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const requestRef = useRef(0);
+  const emailsRef = useRef(emails);
+  emailsRef.current=emails;
   const prevEmailCountRef = useRef(0);
 
-  const fetchEmails = useCallback(async () => {
+  const fetchEmails = useCallback(async (append = false) => {
     if (!user) return;
+    const request = ++requestRef.current;
     try {
+      if(searchQuery.trim()) {
+        const offset=append ? emailsRef.current.length : 0;
+        const {data,error}=await supabase.rpc('search_mail',{_filters:parseMailSearch(searchQuery),_view:view,_connection_id:connectionId ?? undefined,_offset:offset,_limit:50});
+        if(request!==requestRef.current)return;
+        if(error)throw error;
+        const results=(data||[]) as Email[];
+        setEmails(prev=>append?[...prev,...results.filter(e=>!prev.some(p=>p.id===e.id))]:results);
+        setHasMore(results.length===50);setSearchError(null);return;
+      }
       const { data, error } = await applyView(supabase
         .from('emails')
         .select('*, email_connections_safe(email_address, provider)')
@@ -228,6 +246,7 @@ export function useEmails(view: MailView = 'inbox') {
         .limit(200);
 
       if (error) throw error;
+      if(request!==requestRef.current)return;
       const newEmails = ((data as Email[]) || []).sort(mailInboxOrder);
       
       // Check for new emails and send notification
@@ -238,13 +257,15 @@ export function useEmails(view: MailView = 'inbox') {
       prevEmailCountRef.current = newEmails.length;
       
       setEmails(newEmails);
+      setSearchError(null);setHasMore(false);
     } catch (error) {
       console.error('Error fetching emails:', error);
+      if(request===requestRef.current){setSearchError(t('mailSearch.error'));if(searchQuery)setEmails([]);}
     } finally {
-      setIsLoading(false);
+      if(request===requestRef.current)setIsLoading(false);
     }
     fetchCounts();
-  }, [user, view]);
+  }, [user?.id, view, searchQuery, connectionId, t]);
 
   const [counts, setCounts] = useState<FolderCounts | null>(null);
   const fetchCounts = useCallback(async () => {
@@ -253,7 +274,7 @@ export function useEmails(view: MailView = 'inbox') {
     if (!error && data) setCounts(data as unknown as FolderCounts);
   }, [user]);
 
-  useEffect(() => { fetchEmails(); }, [fetchEmails]);
+  useEffect(() => {requestRef.current++;setEmails([]);setIsLoading(true);const timer=setTimeout(()=>void fetchEmails(),searchQuery?300:0);return()=>{clearTimeout(timer);requestRef.current++;};}, [fetchEmails]);
   useEffect(() => {
     if (!user) return;
     const timer = setInterval(() => { if (!document.hidden) void fetchEmails(); }, 60000);
@@ -334,30 +355,11 @@ export function useEmails(view: MailView = 'inbox') {
     fetchCounts();
   };
 
-  const searchEmails = useCallback(async (query: string) => {
-    if (!user || !query.trim()) { fetchEmails(); return; }
-    try {
-      const q = `%${query}%`;
-      const { data, error } = await applyView(supabase
-        .from('emails')
-        .select('*, email_connections_safe(email_address, provider)')
-        .eq('user_id', user.id), view)
-        .or(`subject.ilike.${q},from_email.ilike.${q},from_name.ilike.${q},snippet.ilike.${q}`)
-        .order('inbox_returned_at', { ascending: false, nullsFirst: false })
-        .order('received_at', { ascending: false })
-        .limit(200);
-
-      if (error) throw error;
-      setEmails(((data as Email[]) || []).sort(mailInboxOrder));
-    } catch (error) {
-      console.error('Error searching emails:', error);
-    }
-  }, [user, fetchEmails, view]);
-
   // Group emails into threads
   const threads = groupIntoThreads(emails);
 
-  return { emails, threads, isLoading, refetch: fetchEmails, snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts, refetchCounts: fetchCounts };
+  const refetch=useCallback(()=>fetchEmails(),[fetchEmails]);
+  return { emails, threads, isLoading, searchError, hasMore, loadMore:()=>fetchEmails(true), refetch, snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts, refetchCounts: fetchCounts };
 }
 
 function groupIntoThreads(emails: Email[]): EmailThread[] {
