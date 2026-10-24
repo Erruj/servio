@@ -149,7 +149,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     document.addEventListener('visibilitychange', flush);
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', flush); if (!stopped.current) void saveRef.current(); };
   }, [ready]);
-  const close = async () => { if (await save()) { stopped.current = true; onOpenChange(false); } };
+  const close = async () => { if (uncertain || await save()) { stopped.current = true; onOpenChange(false); } };
 
   const addFiles = async (files: File[]) => {
     const added: ComposeAttachment[] = [];
@@ -208,8 +208,8 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       for (const warning of data?.warnings || []) toast({ title: t(`compose.delivery.${warning}`, { defaultValue: t('compose.delivery.storage_sent') }) });
       toast({ title: t('compose.sent') }); onSaved?.(); onOpenChange(false);
     } catch (error) {
-      stopped.current = false;
       const code = error instanceof Error ? error.message : 'network';
+      stopped.current = code === 'uncertain';
       setUncertain(code === 'uncertain');
       setSendFailure(t(`compose.delivery.${code}`, { defaultValue: t('compose.delivery.network') }));
     } finally { setSending(false); }
