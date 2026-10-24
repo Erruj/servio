@@ -122,9 +122,10 @@ interface MailDetailProps {
   actions?: MailActions;
   connections?: EmailConnection[];
   onDraftSaved?: () => void;
+  composeRequest?: { id: string; mode: ComposeMode; nonce: number };
 }
 
-export function MailDetail({ mail, className, actions, connections = [], onDraftSaved }: MailDetailProps) {
+export function MailDetail({ mail, className, actions, connections = [], onDraftSaved, composeRequest }: MailDetailProps) {
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
   const { t } = useTranslation();
   const [labelsOpen, setLabelsOpen] = useState(false);
@@ -188,6 +189,10 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
       setReply('');
     }
   }, [mail?.id]);
+
+  useEffect(() => {
+    if (composeRequest?.id === mail?.id && composeRequest) setComposeMode(composeRequest.mode);
+  }, [composeRequest, mail?.id]);
 
   // Auto-suggest tone based on sentiment + urgency
   useEffect(() => {
