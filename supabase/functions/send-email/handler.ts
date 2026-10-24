@@ -69,7 +69,7 @@ async function gmailOriginal(token:string,externalId:string) {
   await walk(data.payload);
   return {message_id:header('message-id'),reference_ids:(header('references') || '').match(/<[^>]+>/g) || [],attachments};
 }
-export async function deliverEmail(req: Request, queuedOwner?: string) {
+export async function deliverEmail(req: Request, queuedOwner?: string, queuedVersion?: string) {
   if(req.method==='OPTIONS') return new Response('ok',{headers:corsHeaders});
   if(req.method!=='POST') return json({errorCode:'method'},405);
   let db:any, draft:any, owner:string | undefined;
@@ -154,7 +154,9 @@ export async function deliverEmail(req: Request, queuedOwner?: string) {
     const headers=replyHeaders(original || {},mode);
     const html=safeHtml(input.html || escapeHtml(input.body));
     const raw=await buildMime({from:connection.email_address,to:input.to,cc:input.cc,bcc:input.bcc,subject:input.subject,text:input.body,html,messageId:mid,date:new Date(),...headers,attachments:mimeAttachments(attachments)});
-    const claim=await db.from('emails').update({send_status:'sending',message_id:mid,connection_id:connection.id}).eq('id',draft.id).eq('user_id',owner).eq('folder',queuedOwner ? 'scheduled':'drafts').in('send_status',queuedOwner ? ['queued']:['draft','failed']).lte(queuedOwner ? 'send_at':'received_at',new Date().toISOString()).select('id');
+    let claimQuery=db.from('emails').update({send_status:'sending',message_id:mid,connection_id:connection.id}).eq('id',draft.id).eq('user_id',owner).eq('folder',queuedOwner ? 'scheduled':'drafts').in('send_status',queuedOwner ? ['queued']:['draft','failed']).lte(queuedOwner ? 'send_at':'received_at',new Date().toISOString()).select('id');
+    if(queuedVersion)claimQuery=claimQuery.eq('updated_at',queuedVersion);
+    const claim=await claimQuery;
     if(claim.error) throw new SendError('storage',500);
     if(!claim.data?.length) throw new SendError('uncertain',409);
     claimed=true;

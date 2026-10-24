@@ -4,6 +4,7 @@ import { z } from 'npm:zod@3';
 import { isCronAuthorized, recordCronHealth } from '../_shared/security.ts';
 import { deliverEmail } from '../send-email/handler.ts';
 import { SendSchema } from '../send-email/message.ts';
+declare const EdgeRuntime:{waitUntil:(promise:Promise<unknown>)=>void};
 const json=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{...corsHeaders,'Content-Type':'application/json'}});
 const schema=z.object({action:z.enum(['enqueue','cancel','undo','now']).optional(),draftId:z.string().uuid().optional(),sendAt:z.string().datetime().optional(),payload:z.unknown().optional()});
 Deno.serve(async req=>{
@@ -18,10 +19,10 @@ Deno.serve(async req=>{
  if(await isCronAuthorized(req.headers.get('x-cron-secret'))){
  const process=async()=>{
  if(body.draftId){const {data}=await db.from('emails').select('send_at').eq('id',body.draftId).eq('send_status','queued').maybeSingle();const delay=new Date(data?.send_at || 0).getTime()-Date.now();if(delay>0&&delay<=30000)await new Promise(r=>setTimeout(r,delay+50));}
- const {data,error}=await db.from('emails').select('id,user_id,send_payload').eq('folder','scheduled').eq('send_status','queued').lte('send_at',new Date().toISOString()).order('send_at').limit(25);
+ const {data,error}=await db.from('emails').select('id,user_id,send_payload,send_at,updated_at').eq('folder','scheduled').eq('send_status','queued').lte('send_at',new Date().toISOString()).order('send_at').limit(25);
  if(error)throw error;
  for(const row of data || []){
- const response=await deliverEmail(new Request(req.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...row.send_payload,draftId:row.id})}),row.user_id);
+ const response=await deliverEmail(new Request(req.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...row.send_payload,draftId:row.id})}),row.user_id,row.updated_at);
  if(!response.ok){const result=await response.json();await db.from('emails').update({send_status:'failed',send_error:result.errorCode || 'network'}).eq('id',row.id).eq('send_status','queued');}
  }
  await db.rpc('refresh_mail_send_job');await recordCronHealth('scheduled-mail-delivery');
