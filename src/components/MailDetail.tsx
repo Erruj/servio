@@ -122,9 +122,10 @@ interface MailDetailProps {
   actions?: MailActions;
   connections?: EmailConnection[];
   onDraftSaved?: () => void;
+  composeRequest?: { id: string; mode: ComposeMode; nonce: number };
 }
 
-export function MailDetail({ mail, className, actions, connections = [], onDraftSaved }: MailDetailProps) {
+export function MailDetail({ mail, className, actions, connections = [], onDraftSaved, composeRequest }: MailDetailProps) {
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
   const { t } = useTranslation();
   const [labelsOpen, setLabelsOpen] = useState(false);
@@ -190,13 +191,8 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
   }, [mail?.id]);
 
   useEffect(() => {
-    const compose = (event: Event) => {
-      const request = (event as CustomEvent<{id: string; mode: ComposeMode}>).detail;
-      if (request.id === mail?.id && ['reply','replyAll','forward'].includes(request.mode)) setComposeMode(request.mode);
-    };
-    window.addEventListener('servio-mail-compose', compose);
-    return () => window.removeEventListener('servio-mail-compose', compose);
-  }, [mail?.id]);
+    if (composeRequest?.id === mail?.id && composeRequest) setComposeMode(composeRequest.mode);
+  }, [composeRequest, mail?.id]);
 
   // Auto-suggest tone based on sentiment + urgency
   useEffect(() => {

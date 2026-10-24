@@ -21,6 +21,7 @@ import { useEmailConnections, useEmails, requestNotificationPermission } from '@
 import { emailToMailItem } from '@/types/email';
 import { useInboxShortcuts, useMailShortcutPrefs } from '@/hooks/useInboxShortcuts';
 import { INBOX_KEYS, runBulkMailAction, type BulkMailAction, type InboxCommand } from '@/lib/inbox-controls';
+import { canReplyAll, type ComposeMode } from '@/lib/mail-compose';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Helmet } from 'react-helmet-async';
 import { ToastAction } from '@/components/ui/toast';
@@ -52,6 +53,7 @@ const Inbox = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const shortcutPrefs = useMailShortcutPrefs();
   const [focusedMailId, setFocusedMailId] = useState<string>();
+  const [composeRequest, setComposeRequest] = useState<{id: string; mode: ComposeMode; nonce: number}>();
   const displayedMailsRef = useRef<MailItem[]>([]);
   const onDisplayedMails = useCallback((items: MailItem[]) => { displayedMailsRef.current = items; }, []);
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
@@ -225,20 +227,21 @@ const Inbox = () => {
   const onShortcut = (command: InboxCommand) => {
     const items = displayedMailsRef.current;
     const focus = items.find(mail=>mail.id === focusedMailId) || items.find(mail=>mail.id === selectedMail?.id) || items[0];
-    const mail = selectedMail ? (mails.find(item=>item.id===selectedMail.id) || selectedMail) : focus;
+    const mail = focus || (selectedMail ? (mails.find(item=>item.id===selectedMail.id) || selectedMail) : undefined);
     if (command === 'next' || command === 'previous') {
       const index = focus ? items.findIndex(item=>item.id===focus.id) : -1;
       const next = items[Math.max(0,Math.min(items.length-1,index+(command==='next'?1:-1)))];
       if(next) setFocusedMailId(next.id);
-    } else if(command==='open' && focus) handleMailSelect(focus);
+    } else if(command==='open' && focus) {setComposeRequest(undefined);handleMailSelect(focus);}
     else if(command==='back') {setSelectedMail(null);hasAutoSelectedRef.current=true;}
     else if(command==='new') {setDraftMail(null);setComposeOpen(true);}
     else if(command==='search') window.dispatchEvent(new Event('servio-mail-search'));
     else if(command==='help') setShowShortcuts(true);
     else if(mail && ['reply','replyAll','forward'].includes(command)) {
       if(mail.folder==='drafts' || mail.folder==='scheduled') return;
-      if(!selectedMail) {handleMailSelect(mail);requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('servio-mail-compose',{detail:{id:mail.id,mode:command}})));}
-      else window.dispatchEvent(new CustomEvent('servio-mail-compose',{detail:{id:mail.id,mode:command}}));
+      if(command==='replyAll' && !canReplyAll(mail,connections.map(connection=>connection.email_address))) return;
+      handleMailSelect(mail);
+      setComposeRequest({id:mail.id,mode:command as ComposeMode,nonce:Date.now()});
     } else if(mail && command==='archive') void handleMove(mail,'archive');
     else if(mail && command==='trash') void handleMove(mail,'trash');
     else if(mail && command==='star') void handleToggleStar(mail);

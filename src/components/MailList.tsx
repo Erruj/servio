@@ -139,7 +139,8 @@ export function MailList({
   useEffect(() => { onDisplayedMails?.(filteredMails); }, [filteredMails, onDisplayedMails]);
   const toggleSelect = (id: string, shift = false) => {
     if (bulkBusy) return;
-    setSelectedIds(prev => selectMailRange(prev, filteredMails.map(m => m.id), id, anchorRef.current, shift));
+    const anchor = anchorRef.current;
+    setSelectedIds(prev => selectMailRange(prev, filteredMails.map(m => m.id), id, anchor, shift));
     if (!shift) anchorRef.current = id;
   };
   const selectAll = () => {
