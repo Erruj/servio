@@ -754,6 +754,53 @@ export type Database = {
           },
         ]
       }
+      mail_document_imports: {
+        Row: {
+          attachment_key: string
+          created_at: string
+          document_id: string
+          email_id: string | null
+          file_path: string | null
+          id: string
+          kind: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_key: string
+          created_at?: string
+          document_id?: string
+          email_id?: string | null
+          file_path?: string | null
+          id?: string
+          kind: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachment_key?: string
+          created_at?: string
+          document_id?: string
+          email_id?: string | null
+          file_path?: string | null
+          id?: string
+          kind?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mail_document_imports_email_id_fkey"
+            columns: ["email_id"]
+            isOneToOne: false
+            referencedRelation: "emails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mail_preferences: {
         Row: {
           created_at: string
