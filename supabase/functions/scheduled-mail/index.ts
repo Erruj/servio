@@ -1,3 +1,4 @@
+import { undoOpen } from '../_shared/mail-send/queue.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'npm:zod@3';
@@ -37,7 +38,7 @@ Deno.serve(async req=>{
  if(!draft)return json({errorCode:'draft_missing'},404);
  if(['sending','uncertain','sent'].includes(draft.send_status)||draft.folder==='sent')return json({errorCode:'uncertain'},409);
  if(body.action==='cancel'||body.action==='undo'){
- if(body.action==='undo'&&(!draft.undo_until||Date.now()>=new Date(draft.undo_until).getTime()))return json({errorCode:'too_late'},409);
+ if(body.action==='undo'&&!undoOpen(draft.undo_until))return json({errorCode:'too_late'},409);
  const {data,error}=await db.from('emails').update({folder:'drafts',send_status:'draft',send_at:null,undo_until:null,send_payload:null,send_error:null}).eq('id',draft.id).eq('user_id',user.id).in('send_status',['queued','failed','draft']).select('id');
  if(error||!data?.length)return json({errorCode:'uncertain'},409);return json({success:true});
  }

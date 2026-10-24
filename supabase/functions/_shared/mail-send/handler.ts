@@ -1,3 +1,4 @@
+import { mayDeliver } from "./queue.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { Buffer } from "node:buffer";
@@ -98,7 +99,7 @@ export async function deliverEmail(req: Request, queuedOwner?: string, queuedVer
       if(result.error || !draft) throw new SendError('draft_missing');
       if(draft.folder==='sent' || draft.send_status==='sent') return json({success:true,messageId:draft.message_id});
       if(draft.send_status==='sending' || draft.send_status==='uncertain') throw new SendError('uncertain',409);
-      if(queuedOwner && (draft.folder!=='scheduled' || draft.send_status!=='queued' || new Date(draft.send_at).getTime()>Date.now())) throw new SendError('draft_missing');
+      if(queuedOwner && !mayDeliver(draft)) throw new SendError('draft_missing');
       if(!queuedOwner && draft.folder!=='drafts') throw new SendError('draft_missing');
     } else {
       // Legacy callers also receive a durable record before any external side effect.
