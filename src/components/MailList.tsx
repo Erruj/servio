@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, MailOpen, Trash2, CheckSquare, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNewItems } from '@/hooks/useNewItems';
+import { BulkMailToolbar } from '@/components/inbox/BulkMailToolbar';
+import { selectMailRange, currentSelection, type BulkMailAction } from '@/lib/inbox-controls';
 
 interface MailListProps {
   mails: MailItem[];
@@ -27,16 +29,21 @@ interface MailListProps {
   onDeleteMultiple?: (ids: string[]) => void;
   onToggleStar?: (mail: MailItem) => void;
   title?: string;
+  onBulkAction?: (ids: string[], action: BulkMailAction, label?: string) => Promise<string[]>;
+  onDisplayedMails?: (mails: MailItem[]) => void;
+  focusedMailId?: string;
 }
 
 export function MailList({ 
   mails, selectedMailId, onSelectMail, searchQuery = '', filter = 'all', className,
-  onMarkAsRead, onMarkAsUnread, onDeleteMultiple, onToggleStar, title
+  onMarkAsRead, onMarkAsUnread, onDeleteMultiple, onToggleStar, title, onBulkAction, onDisplayedMails, focusedMailId
 }: MailListProps) {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const anchorRef = useRef<string | null>(null);
   // Alleen nieuw binnengekomen mails krijgen een korte entrance.
   const newMailIds = useNewItems(mails.map((m) => m.id));
 
@@ -124,32 +131,29 @@ export function MailList({
     return pinnedIds.map(id => mailById.get(id)).filter((m): m is MailItem => Boolean(m));
   }, [pinnedIds, mails]);
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
+  const displayedFingerprint = filteredMails.map(m => m.id).join(',');
+  useEffect(() => {
+    setSelectedIds(prev => new Set(currentSelection(prev, filteredMails.map(m => m.id))));
+    anchorRef.current = null;
+  }, [displayedFingerprint, filter, safeSearchQuery, categoryFilter, urgencyFilter]);
+  useEffect(() => { onDisplayedMails?.(filteredMails); }, [filteredMails, onDisplayedMails]);
+  const toggleSelect = (id: string, shift = false) => {
+    if (bulkBusy) return;
+    setSelectedIds(prev => selectMailRange(prev, filteredMails.map(m => m.id), id, anchorRef.current, shift));
+    if (!shift) anchorRef.current = id;
   };
-
   const selectAll = () => {
-    if (selectedIds.size === filteredMails.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredMails.map(m => m.id)));
-    }
+    if (bulkBusy) return;
+    setSelectedIds(new Set(filteredMails.map(m => m.id)));
+    setBulkMode(true);
   };
-
-  const handleBulkAction = (action: 'read' | 'unread' | 'delete') => {
-    const ids = Array.from(selectedIds);
-    if (ids.length === 0) return;
-    
-    if (action === 'read') onMarkAsRead?.(ids);
-    else if (action === 'unread') onMarkAsUnread?.(ids);
-    else if (action === 'delete') onDeleteMultiple?.(ids);
-    
-    setSelectedIds(new Set());
-    setBulkMode(false);
+  const handleBulkAction = async (action: BulkMailAction, label?: string) => {
+    const ids = currentSelection(selectedIds, filteredMails.map(m => m.id));
+    if (!ids.length || !onBulkAction || bulkBusy) return;
+    setBulkBusy(true);
+    try { const failed = await onBulkAction(ids, action, label); setSelectedIds(new Set(failed)); setBulkMode(failed.length > 0); }
+    catch { toast({title:t('mailActions.mailboxFailed'),variant:'destructive'}); }
+    finally {setBulkBusy(false);}
   };
 
   const getEmailPreview = (mail: MailItem): string => {
@@ -179,7 +183,7 @@ export function MailList({
           <h2 className="text-[15px] font-semibold text-foreground">
             {filter !== 'all' ? (filterLabels[filter] || title) : (title || 'Inbox')} <span className="text-muted-foreground font-normal">({filteredMails.length})</span>
           </h2>
-          <Button variant="ghost" size="sm" onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}>
+          <Button variant="ghost" size="sm" className="min-h-11" disabled={bulkBusy} title={t('inboxControls.selectAll')} aria-label={t('inboxControls.selectAll')} onClick={selectAll}>
             <CheckSquare className="h-4 w-4" />
           </Button>
         </div>
@@ -197,32 +201,16 @@ export function MailList({
         </div>
       </div>
 
-      {/* Bulk action bar */}
-      {bulkMode && selectedIds.size > 0 && (
-        <div className="px-4 py-2 border-b border-border bg-primary/5 flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={selectAll}>
-            {selectedIds.size === filteredMails.length ? 'Deselecteer alles' : 'Selecteer alles'}
-          </Button>
-          <span className="text-sm text-muted-foreground">{selectedIds.size} geselecteerd</span>
-          <div className="flex-1" />
-          <Button variant="ghost" size="sm" onClick={() => handleBulkAction('read')} title="Markeer als gelezen">
-            <MailOpen className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleBulkAction('unread')} title="Markeer als ongelezen">
-            <Mail className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleBulkAction('delete')} className="text-destructive" title="Verwijderen">
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+      {selectedIds.size > 0 && <BulkMailToolbar count={selectedIds.size} busy={bulkBusy} onClear={()=>{setSelectedIds(new Set());setBulkMode(false);}} onAction={(action,label)=>void handleBulkAction(action,label)} />}
 
       {/* Mail list (virtualized) */}
       <VirtualMailList
         mails={filteredMails}
-        bulkMode={bulkMode}
+        bulkMode={bulkMode || selectedIds.size > 0}
         selectedIds={selectedIds}
         selectedMailId={selectedMailId}
+        focusedMailId={focusedMailId}
+        selectionDisabled={bulkBusy}
         onSelectMail={onSelectMail}
         newMailIds={newMailIds}
         toggleSelect={toggleSelect}
@@ -245,7 +233,9 @@ interface VirtualMailListProps {
   selectedMailId?: string;
   onSelectMail: (mail: MailItem) => void;
   newMailIds: Set<string>;
-  toggleSelect: (id: string) => void;
+  toggleSelect: (id: string, shift?: boolean) => void;
+  focusedMailId?: string;
+  selectionDisabled?: boolean;
   onToggleStar?: (mail: MailItem) => void;
   getEmailPreview: (mail: MailItem) => string;
   getMailAnalysis: (mail: MailItem) => { category: string | null; urgency: Urgency | null };
@@ -256,7 +246,7 @@ interface VirtualMailListProps {
 }
 
 function VirtualMailList(props: VirtualMailListProps) {
-  const { mails, bulkMode, selectedIds, selectedMailId, onSelectMail, newMailIds, toggleSelect, onToggleStar, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
+  const { mails, bulkMode, selectedIds, selectedMailId, focusedMailId, selectionDisabled, onSelectMail, newMailIds, toggleSelect, onToggleStar, getEmailPreview, getMailAnalysis, getCategoryClassName, getUrgencyClassName, emptyTitle, emptyMessage } = props;
   const { t } = useTranslation();
   const parentRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
@@ -265,6 +255,11 @@ function VirtualMailList(props: VirtualMailListProps) {
     estimateSize: () => 104,
     overscan: 10,
   });
+
+  useEffect(() => {
+    const index = mails.findIndex(mail => mail.id === focusedMailId);
+    if (index >= 0) rowVirtualizer.scrollToIndex(index, {align:'auto'});
+  }, [focusedMailId, mails, rowVirtualizer]);
 
   if (mails.length === 0) {
     return (
@@ -295,12 +290,14 @@ function VirtualMailList(props: VirtualMailListProps) {
               ref={rowVirtualizer.measureElement}
               data-index={virtualRow.index}
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${virtualRow.start}px)` }}
-              onClick={() => !bulkMode && onSelectMail(mail)}
+              onClick={(event) => {if(bulkMode || event.shiftKey) toggleSelect(mail.id,event.shiftKey); else onSelectMail(mail);}}
+              data-mail-id={mail.id}
               className={cn(
-                'relative px-4 py-3 cursor-pointer transition-colors duration-150 border-b border-border/40',
+                'group relative px-4 py-3 cursor-pointer transition-colors duration-150 border-b border-border/40',
                 !isSelected && 'hover:bg-secondary/60',
                 newMailIds.has(mail.id) && 'animate-item-fade',
-                isSelected && 'bg-[hsl(214,100%,96%)] dark:bg-primary/15',
+                isSelected && 'bg-primary/10',
+                focusedMailId === mail.id && 'ring-1 ring-inset ring-primary',
                 isChecked && 'bg-accent/15'
               )}
             >
@@ -310,9 +307,9 @@ function VirtualMailList(props: VirtualMailListProps) {
               )}
 
               <div className="flex items-start gap-2.5 pl-1">
-                {bulkMode && (
-                  <Checkbox checked={isChecked} onCheckedChange={() => toggleSelect(mail.id)} onClick={(e) => e.stopPropagation()} className="mt-1" />
-                )}
+                <div className={cn('shrink-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100', bulkMode ? 'opacity-100' : 'opacity-100 sm:opacity-0')}>
+                  <Checkbox aria-label={`${t('inboxControls.select')}: ${mail.subject}`} disabled={selectionDisabled} checked={isChecked} onClick={e=>{e.stopPropagation();toggleSelect(mail.id,e.shiftKey);}} className="mt-1 h-5 w-5" />
+                </div>
 
                 {/* Unread dot */}
                 <div className="flex-shrink-0 pt-1.5 w-2.5">

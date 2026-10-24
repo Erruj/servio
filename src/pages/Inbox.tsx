@@ -19,7 +19,8 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useEmailConnections, useEmails, requestNotificationPermission } from '@/hooks/useEmailConnections';
 import { emailToMailItem } from '@/types/email';
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useInboxShortcuts, useMailShortcutPrefs } from '@/hooks/useInboxShortcuts';
+import { INBOX_KEYS, runBulkMailAction, type BulkMailAction, type InboxCommand } from '@/lib/inbox-controls';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Helmet } from 'react-helmet-async';
 import { ToastAction } from '@/components/ui/toast';
@@ -49,6 +50,10 @@ const Inbox = () => {
   const [composeOpen, setComposeOpen] = useState(false);
   const [draftMail, setDraftMail] = useState<MailItem | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const shortcutPrefs = useMailShortcutPrefs();
+  const [focusedMailId, setFocusedMailId] = useState<string>();
+  const displayedMailsRef = useRef<MailItem[]>([]);
+  const onDisplayedMails = useCallback((items: MailItem[]) => { displayedMailsRef.current = items; }, []);
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
   useEffect(() => {
     const mql = window.matchMedia('(min-width: 1024px)');
@@ -70,24 +75,6 @@ const Inbox = () => {
 
   // Request notification permission on mount
   useEffect(() => { requestNotificationPermission(); }, []);
-
-  // Keyboard shortcuts
-  const shortcutsList = useMemo(() => [
-    { key: 'c', description: 'Nieuwe email', action: () => setComposeOpen(true) },
-    { key: 'r', description: 'Sync/refresh', action: () => handleSync() },
-    { key: 'j', description: 'Volgende email', action: () => {
-      const idx = mails.findIndex(m => m.id === selectedMail?.id);
-      if (idx < mails.length - 1) handleMailSelect(mails[idx + 1]);
-    }},
-    { key: 'k', description: 'Vorige email', action: () => {
-      const idx = mails.findIndex(m => m.id === selectedMail?.id);
-      if (idx > 0) handleMailSelect(mails[idx - 1]);
-    }},
-    { key: '/', description: 'Zoeken', action: () => document.querySelector<HTMLInputElement>('input[placeholder*="Zoek"]')?.focus() },
-    { key: '?', shift: true, description: 'Sneltoetsen tonen', action: () => setShowShortcuts(true) },
-    { key: 'Escape', description: 'Sluit dialoog', action: () => { setShowShortcuts(false); setComposeOpen(false); } },
-  ], [mails, selectedMail]);
-  useKeyboardShortcuts(shortcutsList);
 
   // Handle search with debounce — query database
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -220,11 +207,52 @@ const Inbox = () => {
     onSaveLabels: async (m, labels) => { try { await setLabels(m.id, labels); toast({ title: t('mailActions.labelsSaved') }); } catch { failToast(); } },
   };
 
+  const handleBulkAction = async (ids: string[], action: BulkMailAction, label?: string): Promise<string[]> => {
+    const byId = new Map(mails.map(mail=>[mail.id,mail]));
+    const result = await runBulkMailAction(ids, async id => {
+      const mail = byId.get(id);
+      if (!mail) throw new Error('missing');
+      if (['archive','trash','spam','inbox'].includes(action)) await moveToFolder([id], action as 'archive'|'trash'|'spam'|'inbox');
+      else if (action === 'read' || action === 'unread') await setReadState(id, action === 'read');
+      else if (action === 'star') await setStarred(id, true);
+      else if (action === 'label' && label) await setLabels(id, [...new Set([...mail.labels,label])]);
+    });
+    if (selectedMail && result.succeeded.includes(selectedMail.id) && ['archive','trash','spam','inbox'].includes(action)) setSelectedMail(null);
+    await refetchEmails();
+    toast({title:result.failed.length ? t('mailActions.mailboxFailed') : t('inboxControls.done'), description:result.failed.length ? t('inboxControls.partial',{count:result.failed.length}) : undefined, variant:result.failed.length ? 'destructive' : 'default'});
+    return result.failed;
+  };
+  const onShortcut = (command: InboxCommand) => {
+    const items = displayedMailsRef.current;
+    const focus = items.find(mail=>mail.id === focusedMailId) || items.find(mail=>mail.id === selectedMail?.id) || items[0];
+    const mail = selectedMail ? (mails.find(item=>item.id===selectedMail.id) || selectedMail) : focus;
+    if (command === 'next' || command === 'previous') {
+      const index = focus ? items.findIndex(item=>item.id===focus.id) : -1;
+      const next = items[Math.max(0,Math.min(items.length-1,index+(command==='next'?1:-1)))];
+      if(next) setFocusedMailId(next.id);
+    } else if(command==='open' && focus) handleMailSelect(focus);
+    else if(command==='back') {setSelectedMail(null);hasAutoSelectedRef.current=true;}
+    else if(command==='new') {setDraftMail(null);setComposeOpen(true);}
+    else if(command==='search') window.dispatchEvent(new Event('servio-mail-search'));
+    else if(command==='help') setShowShortcuts(true);
+    else if(mail && ['reply','replyAll','forward'].includes(command)) {
+      if(mail.folder==='drafts' || mail.folder==='scheduled') return;
+      if(!selectedMail) {handleMailSelect(mail);requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('servio-mail-compose',{detail:{id:mail.id,mode:command}})));}
+      else window.dispatchEvent(new CustomEvent('servio-mail-compose',{detail:{id:mail.id,mode:command}}));
+    } else if(mail && command==='archive') void handleMove(mail,'archive');
+    else if(mail && command==='trash') void handleMove(mail,'trash');
+    else if(mail && command==='star') void handleToggleStar(mail);
+    else if(mail && command==='unread') void setReadState(mail.id,false).catch(failToast);
+  };
+  useInboxShortcuts(shortcutPrefs.enabled, composeOpen || showShortcuts, onShortcut);
+
   // Altijd de actuele versie van de geselecteerde mail tonen (ster/gelezen live).
   const currentMail = selectedMail ? (mails.find(m => m.id === selectedMail.id) ?? selectedMail) : null;
 
   const handleViewChange = (v: MailView) => {
     setView(v);
+    setFocusedMailId(undefined);
+    displayedMailsRef.current = [];
     setSelectedMail(null);
     hasAutoSelectedRef.current = true;
   };
@@ -407,7 +435,7 @@ const Inbox = () => {
                   })()}
                   <div className="flex-1 overflow-hidden">
                     <MailList title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="h-full"
-                      onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
+                      onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} onBulkAction={handleBulkAction} onDisplayedMails={onDisplayedMails} focusedMailId={focusedMailId} />
                   </div>
                 </div>
                 <div className="flex-1">
@@ -446,7 +474,7 @@ const Inbox = () => {
                       </div>
                     )}
                     <MailList title={t(`mailFolders.${view}`)} mails={visibleMails} selectedMailId={selectedMail?.id} onSelectMail={handleMailSelect} searchQuery={searchQuery} filter={filter} className="flex-1"
-                      onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} />
+                      onMarkAsRead={(ids) => markMultipleAsRead(ids).catch(failToast)} onMarkAsUnread={(ids) => markMultipleAsUnread(ids).catch(failToast)} onDeleteMultiple={deleteMultiple} onToggleStar={handleToggleStar} onBulkAction={handleBulkAction} onDisplayedMails={onDisplayedMails} focusedMailId={focusedMailId} />
                   </>
                 )}
               </div>
@@ -476,14 +504,9 @@ const Inbox = () => {
       {/* Keyboard shortcuts dialog */}
       <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
         <DialogContent>
-          <DialogHeader><DialogTitle>⌨️ Sneltoetsen</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('inboxControls.shortcuts')}</DialogTitle></DialogHeader>
           <div className="space-y-2">
-            {[
-              { key: 'C', desc: 'Nieuwe email' }, { key: 'R', desc: 'Sync/refresh' },
-              { key: 'J', desc: 'Volgende email' }, { key: 'K', desc: 'Vorige email' },
-              { key: '/', desc: 'Zoeken' }, { key: 'Shift+?', desc: 'Sneltoetsen tonen' },
-              { key: 'Esc', desc: 'Sluit dialoog' },
-            ].map((s, i) => (
+            {Object.entries(INBOX_KEYS).map(([key,command]) => ({key:key==='U'?'Shift+u':key,desc:t(`inboxControls.${command}`)})).map((s, i) => (
               <div key={i} className="flex items-center justify-between text-sm py-1">
                 <span className="text-muted-foreground">{s.desc}</span>
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">{s.key}</kbd>
