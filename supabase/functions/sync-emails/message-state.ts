@@ -1,3 +1,4 @@
+import {suppressAutomaticReply} from '../_shared/vacation-rules.ts';
 // Keep the Graph selection and parser together so flags are actually fetched.
 import { unsubscribeHeaders } from './sender-rules.ts';
 export const OUTLOOK_MESSAGE_FIELDS = "id,conversationId,from,toRecipients,ccRecipients,subject,bodyPreview,body,isRead,flag,hasAttachments,receivedDateTime,internetMessageId,internetMessageHeaders";
@@ -5,6 +6,7 @@ export const OUTLOOK_MESSAGE_FIELDS = "id,conversationId,from,toRecipients,ccRec
 export function parseOutlookMessage(msg: any) {
   return {
     ...unsubscribeHeaders(msg.internetMessageHeaders || []),
+    auto_reply_suppressed:suppressAutomaticReply(msg.internetMessageHeaders || []),
     external_id: msg.id,
     message_id: msg.internetMessageId || null,
     reference_ids: (msg.internetMessageHeaders?.find((h: any) => h.name.toLowerCase() === "references")?.value || "").match(/<[^>]+>/g) || [],

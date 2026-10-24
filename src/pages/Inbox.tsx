@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell, Keyboard } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
-import { useEmailConnections, useEmails, requestNotificationPermission } from '@/hooks/useEmailConnections';
+import { useEmailConnections, useEmails } from '@/hooks/useEmailConnections';
 import { emailToMailItem } from '@/types/email';
 import { useInboxShortcuts, useMailShortcutPrefs } from '@/hooks/useInboxShortcuts';
 import { INBOX_KEYS, runBulkMailAction, type BulkMailAction, type InboxCommand } from '@/lib/inbox-controls';
@@ -76,8 +76,7 @@ const Inbox = () => {
     ? mails.filter(m => m.connectionId === selectedConnectionId)
     : mails;
 
-  // Request notification permission on mount
-  useEffect(() => { requestNotificationPermission(); }, []);
+  useEffect(()=>{const id=searchParams.get('mail');if(!id||!user)return;let cancelled=false;void supabase.from('emails').select('*').eq('id',id).eq('user_id',user.id).maybeSingle().then(({data})=>{if(data&&!cancelled){setSelectedMail(emailToMailItem(data as unknown as Parameters<typeof emailToMailItem>[0]));hasAutoSelectedRef.current=true;}});return()=>{cancelled=true;};},[searchParams,user?.id]);
 
   const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query);

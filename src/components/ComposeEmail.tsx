@@ -99,10 +99,12 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     Promise.all([
       supabase.from('email_connections_safe').select('id,provider,email_address,is_active').eq('user_id', user.id).eq('is_active', true),
       supabase.from('user_settings').select('email_signature').eq('user_id', user.id).maybeSingle(),
+      supabase.from('mail_preferences').select('default_connection_id').eq('user_id',user.id).maybeSingle(),
+      supabase.from('mailbox_preferences').select('connection_id,signature').eq('user_id',user.id),
       supabase.from('emails').select('from_email,to_emails,cc_emails').eq('user_id', user.id).neq('folder', 'drafts').order('received_at', { ascending: false }).limit(500),
       supabase.from('customers').select('email').eq('user_id', user.id).not('email', 'is', null).limit(1000),
       supabase.from('templates').select('id,name,body').eq('user_id', user.id).order('name'),
-    ]).then(([conn, settings, emails, customers, tmpl]) => {
+    ]).then(([conn, settings, mailPrefs, mailboxPrefs, emails, customers, tmpl]) => {
       if (cancelled) return;
       const active = (provided || (conn.data || []) as unknown as EmailConnection[]).filter(c => c.is_active);
       setConnections(active);
@@ -111,8 +113,10 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       setDraft(prev => {
         if (initialDraft) return prev;
         const recipients = reminder ? { to: mail?.to || [], cc: mail?.cc || [] } : mail ? composeRecipients(mail, mode, active.map(c => c.email_address)) : { to: prev.to, cc: prev.cc };
-        const signature = settings.data?.email_signature;
-        return { ...prev, ...recipients, connectionId: prev.connectionId || active[0]?.id || '', html: prev.html + (signature && !plainText(prev.html).includes(signature) ? `<br><br>${textToComposeHtml(signature)}` : '') };
+        const connectionId=prev.connectionId || (active.some(c=>c.id===mailPrefs.data?.default_connection_id)?mailPrefs.data?.default_connection_id:active[0]?.id) || '';
+        const mailbox=mailboxPrefs.data?.find(p=>p.connection_id===connectionId);
+        const signature = mailbox ? mailbox.signature : settings.data?.email_signature;
+        return { ...prev, ...recipients, connectionId, html: prev.html + (signature && !plainText(prev.html).includes(signature) ? `<br><br>${textToComposeHtml(signature)}` : '') };
       });
       setReady(true);
     }).catch(() => { if (!cancelled) { setReady(true); setStatus('error'); } });

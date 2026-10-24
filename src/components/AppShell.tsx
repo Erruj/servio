@@ -1,3 +1,4 @@
+import {useMailNotifications} from '@/hooks/useMailNotifications';
 import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
@@ -16,6 +17,7 @@ interface AppShellProps {
  */
 export function AppShell({ children, noScroll = false }: AppShellProps) {
   const { pathname } = useLocation();
+  useMailNotifications();
 
   return (
     <AppShellContext.Provider value={true}>
