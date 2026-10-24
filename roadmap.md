@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Mail-prompt 9: uitschrijfheaders, veilige uitschrijfactie, accountgebonden blokkeren en Spam-sync
+- [ ] Mail-prompt 9: tests en echte nieuwsbrief-/mailboxcontrole
+
 - [x] Mail-prompt 8: snoozen, opvolg-herinneringen, vijfminutencontrole en tests
 - [ ] Mail-prompt 8: echte accountcontrole van snooze en opvolging (externe Supabase zonder beschikbare inlogsessie)
 - [ ] Mail-prompt 8: echte AI-generatie van herinneringsconcept (generate-reply geeft 401 zonder beschikbare sessie)
