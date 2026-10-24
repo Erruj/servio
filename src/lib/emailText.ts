@@ -144,6 +144,7 @@ export function splitQuotedReply(text: string): { main: string; quoted: string |
     /^[ \t>]*Am\s.{1,300}\bschrieb\b[^\n]*:?\s*$/im,
     // French: "Le 12 mai 2025 à 10:00, Jean a écrit :"
     /^[ \t>]*Le\s.{1,300}\ba\s+écrit\b[^\n]*:?\s*$/im,
+    /^[ \t>]*El\s.{1,300}\bescribió\b[^\n]*:?\s*$/im,
     // Outlook separator
     /^[ \t>]*-{2,}\s*(Original Message|Oorspronkelijk bericht|Ursprüngliche Nachricht|Message d'origine)\s*-{2,}\s*$/im,
     // Header block that starts with From:/Van:/Von:/De:

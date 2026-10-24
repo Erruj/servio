@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { NotificationBell } from '@/components/NotificationBell';
+import {MailSearchSuggestions} from '@/components/inbox/MailSearchSuggestions';
 
 import {
   DropdownMenu,
@@ -23,6 +24,9 @@ import {
 } from '@/components/ui/select';
 
 interface TopbarProps {
+  searchValue?: string;
+  mailView?: string;
+  onSavedView?: (query:string,view:string)=>void;
   onSearchChange?: (query: string) => void;
   onFilterChange?: (filter: string) => void;
   className?: string;
@@ -31,8 +35,10 @@ interface TopbarProps {
   onConnectionChange?: (id: string | null) => void;
 }
 
-export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange }: TopbarProps) {
+export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange, searchValue, mailView='inbox', onSavedView }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestionsOpen,setSuggestionsOpen]=useState(false);
+  useEffect(()=>{if(searchValue!==undefined)setSearchQuery(searchValue);},[searchValue]);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -52,11 +58,12 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
   }, [user]);
 
   const loadDisplayName = async () => {
+    if(!user)return;
     try {
       const { data } = await supabase
         .from('profiles')
         .select('full_name, email')
-        .eq('id', user!.id)
+        .eq('id', user.id)
         .single();
       
       setDisplayName(data?.full_name || data?.email || user?.email || 'Gebruiker');
@@ -105,8 +112,11 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
             autoFocus={mobileSearchOpen}
-            onBlur={() => { if (!searchQuery) setMobileSearchOpen(false); }}
+            onFocus={()=>setSuggestionsOpen(true)}
+            onKeyDown={e=>{if(e.key==='Escape'||e.key==='Enter')setSuggestionsOpen(false);}}
+            onBlur={() => {setSuggestionsOpen(false); if (!searchQuery) setMobileSearchOpen(false); }}
           />
+          {suggestionsOpen&&<MailSearchSuggestions query={searchQuery} view={mailView} onClose={()=>setSuggestionsOpen(false)} onSelect={(query,view)=>{handleSearchChange(query);if(view)onSavedView?.(query,view);searchRef.current?.focus();}}/>}
         </div>
         
         <Select defaultValue="all" onValueChange={onFilterChange}>
