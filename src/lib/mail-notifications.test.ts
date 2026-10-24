@@ -1,3 +1,4 @@
+// @ts-nocheck -- Bun test runner types are separate from the app.
 import {test,expect} from 'bun:test';
 import {shouldNotify} from './mail-notifications';
 import {vacationEligible,vacationCooldownPassed,suppressAutomaticReply} from '../../supabase/functions/_shared/vacation-rules';
