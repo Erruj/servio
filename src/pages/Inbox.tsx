@@ -471,7 +471,7 @@ const Inbox = () => {
       />
 
       {selectedMail?.folder==='scheduled' && <Dialog open onOpenChange={open=>{if(!open)setSelectedMail(null);}}><DialogContent><DialogHeader><DialogTitle>{selectedMail.subject}</DialogTitle></DialogHeader><p>{t('mailSchedule.plannedFor',{date:new Date(selectedMail.sendAt || selectedMail.receivedAt).toLocaleString(i18n.language)})}</p>{selectedMail.sendError && <p role="alert" className="text-destructive">{t('mailSchedule.failed')}</p>}<div className="flex flex-wrap gap-2"><Button onClick={()=>{void scheduledAction(selectedMail,'cancel',true);setSelectedMail(null);}}>{t('mailSchedule.edit')}</Button><Button onClick={()=>{void scheduledAction(selectedMail,'now');setSelectedMail(null);}}>{t('mailSchedule.now')}</Button><Button variant="outline" onClick={()=>{void scheduledAction(selectedMail,'cancel');setSelectedMail(null);}}>{t('mailSchedule.cancel')}</Button></div></DialogContent></Dialog>}
-      <ComposeEmail open={composeOpen} onOpenChange={open => { setComposeOpen(open); if (!open) setDraftMail(null); }} hasConnection={hasConnections} connections={connections} draftId={draftMail?.id} initialDraft={draftMail?.draftData} onSaved={refetchEmails} />
+      <ComposeEmail open={composeOpen} onOpenChange={open => { setComposeOpen(open); if (!open) setDraftMail(null); }} hasConnection={hasConnections} connections={connections} draftId={draftMail?.id} initialDraft={draftMail?.draftData} scheduledAt={draftMail?.sendAt} onSaved={refetchEmails} />
 
       {/* Keyboard shortcuts dialog */}
       <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>

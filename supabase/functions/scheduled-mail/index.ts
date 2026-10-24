@@ -1,3 +1,4 @@
+import { undoOpen } from '../_shared/mail-send/queue.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'npm:zod@3';
@@ -23,7 +24,7 @@ Deno.serve(async req=>{
  if(error)throw error;
  for(const row of data || []){
  const response=await deliverEmail(new Request(req.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...row.send_payload,draftId:row.id})}),row.user_id,row.updated_at);
- if(!response.ok){const result=await response.json();await db.from('emails').update({send_status:'failed',send_error:result.errorCode || 'network'}).eq('id',row.id).eq('send_status','queued');}
+ if(!response.ok){const result=await response.json();await db.from('emails').update({send_status:'failed',send_error:result.errorCode || 'network'}).eq('id',row.id).eq('send_status','queued').eq('updated_at',row.updated_at);}
  }
  await db.rpc('refresh_mail_send_job');await recordCronHealth('scheduled-mail-delivery');
  };
@@ -37,7 +38,7 @@ Deno.serve(async req=>{
  if(!draft)return json({errorCode:'draft_missing'},404);
  if(['sending','uncertain','sent'].includes(draft.send_status)||draft.folder==='sent')return json({errorCode:'uncertain'},409);
  if(body.action==='cancel'||body.action==='undo'){
- if(body.action==='undo'&&(!draft.undo_until||Date.now()>=new Date(draft.undo_until).getTime()))return json({errorCode:'too_late'},409);
+ if(body.action==='undo'&&!undoOpen(draft.undo_until))return json({errorCode:'too_late'},409);
  const {data,error}=await db.from('emails').update({folder:'drafts',send_status:'draft',send_at:null,undo_until:null,send_payload:null,send_error:null}).eq('id',draft.id).eq('user_id',user.id).in('send_status',['queued','failed','draft']).select('id');
  if(error||!data?.length)return json({errorCode:'uncertain'},409);return json({success:true});
  }
