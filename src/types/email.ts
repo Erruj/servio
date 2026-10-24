@@ -12,6 +12,7 @@ export interface EmailConnection {
 }
 
 export interface Email {
+  attachment_metadata?: { id?: string; name: string; sizeKB?: number }[];
   draft_data?: import('@/lib/mail-compose').DraftData | null;
   id: string;
   connection_id: string;
@@ -63,7 +64,7 @@ export function emailToMailItem(email: Email): MailItem {
     cc: email.cc_emails || [],
     externalId: email.external_id,
     labels: email.labels || [],
-    attachments: email.has_attachments ? [{ name: 'attachment' }] : undefined,
+    attachments: email.attachment_metadata?.length ? email.attachment_metadata : email.has_attachments ? [{ name: 'attachment' }] : undefined,
     aiCategory: email.ai_category || undefined,
     aiUrgency: email.ai_urgency || undefined,
     customerSentiment: email.customer_sentiment || undefined,

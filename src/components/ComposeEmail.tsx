@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Send, X, Minus, Maximize2, Minimize2, Paperclip, Trash2, Bold, Italic, Underline, List, Link, Quote, Sparkles, FileText, MoreHorizontal } from 'lucide-react';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
@@ -56,7 +57,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     subject: composeSubject(mail?.subject || replyTo?.subject || '', mode), html: textToComposeHtml(initialBody || ''),
     quote: mail ? (mode === 'forward' ? `${t('compose.from')}: ${mail.fromEmail || mail.from}\n${t('compose.to')}: ${mail.to.join(', ')}\n${t('compose.subject')}: ${mail.subject}\n${new Date(mail.receivedAt).toLocaleString(i18n.language)}\n\n` : '') + (mail.bodyText || plainText(mail.bodyHtml || mail.body || '')) : '',
     quoteHeading: mail ? mode === 'forward' ? t('compose.forwarded') : t('compose.quoted', { date: new Date(mail.receivedAt).toLocaleString(i18n.language), name: mail.from }) : '',
-    attachments: [], originalAttachments: mode === 'forward' ? (mail?.attachments || []).map(a => ({ name: a.name, url: a.url, selected: false })) : [],
+    attachments: [], originalAttachments: mode === 'forward' ? (mail?.attachments || []).map(a => ({ id: a.id, name: a.name, url: a.url, selected: false })) : [],
   });
   const [ready, setReady] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -65,6 +66,8 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
   const [showQuote, setShowQuote] = useState((initialDraft?.mode || mode) === 'forward');
   const [status, setStatus] = useState<'saved' | 'saving' | 'error' | ''>('');
   const [sending, setSending] = useState(false);
+  const [sendFailure, setSendFailure] = useState('');
+  const [uncertain, setUncertain] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [discard, setDiscard] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -146,7 +149,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     document.addEventListener('visibilitychange', flush);
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', flush); if (!stopped.current) void saveRef.current(); };
   }, [ready]);
-  const close = async () => { if (await save()) { stopped.current = true; onOpenChange(false); } };
+  const close = async () => { if (uncertain || await save()) { stopped.current = true; onOpenChange(false); } };
 
   const addFiles = async (files: File[]) => {
     const added: ComposeAttachment[] = [];
@@ -183,23 +186,33 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     const d = latest.current;
     if (!d.to.length || !d.subject.trim() || !plainText(d.html).trim()) { toast({ title: t('compose.missingFields'), variant: 'destructive' }); return; }
     if (!hasConnection || !d.connectionId) { toast({ title: t('compose.noMailbox'), variant: 'destructive' }); return; }
-    if (d.bcc.length) { toast({ title: t('compose.bccPending'), variant: 'destructive' }); return; }
-    if (d.originalAttachments.some(a => a.selected)) { toast({ title: t('compose.originalUnavailable'), variant: 'destructive' }); return; }
-    setSending(true);
+    if (uncertain) return;
+    setSending(true); setSendFailure('');
     try {
       if (!(await save())) return;
       stopped.current = true;
       const quote = d.quote ? `\n\n${d.quoteHeading}\n${d.quote}` : '';
       const { data, error } = await supabase.functions.invoke('send-email', { body: {
-        to: d.to.join(', '), cc: d.cc.join(', ') || undefined, subject: d.subject, body: plainText(d.html) + quote,
+        to: d.to, cc: d.cc, bcc: d.bcc, subject: d.subject, body: plainText(d.html) + quote,
+        html: cleanHtml(d.html) + (d.quote ? `<blockquote>${textToComposeHtml(d.quoteHeading + '\n' + d.quote)}</blockquote>` : ''),
+        mode: d.mode, originalId: d.originalId, draftId: id.current,
+        originalAttachments: d.originalAttachments.filter(a => a.selected).map(a => a.id || '*'),
         connection_id: d.connectionId, replyToEmailId: d.mode === 'reply' || d.mode === 'replyAll' ? d.originalId : undefined,
         attachments: d.attachments.map(a => ({ filename: a.name, mimeType: a.type, content: a.content })),
       } });
-      if (error || data?.error) throw new Error('send');
-      const { error: deleteError } = await supabase.from('emails').delete().eq('id', id.current).eq('user_id', user?.id || '');
-      if (deleteError) { await supabase.from('emails').update({ folder: 'sent' }).eq('id', id.current).eq('user_id', user?.id || ''); }
+      if (error || data?.error || data?.errorCode) {
+        let details = data;
+        if (error instanceof FunctionsHttpError) { try { details = await error.context.json(); } catch { /* use fallback */ } }
+        throw new Error(details?.errorCode || (details?.error ? 'limit' : 'network'));
+      }
+      for (const warning of data?.warnings || []) toast({ title: t(`compose.delivery.${warning}`, { defaultValue: t('compose.delivery.storage_sent') }) });
       toast({ title: t('compose.sent') }); onSaved?.(); onOpenChange(false);
-    } catch { stopped.current = false; toast({ title: t('compose.sendError'), variant: 'destructive' }); } finally { setSending(false); }
+    } catch (error) {
+      const code = error instanceof Error ? error.message : 'network';
+      stopped.current = code === 'uncertain';
+      setUncertain(code === 'uncertain');
+      setSendFailure(t(`compose.delivery.${code}`, { defaultValue: t('compose.delivery.network') }));
+    } finally { setSending(false); }
   };
   const icon = (label: string, Icon: typeof X, action: () => void) => <Tooltip><TooltipTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label={label} onMouseDown={e => e.preventDefault()} onClick={action}><Icon className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>{label}</TooltipContent></Tooltip>;
   return <TooltipProvider><section aria-label={t(`compose.${draft.mode}`)} className={expanded ? 'fixed inset-3 sm:inset-10 z-50 bg-card border border-border shadow-elevated rounded-lg flex flex-col' : inline ? 'border border-border rounded-lg bg-card my-4 min-w-0' : 'fixed bottom-20 md:bottom-4 right-2 sm:right-4 left-2 sm:left-auto sm:w-[580px] max-h-[calc(100dvh-100px)] z-40 bg-card border border-border shadow-elevated rounded-lg flex flex-col'}>
@@ -220,7 +233,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
         {aiBusy && <Skeleton className="h-8 w-3/4" />}
         <div ref={editor} contentEditable suppressContentEditableWarning role="textbox" aria-label={t('compose.message')} aria-multiline="true" className="min-h-44 p-2 outline-none text-sm leading-relaxed break-words [&_ul]:list-disc [&_ul]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_a]:text-primary" onInput={e => patch({ html: cleanHtml(e.currentTarget.innerHTML) })} onPaste={e => { e.preventDefault(); command('insertHTML', textToComposeHtml(e.clipboardData.getData('text/plain'))); }} />
         {draft.quote && <div className="text-xs text-muted-foreground"><Button variant="ghost" className="h-11" aria-label={t('compose.quote')} onClick={() => setShowQuote(!showQuote)}><MoreHorizontal className="h-4 w-4" /></Button>{showQuote && <blockquote className="border-l-2 border-border pl-3 whitespace-pre-wrap break-words max-h-64 overflow-y-auto"><strong>{draft.quoteHeading}</strong><br />{draft.quote}</blockquote>}</div>}
-        {draft.originalAttachments.length > 0 && <fieldset className="text-xs space-y-2"><legend>{t('compose.forwardAttachments')}</legend>{draft.originalAttachments.map((a, i) => <label key={i} className="flex items-center gap-2 min-h-11"><input type="checkbox" checked={a.selected} onChange={e => patch({ originalAttachments: draft.originalAttachments.map((att, index) => index === i ? { ...att, selected: e.target.checked } : att) })} />{a.name}</label>)}<p className="text-muted-foreground">{t('compose.originalUnavailable')}</p></fieldset>}
+        {draft.originalAttachments.length > 0 && <fieldset className="text-xs space-y-2"><legend>{t('compose.forwardAttachments')}</legend>{draft.originalAttachments.map((a, i) => <label key={i} className="flex items-center gap-2 min-h-11"><input type="checkbox" checked={a.selected} onChange={e => patch({ originalAttachments: draft.originalAttachments.map((att, index) => index === i ? { ...att, selected: e.target.checked } : att) })} />{a.name}</label>)}<p className="text-muted-foreground">{t('compose.delivery.originals')}</p></fieldset>}
         {draft.attachments.map((a, i) => <div key={i} className="flex items-center gap-2 bg-secondary rounded-md pl-2 text-sm"><Paperclip className="h-4 w-4 shrink-0" /><span className="truncate flex-1">{a.name}</span><span className="text-xs">{(a.size / 1024 / 1024).toFixed(1)} MB</span>{icon(t('compose.remove'), X, () => patch({ attachments: draft.attachments.filter((_, x) => x !== i) }))}</div>)}
         <input ref={fileInput} type="file" multiple className="hidden" onChange={e => { void addFiles(Array.from(e.target.files || [])); e.target.value = ''; }} />
         <div className="flex flex-wrap items-center gap-1 border-t border-border pt-2">
@@ -229,8 +242,9 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
           {draft.originalId && <Button variant="ghost" className="min-h-11 gap-2" disabled={aiBusy} onClick={() => ai()}><Sparkles className="h-4 w-4" />{t('compose.suggest')}</Button>}
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" disabled={aiBusy} className="min-h-11 gap-2"><Sparkles className="h-4 w-4" />{t('compose.improve')}</Button></DropdownMenuTrigger><DropdownMenuContent>{['business','friendly','shorter'].map(style => <DropdownMenuItem key={style} onSelect={() => ai(style)}>{t(`compose.${style}`)}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>
         </div>
+        {sendFailure && <div role="alert" className="text-sm text-destructive border border-destructive rounded-md p-3 flex flex-wrap items-center gap-2"><span className="flex-1">{t('compose.sendError')} {sendFailure}</span><Button variant="outline" className="min-h-11" disabled={sending || uncertain} onClick={send}>{t('compose.retry')}</Button></div>}
         <footer className="flex items-center flex-wrap gap-2 border-t border-border pt-2">
-          <Button className="min-h-11 gap-2" disabled={sending || aiBusy} onClick={send}><Send className="h-4 w-4" />{t(sending ? 'compose.sending' : 'compose.send')}</Button>
+          <Button className="min-h-11 gap-2" disabled={sending || aiBusy || uncertain} onClick={send}><Send className="h-4 w-4" />{t(sending ? 'compose.sending' : 'compose.send')}</Button>
           <span className={`text-xs flex-1 ${status === 'error' ? 'text-destructive' : 'text-muted-foreground'}`} role="status">{status ? t(`compose.${status === 'error' ? 'saveError' : status}`) : ''}</span>
           {status === 'error' && <Button variant="outline" className="min-h-11" onClick={() => save()}>{t('compose.retry')}</Button>}
           {icon(t('compose.discard'), Trash2, () => setDiscard(true))}

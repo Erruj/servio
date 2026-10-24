@@ -22,7 +22,7 @@ export interface MailItem {
   cc?: string[];
   externalId?: string;
   labels: string[];
-  attachments?: { name: string; url?: string; sizeKB?: number }[];
+  attachments?: { id?: string; name: string; url?: string; sizeKB?: number }[];
   aiCategory?: string;
   aiUrgency?: string;
   customerSentiment?: string;

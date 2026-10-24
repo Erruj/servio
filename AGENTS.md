@@ -2,3 +2,4 @@
 - Mailacties (gelezen, ster, map) lopen via edge function mail-action, die eerst de echte mailbox bijwerkt en daarna de database; de sync neemt gelezen/ster uit de mailbox over maar wijzigt folder nooit, zodat gearchiveerde/verwijderde mails niet terugkomen.
 - Mail sync uses partial UPDATEs for existing messages, excludes Servio-owned labels and folders, and reads Outlook stars from Graph flags; this preserves user edits without insert defaults resetting omitted fields.
 - All mail compose modes use the shared composer and persist draft state in emails.draft_data with folder=drafts under existing user RLS; this makes drafts visible in folder counts and resumable without separate storage.
+- Mail sending claims an owned draft before delivery, preserves RFC threading, and converts that row to Sent after provider acceptance; post-delivery copy failures must never trigger another delivery, preventing duplicate sends.

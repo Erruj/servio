@@ -501,6 +501,7 @@ export type Database = {
           ai_category: string | null
           ai_classified_at: string | null
           ai_urgency: string | null
+          attachment_metadata: Json
           body_html: string | null
           body_text: string | null
           category_from_correction: boolean
@@ -519,7 +520,10 @@ export type Database = {
           is_read: boolean | null
           is_starred: boolean | null
           labels: string[] | null
+          message_id: string | null
           received_at: string
+          reference_ids: string[]
+          send_status: string
           snippet: string | null
           snoozed_until: string | null
           subject: string | null
@@ -535,6 +539,7 @@ export type Database = {
           ai_category?: string | null
           ai_classified_at?: string | null
           ai_urgency?: string | null
+          attachment_metadata?: Json
           body_html?: string | null
           body_text?: string | null
           category_from_correction?: boolean
@@ -553,7 +558,10 @@ export type Database = {
           is_read?: boolean | null
           is_starred?: boolean | null
           labels?: string[] | null
+          message_id?: string | null
           received_at: string
+          reference_ids?: string[]
+          send_status?: string
           snippet?: string | null
           snoozed_until?: string | null
           subject?: string | null
@@ -569,6 +577,7 @@ export type Database = {
           ai_category?: string | null
           ai_classified_at?: string | null
           ai_urgency?: string | null
+          attachment_metadata?: Json
           body_html?: string | null
           body_text?: string | null
           category_from_correction?: boolean
@@ -587,7 +596,10 @@ export type Database = {
           is_read?: boolean | null
           is_starred?: boolean | null
           labels?: string[] | null
+          message_id?: string | null
           received_at?: string
+          reference_ids?: string[]
+          send_status?: string
           snippet?: string | null
           snoozed_until?: string | null
           subject?: string | null
