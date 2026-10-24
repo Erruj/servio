@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Mail-prompt 8: snoozen, opvolg-herinneringen, vijfminutencontrole en tests
+- [ ] Mail-prompt 8: echte accountcontrole van snooze en opvolging (externe Supabase zonder beschikbare inlogsessie)
+
 - [x] Mail-prompt 7: selectie, bulkacties, sneltoetsen en instelling
 - [x] Mail-prompt 7: regeltests en gesimuleerde inboxcontrole
 - [ ] Mail-prompt 7: echte IMAP/Outlook bulkactie en herladen (externe Supabase zonder beschikbare inlogsessie)
