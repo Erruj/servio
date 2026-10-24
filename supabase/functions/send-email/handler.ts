@@ -69,7 +69,7 @@ async function gmailOriginal(token:string,externalId:string) {
   await walk(data.payload);
   return {message_id:header('message-id'),reference_ids:(header('references') || '').match(/<[^>]+>/g) || [],attachments};
 }
-Deno.serve(async(req)=>{
+export async function deliverEmail(req: Request, queuedOwner?: string) {
   if(req.method==='OPTIONS') return new Response('ok',{headers:corsHeaders});
   if(req.method!=='POST') return json({errorCode:'method'},405);
   let db:any, draft:any, owner:string | undefined;
@@ -80,9 +80,10 @@ Deno.serve(async(req)=>{
     const anon=Deno.env.get('SUPABASE_ANON_KEY');
     if(!url || !service || !anon) throw new SendError('configuration',500);
     const auth=req.headers.get('Authorization');
-    if(!auth?.startsWith('Bearer ')) return json({errorCode:'session'},401);
-    const authClient=createClient(url,anon,{global:{headers:{Authorization:auth}}});
-    const {data:{user},error:authError}=await authClient.auth.getUser();
+    if(!queuedOwner && !auth?.startsWith('Bearer ')) return json({errorCode:'session'},401);
+    const authClient=createClient(url,anon,{global:{headers:{Authorization:auth || ''}}});
+    const authResult=queuedOwner ? {data:{user:{id:queuedOwner,email:''}},error:null} : await authClient.auth.getUser();
+    const {data:{user},error:authError}=authResult;
     if(authError || !user) return json({errorCode:'session'},401);
     owner=user.id; db=createClient(url,service);
     const parsed=SendSchema.safeParse(await req.json());
@@ -97,7 +98,8 @@ Deno.serve(async(req)=>{
       if(result.error || !draft) throw new SendError('draft_missing');
       if(draft.folder==='sent' || draft.send_status==='sent') return json({success:true,messageId:draft.message_id});
       if(draft.send_status==='sending' || draft.send_status==='uncertain') throw new SendError('uncertain',409);
-      if(draft.folder!=='drafts') throw new SendError('draft_missing');
+      if(queuedOwner && (draft.folder!=='scheduled' || draft.send_status!=='queued' || new Date(draft.send_at).getTime()>Date.now())) throw new SendError('draft_missing');
+      if(!queuedOwner && draft.folder!=='drafts') throw new SendError('draft_missing');
     } else {
       // Legacy callers also receive a durable record before any external side effect.
       const result=await db.from('emails').insert({user_id:owner,external_id:`servio-draft-${crypto.randomUUID()}`,folder:'drafts',from_email:user.email || '',to_emails:input.to,cc_emails:input.cc,subject:input.subject,body_text:input.body,body_html:safeHtml(input.html || escapeHtml(input.body)),received_at:new Date().toISOString()}).select('*').single();
@@ -152,7 +154,7 @@ Deno.serve(async(req)=>{
     const headers=replyHeaders(original || {},mode);
     const html=safeHtml(input.html || escapeHtml(input.body));
     const raw=await buildMime({from:connection.email_address,to:input.to,cc:input.cc,bcc:input.bcc,subject:input.subject,text:input.body,html,messageId:mid,date:new Date(),...headers,attachments:mimeAttachments(attachments)});
-    const claim=await db.from('emails').update({send_status:'sending',message_id:mid,connection_id:connection.id}).eq('id',draft.id).eq('user_id',owner).eq('folder','drafts').in('send_status',['draft','failed']).select('id');
+    const claim=await db.from('emails').update({send_status:'sending',message_id:mid,connection_id:connection.id}).eq('id',draft.id).eq('user_id',owner).eq('folder',queuedOwner ? 'scheduled':'drafts').in('send_status',queuedOwner ? ['queued']:['draft','failed']).lte(queuedOwner ? 'send_at':'received_at',new Date().toISOString()).select('id');
     if(claim.error) throw new SendError('storage',500);
     if(!claim.data?.length) throw new SendError('uncertain',409);
     claimed=true;
@@ -183,7 +185,7 @@ Deno.serve(async(req)=>{
       const result=await providerCall('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',token,'POST',{raw:Buffer.from(raw).toString('base64url'),...(['reply','replyAll'].includes(mode) && original?.thread_id ? {threadId:original.thread_id}:{})});
       delivered=true;externalId=result.id;threadId=result.threadId || threadId;
     } else throw new SendError('configuration');
-    const {error:saveError}=await db.from('emails').update({folder:'sent',send_status:'sent',external_id:externalId,message_id:draft.message_id || mid,reference_ids:headers.references || [],thread_id:threadId,from_email:connection.email_address,to_emails:input.to,cc_emails:input.cc,subject:input.subject,body_text:input.body,body_html:html,snippet:input.body.slice(0,160),is_read:true,is_starred:false,received_at:new Date().toISOString(),has_attachments:attachments.length>0,attachment_metadata:attachments.map((a,i)=>({id:`part-${i}`,name:a.filename,type:a.mimeType,sizeKB:Math.ceil(atob(a.content).length/1024)})),draft_data:null}).eq('id',draft.id).eq('user_id',owner);
+    const {error:saveError}=await db.from('emails').update({folder:'sent',send_status:'sent',send_at:null,undo_until:null,send_payload:null,send_error:null,external_id:externalId,message_id:draft.message_id || mid,reference_ids:headers.references || [],thread_id:threadId,from_email:connection.email_address,to_emails:input.to,cc_emails:input.cc,subject:input.subject,body_text:input.body,body_html:html,snippet:input.body.slice(0,160),is_read:true,is_starred:false,received_at:new Date().toISOString(),has_attachments:attachments.length>0,attachment_metadata:attachments.map((a,i)=>({id:`part-${i}`,name:a.filename,type:a.mimeType,sizeKB:Math.ceil(atob(a.content).length/1024)})),draft_data:null}).eq('id',draft.id).eq('user_id',owner);
     if(saveError) warnings.push('storage_sent');
     return json({success:true,messageId:draft.message_id || mid,warnings});
   } catch(error) {
@@ -191,9 +193,9 @@ Deno.serve(async(req)=>{
     const smtpError=error as {code?: string; responseCode?: number};
     const code=error instanceof SendError ? error.code : ['attachment_size','attachment_missing','original_missing'].includes(rawCode) ? rawCode : smtpError.code==='EAUTH' || /auth|login|credentials/i.test(rawCode) ? 'reconnect' : smtpError.responseCode || smtpError.code==='EENVELOPE' ? 'provider' : 'network';
     const uncertain=claimed && !delivered && (code==='network');
-    if(db && draft && owner && claimed) await db.from('emails').update({send_status:delivered ? 'sent':uncertain ? 'uncertain':'failed'}).eq('id',draft.id).eq('user_id',owner);
+    if(db && draft && owner && claimed) await db.from('emails').update({send_status:delivered ? 'sent':uncertain ? 'uncertain':'failed',send_error:code}).eq('id',draft.id).eq('user_id',owner);
     if(delivered) return json({success:true,warnings:['storage_sent']});
     console.error('send-email failed', {code,uncertain});
     return json({errorCode:uncertain ? 'uncertain':code},error instanceof SendError ? error.status : 500);
   }
-});
+}
