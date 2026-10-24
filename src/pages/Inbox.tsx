@@ -161,6 +161,8 @@ const Inbox = () => {
     await refetchEmails();if(edit){setDraftMail({...mail,folder:'drafts'});setComposeOpen(true);}else toast({title:t(action==='cancel'?'mailSchedule.cancelled':'mailSchedule.scheduled')});
   };
   const handleMailSelect = (mail: MailItem) => {
+    setComposeRequest(undefined);
+    setFocusedMailId(mail.id);
     if(mail.folder==='scheduled'){setSelectedMail(mail);return;}
     if (mail.folder === 'drafts') {
       setDraftMail(mail);
@@ -443,7 +445,7 @@ const Inbox = () => {
                 </div>
                 <div className="flex-1">
                   <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                    {isDesktop && <MailDetail mail={currentMail} className="h-full" actions={mailActions} connections={connections} onDraftSaved={refetchEmails} />}
+                    {isDesktop && <MailDetail mail={currentMail} className="h-full" actions={mailActions} connections={connections} onDraftSaved={refetchEmails} composeRequest={composeRequest} />}
                   </Suspense>
                 </div>
               </div>
@@ -460,7 +462,7 @@ const Inbox = () => {
                       )}
                     </div>
                     <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                      {!isDesktop && <MailDetail mail={currentMail} className="flex-1 min-w-0" actions={mailActions} connections={connections} onDraftSaved={refetchEmails} />}
+                      {!isDesktop && <MailDetail mail={currentMail} className="flex-1 min-w-0" actions={mailActions} connections={connections} onDraftSaved={refetchEmails} composeRequest={composeRequest} />}
                     </Suspense>
                   </div>
                 ) : (
