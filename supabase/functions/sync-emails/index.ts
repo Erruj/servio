@@ -137,6 +137,8 @@ function parseGmailMessage(msg: any) {
 
   return {
     external_id: msg.id,
+    message_id: getHeader("Message-ID") || null,
+    reference_ids: (getHeader("References") || "").match(/<[^>]+>/g) || [],
     thread_id: msg.threadId,
     from_email: fromMatch[2] || fromHeader,
     from_name: fromMatch[1] || null,
@@ -378,7 +380,9 @@ function processImapMessage(metaLine: string, rawBytes: Uint8Array): any | null 
 
     return {
       external_id: parsed.messageId || `uid-${uid}`,
-      thread_id: null,
+      thread_id: parsed.referenceIds[0] || parsed.inReplyTo || (parsed.messageId ? `<${parsed.messageId}>` : null),
+      message_id: parsed.messageId ? `<${parsed.messageId}>` : null,
+      reference_ids: parsed.referenceIds,
       from_email: parsed.fromEmail,
       from_name: parsed.fromName,
       to_emails: parsed.toEmails,
@@ -451,6 +455,8 @@ function parseRawEmail(raw: string) {
 
   return {
     messageId,
+    referenceIds: (headers["references"] || "").match(/<[^>]+>/g) || [],
+    inReplyTo: headers["in-reply-to"] || null,
     fromEmail,
     fromName: fromName ? decodeRFC2047(fromName) : null,
     toEmails,

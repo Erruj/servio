@@ -1,9 +1,11 @@
 // Keep the Graph selection and parser together so flags are actually fetched.
-export const OUTLOOK_MESSAGE_FIELDS = "id,conversationId,from,toRecipients,ccRecipients,subject,bodyPreview,body,isRead,flag,hasAttachments,receivedDateTime";
+export const OUTLOOK_MESSAGE_FIELDS = "id,conversationId,from,toRecipients,ccRecipients,subject,bodyPreview,body,isRead,flag,hasAttachments,receivedDateTime,internetMessageId,internetMessageHeaders";
 
 export function parseOutlookMessage(msg: any) {
   return {
     external_id: msg.id,
+    message_id: msg.internetMessageId || null,
+    reference_ids: (msg.internetMessageHeaders?.find((h: any) => h.name.toLowerCase() === "references")?.value || "").match(/<[^>]+>/g) || [],
     thread_id: msg.conversationId,
     from_email: msg.from?.emailAddress?.address || "",
     from_name: msg.from?.emailAddress?.name || null,
