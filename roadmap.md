@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Mail-prompt 6: ongedaan maken, wachttijd, later versturen en Gepland
+- [ ] Mail-prompt 6: tests en echte mailboxcontrole
+
 - [x] Mail-prompt 5: threading, SMTP/IMAP Verzonden, Outlook verzending, bijlagen en veilige herpogingen
 - [ ] Mail-prompt 5: echte IMAP/Outlook ontvangsttest (externe Supabase zonder beschikbare inlogsessie)
 
