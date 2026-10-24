@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Send, X, Minus, Maximize2, Minimize2, Paperclip, Trash2, Bold, Italic, Underline, List, Link, Quote, Sparkles, FileText, MoreHorizontal } from 'lucide-react';
+import { Send, X, Minus, Maximize2, Minimize2, Paperclip, Trash2, Bold, Italic, Underline, List, Link, Quote, Sparkles, FileText, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { ToastAction } from '@/components/ui/toast';
+import { schedulePreset } from '@/lib/mail-schedule';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -67,6 +69,8 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
   const [status, setStatus] = useState<'saved' | 'saving' | 'error' | ''>('');
   const [sending, setSending] = useState(false);
   const [sendFailure, setSendFailure] = useState('');
+  const [scheduleOpen,setScheduleOpen]=useState(false);
+  const [scheduleDate,setScheduleDate]=useState('');
   const [uncertain, setUncertain] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [discard, setDiscard] = useState(false);
@@ -131,7 +135,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       const sender = connections.find(c => c.id === data.connectionId)?.email_address || user.email || '';
       const { error } = await supabase.from('emails').upsert({
         id: id.current, user_id: user.id, external_id: `servio-draft-${id.current}`, connection_id: data.connectionId || null,
-        folder: 'drafts', from_email: sender, to_emails: data.to, cc_emails: data.cc, subject: data.subject,
+        folder: 'drafts', send_status:'draft', from_email: sender, to_emails: data.to, cc_emails: data.cc, subject: data.subject,
         body_html: data.html, body_text: plainText(data.html), snippet: plainText(data.html).slice(0, 160),
         received_at: new Date().toISOString(), is_read: true, has_attachments: data.attachments.length > 0, draft_data: JSON.parse(serialized),
       }, { onConflict: 'id' });
@@ -182,7 +186,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       setEditorText(data.variants[0].content);
     } catch { toast({ title: t('compose.aiError'), variant: 'destructive' }); } finally { setAiBusy(false); }
   };
-  const send = async () => {
+  const send = async (sendAt?: string) => {
     const d = latest.current;
     if (!d.to.length || !d.subject.trim() || !plainText(d.html).trim()) { toast({ title: t('compose.missingFields'), variant: 'destructive' }); return; }
     if (!hasConnection || !d.connectionId) { toast({ title: t('compose.noMailbox'), variant: 'destructive' }); return; }
@@ -192,21 +196,27 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       if (!(await save())) return;
       stopped.current = true;
       const quote = d.quote ? `\n\n${d.quoteHeading}\n${d.quote}` : '';
-      const { data, error } = await supabase.functions.invoke('send-email', { body: {
+      const { data, error } = await supabase.functions.invoke('scheduled-mail', { body: {action:'enqueue',sendAt,draftId:id.current,payload:{
         to: d.to, cc: d.cc, bcc: d.bcc, subject: d.subject, body: plainText(d.html) + quote,
         html: cleanHtml(d.html) + (d.quote ? `<blockquote>${textToComposeHtml(d.quoteHeading + '\n' + d.quote)}</blockquote>` : ''),
         mode: d.mode, originalId: d.originalId, draftId: id.current,
         originalAttachments: d.originalAttachments.filter(a => a.selected).map(a => a.id || '*'),
         connection_id: d.connectionId, replyToEmailId: d.mode === 'reply' || d.mode === 'replyAll' ? d.originalId : undefined,
         attachments: d.attachments.map(a => ({ filename: a.name, mimeType: a.type, content: a.content })),
-      } });
+      }} });
       if (error || data?.error || data?.errorCode) {
         let details = data;
         if (error instanceof FunctionsHttpError) { try { details = await error.context.json(); } catch { /* use fallback */ } }
         throw new Error(details?.errorCode || (details?.error ? 'limit' : 'network'));
       }
       for (const warning of data?.warnings || []) toast({ title: t(`compose.delivery.${warning}`, { defaultValue: t('compose.delivery.storage_sent') }) });
-      toast({ title: t('compose.sent') }); onSaved?.(); onOpenChange(false);
+      if(sendAt)toast({title:t('mailSchedule.scheduled')});
+      else toast({title:t('mailSchedule.sentUndo'),duration:Math.max(1,new Date(data.undoUntil).getTime()-Date.now()),action:<ToastAction altText={t('mailSchedule.undo')} onClick={async()=>{
+        const result=await supabase.functions.invoke('scheduled-mail',{body:{action:'undo',draftId:id.current}});
+        if(result.error||result.data?.errorCode){toast({title:t('mailSchedule.too_late'),variant:'destructive'});return;}
+        window.dispatchEvent(new CustomEvent('servio-reopen-draft',{detail:{id:id.current,draft:d}}));onSaved?.();
+      }}>{t('mailSchedule.undo')}</ToastAction>});
+      onSaved?.(); onOpenChange(false);
     } catch (error) {
       const code = error instanceof Error ? error.message : 'network';
       stopped.current = code === 'uncertain';
@@ -242,9 +252,10 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
           {draft.originalId && <Button variant="ghost" className="min-h-11 gap-2" disabled={aiBusy} onClick={() => ai()}><Sparkles className="h-4 w-4" />{t('compose.suggest')}</Button>}
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" disabled={aiBusy} className="min-h-11 gap-2"><Sparkles className="h-4 w-4" />{t('compose.improve')}</Button></DropdownMenuTrigger><DropdownMenuContent>{['business','friendly','shorter'].map(style => <DropdownMenuItem key={style} onSelect={() => ai(style)}>{t(`compose.${style}`)}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>
         </div>
-        {sendFailure && <div role="alert" className="text-sm text-destructive border border-destructive rounded-md p-3 flex flex-wrap items-center gap-2"><span className="flex-1">{t('compose.sendError')} {sendFailure}</span><Button variant="outline" className="min-h-11" disabled={sending || uncertain} onClick={send}>{t('compose.retry')}</Button></div>}
+        {sendFailure && <div role="alert" className="text-sm text-destructive border border-destructive rounded-md p-3 flex flex-wrap items-center gap-2"><span className="flex-1">{t('compose.sendError')} {sendFailure}</span><Button variant="outline" className="min-h-11" disabled={sending || uncertain} onClick={()=>void send()}>{t('compose.retry')}</Button></div>}
         <footer className="flex items-center flex-wrap gap-2 border-t border-border pt-2">
-          <Button className="min-h-11 gap-2" disabled={sending || aiBusy || uncertain} onClick={send}><Send className="h-4 w-4" />{t(sending ? 'compose.sending' : 'compose.send')}</Button>
+          <Button className="min-h-11 gap-2" disabled={sending || aiBusy || uncertain} onClick={()=>void send()}><Send className="h-4 w-4" />{t(sending ? 'compose.sending' : 'compose.send')}</Button>
+          <DropdownMenu><DropdownMenuTrigger asChild><Button size="icon" className="h-11 w-11" disabled={sending || aiBusy || uncertain} aria-label={t('mailSchedule.later')}><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent>{(['tomorrow','monday'] as const).map(kind=><DropdownMenuItem key={kind} onSelect={()=>void send(schedulePreset(kind).toISOString())}>{t(`mailSchedule.${kind}`)}</DropdownMenuItem>)}<DropdownMenuItem onSelect={()=>setScheduleOpen(true)}>{t('mailSchedule.custom')}</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
           <span className={`text-xs flex-1 ${status === 'error' ? 'text-destructive' : 'text-muted-foreground'}`} role="status">{status ? t(`compose.${status === 'error' ? 'saveError' : status}`) : ''}</span>
           {status === 'error' && <Button variant="outline" className="min-h-11" onClick={() => save()}>{t('compose.retry')}</Button>}
           {icon(t('compose.discard'), Trash2, () => setDiscard(true))}
@@ -252,6 +263,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       </>}
     </div>
     <ConfirmDialog open={discard} onOpenChange={setDiscard} title={t('compose.discardTitle')} description={t('compose.discardDesc')} confirmLabel={t('compose.discard')} cancelLabel={t('compose.close')} variant="destructive" onConfirm={async () => { if (saving.current) await saving.current; stopped.current = true; const { error } = await supabase.from('emails').delete().eq('id', id.current).eq('user_id', user?.id || ''); if (error) { stopped.current = false; setStatus('error'); return; } onSaved?.(); onOpenChange(false); }} />
+    <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}><DialogContent><DialogHeader><DialogTitle>{t('mailSchedule.custom')}</DialogTitle></DialogHeader><Input type="datetime-local" aria-label={t('mailSchedule.dateTime')} value={scheduleDate} onChange={e=>setScheduleDate(e.target.value)} /><Button disabled={!scheduleDate || sending} onClick={()=>{const date=new Date(scheduleDate);if(!Number.isFinite(date.getTime())||date.getTime()<=Date.now()){toast({title:t('mailSchedule.future'),variant:'destructive'});return;}setScheduleOpen(false);void send(date.toISOString());}}>{t('mailSchedule.schedule')}</Button></DialogContent></Dialog>
     <Dialog open={linkOpen} onOpenChange={setLinkOpen}><DialogContent><DialogHeader><DialogTitle>{t('compose.link')}</DialogTitle></DialogHeader><Input aria-label={t('compose.linkUrl')} value={linkUrl} onChange={e => setLinkUrl(e.target.value)} /><Button onClick={() => { try { const url = new URL(linkUrl); if (!['https:','http:'].includes(url.protocol)) throw new Error(); editor.current?.focus(); if (selectedRange.current) { const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(selectedRange.current); } command('createLink', url.href); setLinkOpen(false); setLinkUrl(''); } catch { toast({ title: t('compose.invalidLink'), variant: 'destructive' }); } }}>{t('compose.save')}</Button></DialogContent></Dialog>
   </section></TooltipProvider>;
 }

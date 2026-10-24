@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Inbox, Star, FileText, Send, Archive, ShieldAlert, Trash2 } from 'lucide-react';
+import { Inbox, Star, FileText, Send, Archive, ShieldAlert, Trash2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { FolderCounts, MailView } from '@/hooks/useEmailConnections';
 
@@ -7,10 +7,11 @@ export const MAIL_VIEWS: { id: MailView; icon: typeof Inbox }[] = [
   { id: 'inbox', icon: Inbox },
   { id: 'starred', icon: Star },
   { id: 'drafts', icon: FileText },
+  { id: 'scheduled', icon: Clock },
   { id: 'sent', icon: Send },
   { id: 'archive', icon: Archive },
   { id: 'spam', icon: ShieldAlert },
-  { id: 'trash', icon: Trash2 },
+  { id: 'trash', icon: Trash2, Clock },
 ];
 
 interface Props {
