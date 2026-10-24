@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Mail-prompt 5: threading, SMTP/IMAP Verzonden, Outlook verzending, bijlagen en veilige herpogingen
+- [ ] Mail-prompt 5: echte IMAP/Outlook ontvangsttest (externe Supabase zonder beschikbare inlogsessie)
+
 - [x] Mail-prompt 4: antwoord/allen/doorstuur/nieuw opstelvenster, opmaak, ontvangers, hulpmiddelen en blijvende concepten
 - [ ] Mail-prompt 4: echte accounttest van concepten na herladen (externe Supabase zonder beschikbare inlogsessie)
 
