@@ -1,3 +1,4 @@
+// @ts-ignore Bun tests
 import { describe, expect, test } from 'bun:test';
 import { senderAddress, legacyBlockedSenders, unsubscribeLinks } from './mail-senders';
 describe('sender preferences', () => {

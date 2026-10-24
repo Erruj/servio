@@ -3,10 +3,6 @@ export const ACTIONS = ["read", "unread", "star", "unstar", "archive", "trash", 
 export type Action = typeof ACTIONS[number];
 type Folder = "inbox" | "archive" | "trash" | "spam" | "sent" | "drafts";
 const MOVE_TARGET: Partial<Record<Action, Folder>> = { archive: "archive", trash: "trash", spam: "spam", inbox: "inbox" };
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 class MailboxError extends Error {
   constructor(message: string, public status = 502) { super(message); }
@@ -156,7 +152,7 @@ async function imapAction(conn: any, email: any, action: Action) {
     const caps = (await imap.cmd("CAPABILITY")).join(" ").toUpperCase();
     await imap.cmd(`LOGIN ${q(conn.email_address)} ${q(password)}`);
     const current: Folder = (email.folder || "inbox") as Folder;
-    const sourceName = await resolveFolder(imap, current === "sent" || current === "drafts" ? "inbox" : current, cache);
+    const sourceName = await resolveFolder(imap, current === "sent" || current === "drafts" || email.folder === 'snoozed' ? "inbox" : current, cache);
     await imap.cmd(`SELECT ${q(sourceName)}`);
     const uid = await findUid(imap, email.external_id, sourceName === "INBOX");
     if (!uid) throw new MailboxError("Deze mail is niet (meer) gevonden in je mailbox.", 404);
