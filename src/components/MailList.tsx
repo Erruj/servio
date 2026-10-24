@@ -17,6 +17,7 @@ import { BulkMailToolbar } from '@/components/inbox/BulkMailToolbar';
 import { selectMailRange, currentSelection, type BulkMailAction } from '@/lib/inbox-controls';
 
 interface MailListProps {
+  serverSearch?: boolean;
   mails: MailItem[];
   selectedMailId?: string;
   onSelectMail: (mail: MailItem) => void;
@@ -35,7 +36,7 @@ interface MailListProps {
 }
 
 export function MailList({ 
-  mails, selectedMailId, onSelectMail, searchQuery = '', filter = 'all', className,
+  mails, selectedMailId, onSelectMail, searchQuery = '', filter = 'all', className, serverSearch = false,
   onMarkAsRead, onMarkAsUnread, onDeleteMultiple, onToggleStar, title, onBulkAction, onDisplayedMails, focusedMailId
 }: MailListProps) {
   const { toast } = useToast();
@@ -58,6 +59,7 @@ export function MailList({
   }, [filter]);
 
   const safeSearchQuery = useMemo(() => {
+    if(serverSearch)return searchQuery;
     if (!searchQuery) return '';
     try {
       if (searchQuery.length > 0) searchQuerySchema.parse(searchQuery);
@@ -68,7 +70,7 @@ export function MailList({
       }
       return '';
     }
-  }, [searchQuery, toast]);
+  }, [searchQuery, toast, serverSearch]);
 
   const hasLabel = (mail: MailItem, label: string) => mail.labels.some(l => l.toUpperCase() === label);
 
@@ -87,7 +89,7 @@ export function MailList({
   useEffect(() => {
     let filtered = mailsRef.current;
 
-    if (safeSearchQuery) {
+    if (safeSearchQuery && !serverSearch) {
       const query = safeSearchQuery.toLowerCase();
       filtered = filtered.filter(mail =>
         mail.subject.toLowerCase().includes(query) ||
@@ -122,7 +124,7 @@ export function MailList({
 
     setPinnedIds(filtered.map(m => m.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, safeSearchQuery, mailIdsFingerprint, blockedSenders, categoryFilter, urgencyFilter]);
+  }, [filter, safeSearchQuery, serverSearch, mailIdsFingerprint, blockedSenders, categoryFilter, urgencyFilter]);
 
   // De gepinde ids met actuele mail-data, zodat leesstatus en AI-labels live blijven meebewegen
   // binnen een bevroren lijst-samenstelling.
