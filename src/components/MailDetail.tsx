@@ -189,6 +189,15 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
     }
   }, [mail?.id]);
 
+  useEffect(() => {
+    const compose = (event: Event) => {
+      const request = (event as CustomEvent<{id: string; mode: ComposeMode}>).detail;
+      if (request.id === mail?.id && ['reply','replyAll','forward'].includes(request.mode)) setComposeMode(request.mode);
+    };
+    window.addEventListener('servio-mail-compose', compose);
+    return () => window.removeEventListener('servio-mail-compose', compose);
+  }, [mail?.id]);
+
   // Auto-suggest tone based on sentiment + urgency
   useEffect(() => {
     const unhappy = analysis?.sentiment === 'Negatief' || mail?.customerSentiment === 'unhappy';

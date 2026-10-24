@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, User, HelpCircle, Mail } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,12 @@ interface TopbarProps {
 export function Topbar({ onSearchChange, onFilterChange, className, connections = [], selectedConnectionId = null, onConnectionChange }: TopbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const focus = () => { setMobileSearchOpen(true); requestAnimationFrame(() => searchRef.current?.focus()); };
+    window.addEventListener('servio-mail-search', focus);
+    return () => window.removeEventListener('servio-mail-search', focus);
+  }, []);
   const [displayName, setDisplayName] = useState('');
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
@@ -93,6 +99,7 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
         <div className={`relative flex-1 min-w-0 ${mobileSearchOpen ? 'block' : 'hidden sm:block'}`}>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            ref={searchRef}
             placeholder={t('ui.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}

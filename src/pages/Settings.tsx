@@ -17,6 +17,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from 'next-themes';
 import { usePersonalization } from '@/hooks/usePersonalization';
 import { useMailSendPrefs } from '@/hooks/useMailSendPrefs';
+import { useMailShortcutPrefs } from '@/hooks/useInboxShortcuts';
 import { UNDO_OPTIONS } from '@/lib/mail-schedule';
 import { useEmailImagePrefs, type EmailImageMode } from '@/hooks/useEmailImagePrefs';
 import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap, Download, Image } from 'lucide-react';
@@ -44,6 +45,7 @@ const Settings = () => {
   const { t, i18n } = useTranslation();
   const imagePrefs = useEmailImagePrefs();
   const sendPrefs=useMailSendPrefs();
+  const shortcutPrefs = useMailShortcutPrefs();
   const { user, signOut } = useAuth();
   const { setTheme: setAppTheme, theme: currentTheme } = useTheme();
   const { settings: personalization, updateSettings: updatePersonalization } = usePersonalization();
@@ -291,6 +293,10 @@ const Settings = () => {
                 <Separator />
                 <SettingItem icon={LayoutGrid} label={t('compactLayout')} description={t('compactLayoutDesc')}>
                   <Switch checked={compactLayout} onCheckedChange={handleCompactToggle} />
+                </SettingItem>
+                <Separator />
+                <SettingItem icon={MessageSquare} label={t('inboxControls.pref')} description="">
+                  <Switch aria-label={t('inboxControls.pref')} checked={shortcutPrefs.enabled} onCheckedChange={value=>{try {shortcutPrefs.setEnabled(value);toast.success(t('inboxControls.prefSaved'));} catch {toast.error(t('inboxControls.prefError'));}}} />
                 </SettingItem>
                 <Separator />
                 <SettingItem icon={MessageSquare} label={t('mailSchedule.delay')} description=""><Select value={String(sendPrefs.seconds)} onValueChange={v=>sendPrefs.update.mutate(Number(v),{onSuccess:()=>toast.success(t('mailSchedule.prefSaved')),onError:()=>toast.error(t('mailSchedule.prefError'))})}><SelectTrigger className="min-h-11 w-[180px]"><SelectValue /></SelectTrigger><SelectContent>{sendPrefs.seconds===8 && <SelectItem value="8">{t('mailSchedule.defaultDelay')}</SelectItem>}{UNDO_OPTIONS.map(n=><SelectItem key={n} value={String(n)}>{t('mailSchedule.seconds',{count:n})}</SelectItem>)}</SelectContent></Select></SettingItem>
