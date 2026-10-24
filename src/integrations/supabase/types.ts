@@ -513,10 +513,12 @@ export type Database = {
           external_id: string
           folder: string
           follow_up_at: string | null
+          follow_up_pending: boolean
           from_email: string
           from_name: string | null
           has_attachments: boolean | null
           id: string
+          inbox_returned_at: string | null
           is_read: boolean | null
           is_starred: boolean | null
           labels: string[] | null
@@ -555,10 +557,12 @@ export type Database = {
           external_id: string
           folder?: string
           follow_up_at?: string | null
+          follow_up_pending?: boolean
           from_email: string
           from_name?: string | null
           has_attachments?: boolean | null
           id?: string
+          inbox_returned_at?: string | null
           is_read?: boolean | null
           is_starred?: boolean | null
           labels?: string[] | null
@@ -597,10 +601,12 @@ export type Database = {
           external_id?: string
           folder?: string
           follow_up_at?: string | null
+          follow_up_pending?: boolean
           from_email?: string
           from_name?: string | null
           has_attachments?: boolean | null
           id?: string
+          inbox_returned_at?: string | null
           is_read?: boolean | null
           is_starred?: boolean | null
           labels?: string[] | null
@@ -1399,7 +1405,19 @@ export type Database = {
         }
         Returns: string
       }
+      mail_reply_matches: {
+        Args: {
+          r: Database["public"]["Tables"]["emails"]["Row"]
+          s: Database["public"]["Tables"]["emails"]["Row"]
+        }
+        Returns: boolean
+      }
+      process_mail_reminders: { Args: never; Returns: undefined }
       refresh_mail_send_job: { Args: never; Returns: undefined }
+      set_mail_snooze: {
+        Args: { _email_id: string; _until: string }
+        Returns: undefined
+      }
       update_team_member_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
