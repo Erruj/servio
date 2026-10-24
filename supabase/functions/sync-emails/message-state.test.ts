@@ -2,6 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { mailboxUpdate, OUTLOOK_MESSAGE_FIELDS, parseOutlookMessage } from "./message-state";
 
 describe("mail sync state", () => {
+  test("returned snoozes and follow-ups remain unread across sync until opened", () => {
+    expect(mailboxUpdate({is_read:true},true)).not.toHaveProperty('is_read');
+    expect(mailboxUpdate({is_read:true},false).is_read).toBe(true);
+  });
   test("Outlook requests flags and preserves a mailbox star on sync", () => {
     expect(OUTLOOK_MESSAGE_FIELDS.split(",")).toContain("flag");
     const update = mailboxUpdate(parseOutlookMessage({ flag: { flagStatus: "flagged" }, isRead: true }));
