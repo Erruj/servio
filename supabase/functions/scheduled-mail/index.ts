@@ -23,7 +23,7 @@ Deno.serve(async req=>{
  if(error)throw error;
  for(const row of data || []){
  const response=await deliverEmail(new Request(req.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...row.send_payload,draftId:row.id})}),row.user_id,row.updated_at);
- if(!response.ok){const result=await response.json();await db.from('emails').update({send_status:'failed',send_error:result.errorCode || 'network'}).eq('id',row.id).eq('send_status','queued');}
+ if(!response.ok){const result=await response.json();await db.from('emails').update({send_status:'failed',send_error:result.errorCode || 'network'}).eq('id',row.id).eq('send_status','queued').eq('updated_at',row.updated_at);}
  }
  await db.rpc('refresh_mail_send_job');await recordCronHealth('scheduled-mail-delivery');
  };
