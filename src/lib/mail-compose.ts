@@ -16,7 +16,7 @@ export interface DraftData {
   quote: string;
   quoteHeading: string;
   attachments: ComposeAttachment[];
-  originalAttachments: { name: string; url?: string; selected: boolean }[];
+  originalAttachments: { id?: string; name: string; url?: string; selected: boolean }[];
 }
 
 export function addresses(values: string[]) {
