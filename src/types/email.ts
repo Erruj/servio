@@ -12,6 +12,8 @@ export interface EmailConnection {
 }
 
 export interface Email {
+  send_at?: string | null;
+  send_error?: string | null;
   attachment_metadata?: { id?: string; name: string; sizeKB?: number }[];
   draft_data?: import('@/lib/mail-compose').DraftData | null;
   id: string;
@@ -48,6 +50,8 @@ export function emailToMailItem(email: Email): MailItem {
 
   return {
     draftData: email.draft_data || undefined,
+    sendAt:email.send_at || undefined,
+    sendError:email.send_error || undefined,
     id: email.id,
     from: email.from_name || email.from_email,
     fromEmail: email.from_email,
