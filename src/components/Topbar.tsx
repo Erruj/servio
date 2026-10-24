@@ -41,6 +41,8 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
   useEffect(()=>{if(searchValue!==undefined)setSearchQuery(searchValue);},[searchValue]);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const searchAreaRef=useRef<HTMLDivElement>(null);
+  useEffect(()=>{const outside=(event:PointerEvent)=>{const node=event.target;if(node instanceof Element&&!searchAreaRef.current?.contains(node)&&!node.closest('[role="dialog"]'))setSuggestionsOpen(false);};document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside);},[]);
   useEffect(() => {
     const focus = () => { setMobileSearchOpen(true); requestAnimationFrame(() => searchRef.current?.focus()); };
     window.addEventListener('servio-mail-search', focus);
@@ -103,7 +105,7 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
         >
           <Search className="h-4 w-4" />
         </Button>
-        <div className={`relative flex-1 min-w-0 ${mobileSearchOpen ? 'block' : 'hidden sm:block'}`}>
+        <div ref={searchAreaRef} className={`relative flex-1 min-w-0 ${mobileSearchOpen ? 'block' : 'hidden sm:block'}`}>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             ref={searchRef}
@@ -114,7 +116,7 @@ export function Topbar({ onSearchChange, onFilterChange, className, connections 
             autoFocus={mobileSearchOpen}
             onFocus={()=>setSuggestionsOpen(true)}
             onKeyDown={e=>{if(e.key==='Escape'||e.key==='Enter')setSuggestionsOpen(false);}}
-            onBlur={() => {setSuggestionsOpen(false); if (!searchQuery) setMobileSearchOpen(false); }}
+            onBlur={() => { if (!searchQuery && !suggestionsOpen) setMobileSearchOpen(false); }}
           />
           {suggestionsOpen&&<MailSearchSuggestions query={searchQuery} view={mailView} onClose={()=>setSuggestionsOpen(false)} onSelect={(query,view)=>{handleSearchChange(query);if(view)onSavedView?.(query,view);searchRef.current?.focus();}}/>}
         </div>
