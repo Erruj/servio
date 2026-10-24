@@ -1,7 +1,8 @@
 # Roadmap
-- [ ] Mail-prompt 11: browsermeldingen en samengevoegde Mail-instellingen
-- [ ] Mail-prompt 11: mailboxafzender/handtekening en veilige afwezigheidsberichten met audit
-- [ ] Mail-prompt 11: regels en browserflow testen; echte accounttest indien sessie beschikbaar
+- [x] Mail-prompt 11: browsermeldingen en samengevoegde Mail-instellingen
+- [x] Mail-prompt 11: mailboxafzender/handtekening en veilige sync-gestuurde afwezigheidsberichten met audit; Outlook volgt exacte Servio-regels
+- [x] Mail-prompt 11: 42 regeltests, tijdelijke Postgres-cooldown/RLS/audittests en gesimuleerde meldingen-/instellingenproef
+- [ ] Mail-prompt 11: echte IMAP/Outlook bezorging en native browsermelding (externe Supabase zonder beschikbare browsersessie)
 - [x] Mail-prompt 10: full-text RPC, operatoren, suggesties en opgeslagen weergaven
 - [x] Mail-prompt 10: gesprekken en geciteerde tekst inklappen; 32 regeltests, tijdelijke Postgres-tests en gesimuleerde browsercontrole
 - [ ] Mail-prompt 10: echte ingelogde accountcontrole (externe Supabase; geen beschikbare browsersessie)
