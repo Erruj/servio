@@ -143,7 +143,8 @@ Deno.serve(async(req)=>{
       const selected=selectOriginals<{id: string; filename: string; mimeType: string; content: string; unsupported?: boolean}>(fetched.attachments,input.originalAttachments);
       if(selected.some((a:any)=>a.unsupported || !a.content)) throw new SendError('attachment_missing');
       attachments.push(...selected);
-      await db.from('emails').update({message_id:original.message_id,reference_ids:original.reference_ids}).eq('id',original.id).eq('user_id',owner);
+      original.thread_id = original.thread_id || original.reference_ids?.[0] || original.message_id;
+      await db.from('emails').update({message_id:original.message_id,reference_ids:original.reference_ids,thread_id:original.thread_id}).eq('id',original.id).eq('user_id',owner);
     }
     assertAttachments(attachments);
     if(['reply','replyAll'].includes(mode) && !messageId(original?.message_id)) throw new SendError('original_missing');
