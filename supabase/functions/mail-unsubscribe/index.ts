@@ -3,6 +3,7 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { z } from 'npm:zod@3';
 import { publicAddress, unsubscribeTarget } from './links.ts';
 import { applyMailboxAction } from '../_shared/mailbox-actions.ts';
+import { request } from 'node:https';
 const Body=z.object({email_id:z.string().uuid(),action:z.enum(['unsubscribe','archive']).default('unsubscribe')});
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,'Content-Type':'application/json'}});
 Deno.serve(async(req)=>{
@@ -58,13 +59,18 @@ Deno.serve(async(req)=>{
     if(host==='localhost'||host.endsWith('.local')||host.endsWith('.internal')||host.startsWith('[')) throw new Error('host');
     const addresses=/^[\d.]+$/.test(host)?[host]:await Deno.resolveDns(host,'A');
     if(!addresses.length||addresses.some(address=>!publicAddress(address))) throw new Error('private');
-    // Pin the checked address, preventing a second DNS lookup/rebinding during fetch.
-    const httpClient=Deno.createHttpClient({resolve:[{hostname:host,port:443,address:addresses[0]}]});
-    try {
-      const response=await fetch(target.https,{client:httpClient,method:'POST',redirect:'manual',signal:AbortSignal.timeout(10000),headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'List-Unsubscribe=One-Click'});
-      await response.body?.cancel();
-      if(!response.ok) throw new Error('upstream');
-    } finally {httpClient.close();}
+    // Pin DNS while retaining the original TLS hostname and certificate validation.
+    await new Promise<void>((resolve,reject)=>{
+      const body='List-Unsubscribe=One-Click';
+      const outgoing=request(targetUrl,{method:'POST',agent:false,lookup:(_hostname,_options,callback)=>callback(null,addresses[0],4),headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':String(body.length)}},response=>{
+        const status=response.statusCode||0;
+        response.destroy();
+        if(status>=200&&status<300) resolve();else reject(new Error('upstream'));
+      });
+      outgoing.setTimeout(10000,()=>outgoing.destroy(new Error('timeout')));
+      outgoing.on('error',reject);
+      outgoing.end(body);
+    });
     return json({success:true});
   } catch {return json({errorCode:'error'},502);}
 });
