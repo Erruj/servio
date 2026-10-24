@@ -46,6 +46,7 @@ const Inbox = () => {
   const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [draftMail, setDraftMail] = useState<MailItem | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
   useEffect(() => {
@@ -163,6 +164,11 @@ const Inbox = () => {
   };
 
   const handleMailSelect = (mail: MailItem) => {
+    if (mail.folder === 'drafts') {
+      setDraftMail(mail);
+      setComposeOpen(true);
+      return;
+    }
     setSelectedMail(mail);
     localStorage.setItem('servio_inbox_last_email', mail.id);
     if (mail.unread) markAsRead(mail.id).catch(failToast);
@@ -235,7 +241,8 @@ const Inbox = () => {
       if (window.matchMedia('(min-width: 1024px)').matches) {
         const lastId = localStorage.getItem('servio_inbox_last_email');
         const restored = lastId ? mails.find(m => m.id === lastId) : null;
-        setSelectedMail(restored || mails[0]);
+        const candidate = restored || mails[0];
+        if (candidate.folder !== 'drafts') setSelectedMail(candidate);
       }
     }
   }, [mails, selectedMail]);
@@ -396,7 +403,7 @@ const Inbox = () => {
                 </div>
                 <div className="flex-1">
                   <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                    {isDesktop && <MailDetail mail={currentMail} className="h-full" actions={mailActions} />}
+                    {isDesktop && <MailDetail mail={currentMail} className="h-full" actions={mailActions} connections={connections} onDraftSaved={refetchEmails} />}
                   </Suspense>
                 </div>
               </div>
@@ -413,7 +420,7 @@ const Inbox = () => {
                       )}
                     </div>
                     <Suspense fallback={<div className="h-full bg-card flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-                      {!isDesktop && <MailDetail mail={currentMail} className="flex-1 min-w-0" actions={mailActions} />}
+                      {!isDesktop && <MailDetail mail={currentMail} className="flex-1 min-w-0" actions={mailActions} connections={connections} onDraftSaved={refetchEmails} />}
                     </Suspense>
                   </div>
                 ) : (
@@ -454,7 +461,7 @@ const Inbox = () => {
         }}
       />
 
-      <ComposeEmail open={composeOpen} onOpenChange={setComposeOpen} hasConnection={hasConnections} />
+      <ComposeEmail open={composeOpen} onOpenChange={open => { setComposeOpen(open); if (!open) setDraftMail(null); }} hasConnection={hasConnections} connections={connections} draftId={draftMail?.id} initialDraft={draftMail?.draftData} onSaved={refetchEmails} />
 
       {/* Keyboard shortcuts dialog */}
       <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>

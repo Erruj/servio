@@ -12,6 +12,7 @@ export interface EmailConnection {
 }
 
 export interface Email {
+  draft_data?: import('@/lib/mail-compose').DraftData | null;
   id: string;
   connection_id: string;
   external_id: string;
@@ -45,6 +46,7 @@ export function emailToMailItem(email: Email): MailItem {
     : email.email_connections_safe;
 
   return {
+    draftData: email.draft_data || undefined,
     id: email.id,
     from: email.from_name || email.from_email,
     fromEmail: email.from_email,

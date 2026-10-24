@@ -46,6 +46,10 @@ import { Input } from '@/components/ui/input';
 import { Undo2, Inbox, Archive, Star, MailOpen, Tag, Printer, Code, Download, Ban, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type React from 'react';
+import { ComposeEmail } from '@/components/ComposeEmail';
+import type { EmailConnection } from '@/types/email';
+import { canReplyAll, type ComposeMode } from '@/lib/mail-compose';
+import { Reply, ReplyAll, Forward } from 'lucide-react';
 
 export interface MailActions {
   onArchive: (mail: MailItem) => void;
@@ -116,9 +120,12 @@ interface MailDetailProps {
   mail: MailItem | null;
   className?: string;
   actions?: MailActions;
+  connections?: EmailConnection[];
+  onDraftSaved?: () => void;
 }
 
-export function MailDetail({ mail, className, actions }: MailDetailProps) {
+export function MailDetail({ mail, className, actions, connections = [], onDraftSaved }: MailDetailProps) {
+  const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
   const { t } = useTranslation();
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [labelDraft, setLabelDraft] = useState<string[]>([]);
@@ -144,6 +151,7 @@ export function MailDetail({ mail, className, actions }: MailDetailProps) {
 
   // Load user's real templates from Supabase
   useEffect(() => {
+    setComposeMode(null);
     if (!user) return;
     let cancelled = false;
     (async () => {
@@ -213,6 +221,7 @@ export function MailDetail({ mail, className, actions }: MailDetailProps) {
     const customerName = (mail.from || '').split(/[<\s]/)[0] || 'klant';
     const body = recommendedTemplate.body.replace(/\{\{naam\}\}/g, customerName);
     setReply(body);
+    setComposeMode('reply');
     setIsEditingReply(true);
     toast({ title: '📋 Template toegepast', description: recommendedTemplate.name });
   };
@@ -378,6 +387,7 @@ export function MailDetail({ mail, className, actions }: MailDetailProps) {
       
       if (result.success && result.variants && result.variants.length > 0) {
         setReply(result.variants[0].content);
+        setComposeMode('reply');
         toast({
           title: "✅ AI antwoord gegenereerd",
           description: `Antwoord gegenereerd met ${result.provider} (${result.model})`,
@@ -580,7 +590,7 @@ const sentimentLabel = (v?: string) => {
           <h1 className="text-[22px] font-bold text-foreground tracking-tight mb-3 leading-tight">
             {mail.subject}
           </h1>
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
               <div className="text-[14px]">
                 <span className="font-semibold text-foreground">{mail.from}</span>
@@ -592,7 +602,10 @@ const sentimentLabel = (v?: string) => {
             <div className="text-right flex-shrink-0">
               {actions && (
                 <TooltipProvider delayDuration={300}>
-                  <div className="flex items-center justify-end gap-0.5 mb-1 -mr-2" role="toolbar" aria-label={t('mailActions.more')}>
+                  <div className="flex flex-wrap items-center justify-end gap-0.5 mb-1" role="toolbar" aria-label={t('mailActions.more')}>
+                    <ActionIcon label={t('compose.reply')} onClick={() => setComposeMode('reply')}><Reply className="h-4 w-4" /></ActionIcon>
+                    {canReplyAll(mail, connections.map(c => c.email_address)) && <ActionIcon label={t('compose.replyAll')} onClick={() => setComposeMode('replyAll')}><ReplyAll className="h-4 w-4" /></ActionIcon>}
+                    <ActionIcon label={t('compose.forward')} onClick={() => setComposeMode('forward')}><Forward className="h-4 w-4" /></ActionIcon>
                     {mail.folder === 'trash' ? (
                       <Button variant="outline" size="sm" className="h-11 mr-1" onClick={() => actions.onRestore(mail)}><Undo2 className="h-4 w-4 mr-1.5" />{t('mailActions.restore')}</Button>
                     ) : mail.folder === 'spam' ? (
