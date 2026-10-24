@@ -12,6 +12,7 @@ import { SyncErrorBanner } from '@/components/SyncErrorBanner';
 
 import { HelpTooltip } from '@/components/HelpTooltip';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Mail, RefreshCw, Sparkles, PenSquare, Bell, Keyboard } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';

@@ -11,7 +11,7 @@ export const MAIL_VIEWS: { id: MailView; icon: typeof Inbox }[] = [
   { id: 'sent', icon: Send },
   { id: 'archive', icon: Archive },
   { id: 'spam', icon: ShieldAlert },
-  { id: 'trash', icon: Trash2, Clock },
+  { id: 'trash', icon: Trash2 },
 ];
 
 interface Props {

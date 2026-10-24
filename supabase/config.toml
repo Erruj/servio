@@ -29,6 +29,8 @@ project_id = "avtzjxknxnajzutcoayl"
     verify_jwt = false
   [functions.send-email]
     verify_jwt = false
+  [functions.scheduled-mail]
+    verify_jwt = false
   [functions.imap-connect]
     verify_jwt = false
   [functions.generate-reply]
