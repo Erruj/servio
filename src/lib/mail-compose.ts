@@ -5,6 +5,7 @@ export const DRAFT_SAVE_INTERVAL = 5000;
 export const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
 export interface ComposeAttachment { name: string; type: string; size: number; content: string }
 export interface DraftData {
+  followUpDays?: 2 | 3 | 7;
   mode: ComposeMode;
   originalId?: string;
   connectionId: string;

@@ -605,26 +605,26 @@ async function persistMessages(
 
   const { data: existingRows, error: existingError } = await supabase
     .from("emails")
-    .select("id, external_id")
+    .select("id, external_id, is_read, inbox_returned_at")
     .eq("connection_id", connection.id)
     .in("external_id", externalIds);
 
   if (existingError) throw new Error(`Failed to lookup existing emails: ${existingError.message}`);
 
-  const existingByExternalId = new Map((existingRows || []).map((row: any) => [row.external_id, row.id]));
+  const existingByExternalId = new Map((existingRows || []).map((row: any) => [row.external_id, row]));
 
   const inserts: any[] = [];
   const updates: any[] = [];
 
   for (const message of messages) {
     const baseRecord = { ...message, user_id: connection.user_id, connection_id: connection.id };
-    const existingId = existingByExternalId.get(message.external_id);
-    if (existingId) {
+    const existing = existingByExternalId.get(message.external_id) as any;
+    if (existing) {
       // Gelezen/ster komen uit de echte mailbox (Servio-acties gaan via mail-action eerst
       // naar de mailbox). De map (folder) wordt nooit door de sync aangepast, zodat een
       // in Servio gearchiveerde of verwijderde mail niet terug in de inbox komt.
       // Eigen labels blijven in Servio; providerlabels worden alleen bij import gezet.
-      updates.push({ ...mailboxUpdate(baseRecord), id: existingId });
+      updates.push({ ...mailboxUpdate(baseRecord, !!existing.inbox_returned_at && !existing.is_read), id: existing.id });
     } else {
       inserts.push(baseRecord);
     }

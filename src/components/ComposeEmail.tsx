@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Send, X, Minus, Maximize2, Minimize2, Paperclip, Trash2, Bold, Italic, Underline, List, Link, Quote, Sparkles, FileText, MoreHorizontal, ChevronDown } from 'lucide-react';
 import { ToastAction } from '@/components/ui/toast';
 import { schedulePreset } from '@/lib/mail-schedule';
+import { FOLLOW_UP_DAYS } from '@/lib/mail-reminders';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +37,7 @@ interface ComposeEmailProps {
   onSaved?: () => void;
   initialBody?: string;
   scheduledAt?: string;
+  reminder?: boolean;
 }
 const cleanHtml = (html: string) => DOMPurify.sanitize(html, { ALLOWED_TAGS: ['p','div','br','strong','b','em','i','u','ul','ol','li','a','blockquote'], ALLOWED_ATTR: ['href'], ALLOW_DATA_ATTR: false });
 const plainText = (html: string) => {
@@ -48,7 +50,7 @@ export function ComposeEmail(props: ComposeEmailProps) {
   if (!props.open) return null;
   return <ComposerSession key={props.draftId || `${props.mode || 'new'}-${props.mail?.id || props.replyTo?.emailId || props.initialTo || 'new'}`} {...props} />;
 }
-function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail, mode = replyTo ? 'reply' : 'new', inline, connections: provided, draftId, initialDraft, onSaved, initialBody, scheduledAt }: ComposeEmailProps) {
+function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail, mode = replyTo ? 'reply' : 'new', inline, connections: provided, draftId, initialDraft, onSaved, initialBody, scheduledAt, reminder }: ComposeEmailProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -56,7 +58,8 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
   const [draft, setDraft] = useState<DraftData>(() => initialDraft || {
     mode, originalId: mail?.id || replyTo?.emailId, connectionId: mail?.connectionId || '',
     ...composeRecipients(mail, mode, []), bcc: [],
-    to: initialTo ? addresses([initialTo]) : replyTo ? addresses([replyTo.to]) : composeRecipients(mail, mode, []).to,
+    to: reminder ? mail?.to || [] : initialTo ? addresses([initialTo]) : replyTo ? addresses([replyTo.to]) : composeRecipients(mail, mode, []).to,
+    cc: reminder ? mail?.cc || [] : composeRecipients(mail, mode, []).cc,
     subject: composeSubject(mail?.subject || replyTo?.subject || '', mode), html: textToComposeHtml(initialBody || ''),
     quote: mail ? (mode === 'forward' ? `${t('compose.from')}: ${mail.fromEmail || mail.from}\n${t('compose.to')}: ${mail.to.join(', ')}\n${t('compose.subject')}: ${mail.subject}\n${new Date(mail.receivedAt).toLocaleString(i18n.language)}\n\n` : '') + (mail.bodyText || plainText(mail.bodyHtml || mail.body || '')) : '',
     quoteHeading: mail ? mode === 'forward' ? t('compose.forwarded') : t('compose.quoted', { date: new Date(mail.receivedAt).toLocaleString(i18n.language), name: mail.from }) : '',
@@ -107,7 +110,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       setTemplates(tmpl.data || []);
       setDraft(prev => {
         if (initialDraft) return prev;
-        const recipients = mail ? composeRecipients(mail, mode, active.map(c => c.email_address)) : { to: prev.to, cc: prev.cc };
+        const recipients = reminder ? { to: mail?.to || [], cc: mail?.cc || [] } : mail ? composeRecipients(mail, mode, active.map(c => c.email_address)) : { to: prev.to, cc: prev.cc };
         const signature = settings.data?.email_signature;
         return { ...prev, ...recipients, connectionId: prev.connectionId || active[0]?.id || '', html: prev.html + (signature && !plainText(prev.html).includes(signature) ? `<br><br>${textToComposeHtml(signature)}` : '') };
       });
@@ -176,17 +179,25 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
   const setEditorText = (text: string) => {
     const html = textToComposeHtml(text); if (editor.current) editor.current.innerHTML = html; patch({ html });
   };
-  const ai = async (improve?: string) => {
+  const ai = async (improve?: string, followUp = false) => {
     if (!improve && !latest.current.originalId) return;
     if (improve && !plainText(latest.current.html).trim()) { toast({ title: t('compose.missingFields'), variant: 'destructive' }); return; }
     setAiBusy(true);
     try {
       if (!(await save())) return;
-      const { data, error } = await supabase.functions.invoke('generate-reply', { body: { emailId: improve ? id.current : latest.current.originalId, tone: improve || 'zakelijk', language: i18n.language, ...(improve ? { action: 'improve', text: plainText(latest.current.html) } : {}) } });
-      if (error || data?.error || !data?.variants?.[0]?.content) throw new Error('AI');
+      const { data, error } = await supabase.functions.invoke('generate-reply', { body: { emailId: improve ? id.current : latest.current.originalId, tone: improve || 'zakelijk', language: i18n.language, ...(followUp ? { action: 'followUp' } : improve ? { action: 'improve', text: plainText(latest.current.html) } : {}) } });
+      if (error || data?.error || !data?.variants?.[0]?.content) {
+        let detail = data?.error;
+        if (error instanceof FunctionsHttpError) { try { detail = (await error.context.json())?.error; } catch { /* translated fallback */ } }
+        throw new Error(detail || t(followUp ? 'mailReminders.aiError' : 'compose.aiError'));
+      }
       setEditorText(data.variants[0].content);
-    } catch { toast({ title: t('compose.aiError'), variant: 'destructive' }); } finally { setAiBusy(false); }
+    } catch (error) { toast({ title: error instanceof Error ? error.message : t('compose.aiError'), variant: 'destructive' }); } finally { setAiBusy(false); }
   };
+  const reminderStarted = useRef(false);
+  useEffect(() => {
+    if (ready && reminder && !reminderStarted.current && !initialDraft) { reminderStarted.current = true; void ai(undefined, true); }
+  }, [ready, reminder]);
   const send = async (sendAt: string | undefined = scheduledAt) => {
     const d = latest.current;
     if (!d.to.length || !d.subject.trim() || !plainText(d.html).trim()) { toast({ title: t('compose.missingFields'), variant: 'destructive' }); return; }
@@ -255,6 +266,8 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
         </div>
         {sendFailure && <div role="alert" className="text-sm text-destructive border border-destructive rounded-md p-3 flex flex-wrap items-center gap-2"><span className="flex-1">{t('compose.sendError')} {sendFailure}</span><Button variant="outline" className="min-h-11" disabled={sending || uncertain} onClick={()=>void send()}>{t('compose.retry')}</Button></div>}
         <footer className="flex items-center flex-wrap gap-2 border-t border-border pt-2">
+          <div className="w-full flex flex-wrap items-center gap-2"><span className="text-xs text-muted-foreground">{t('mailReminders.followUp')}</span><Select value={String(draft.followUpDays || 'off')} onValueChange={value=>patch({followUpDays:value==='off'?undefined:Number(value) as 2|3|7})}><SelectTrigger className="min-h-11 w-auto" aria-label={t('mailReminders.followUp')}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="off">{t('mailReminders.off')}</SelectItem>{FOLLOW_UP_DAYS.map(days=><SelectItem key={days} value={String(days)}>{t('mailReminders.days',{count:days})}</SelectItem>)}</SelectContent></Select></div>
+          {reminder && <Button variant="outline" disabled={aiBusy} className="min-h-11 gap-2" onClick={()=>void ai(undefined,true)}><Sparkles className="h-4 w-4" />{t('mailReminders.compose')}</Button>}
           <Button className="min-h-11 gap-2" disabled={sending || aiBusy || uncertain} onClick={()=>void send()}><Send className="h-4 w-4" />{t(sending ? 'compose.sending' : 'compose.send')}</Button>
           <DropdownMenu><DropdownMenuTrigger asChild><Button size="icon" className="h-11 w-11" disabled={sending || aiBusy || uncertain} aria-label={t('mailSchedule.later')}><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent>{(['tomorrow','monday'] as const).map(kind=><DropdownMenuItem key={kind} onSelect={()=>void send(schedulePreset(kind).toISOString())}>{t(`mailSchedule.${kind}`)}</DropdownMenuItem>)}<DropdownMenuItem onSelect={()=>setScheduleOpen(true)}>{t('mailSchedule.custom')}</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
           <span className={`text-xs flex-1 ${status === 'error' ? 'text-destructive' : 'text-muted-foreground'}`} role="status">{status ? t(`compose.${status === 'error' ? 'saveError' : status}`) : ''}</span>

@@ -49,9 +49,11 @@ import type React from 'react';
 import { ComposeEmail } from '@/components/ComposeEmail';
 import type { EmailConnection } from '@/types/email';
 import { canReplyAll, type ComposeMode } from '@/lib/mail-compose';
-import { Reply, ReplyAll, Forward } from 'lucide-react';
+import { Reply, ReplyAll, Forward, Clock } from 'lucide-react';
 
 export interface MailActions {
+  onSnooze: (mail: MailItem) => void;
+  onUnsnooze: (mail: MailItem) => void;
   onArchive: (mail: MailItem) => void;
   onDelete: (mail: MailItem) => void;
   onSpam: (mail: MailItem) => void;
@@ -127,6 +129,7 @@ interface MailDetailProps {
 
 export function MailDetail({ mail, className, actions, connections = [], onDraftSaved, composeRequest }: MailDetailProps) {
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
+  const [reminderCompose, setReminderCompose] = useState(false);
   const { t } = useTranslation();
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [labelDraft, setLabelDraft] = useState<string[]>([]);
@@ -176,6 +179,7 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
   // Reset state when mail changes
   useEffect(() => {
     setComposeMode(null);
+    setReminderCompose(false);
     if (mail) {
       setReply('');
       setAnalysis(null);
@@ -521,6 +525,9 @@ const sentimentLabel = (v?: string) => {
     <ErrorBoundary>
       <div className={`bg-background overflow-y-auto overflow-x-hidden max-w-full ${className}`}>
         <div className="p-4 sm:p-8 space-y-5 max-w-full">
+        {mail.followUpPending && <div role="status" className="flex flex-wrap items-center gap-2 border-b border-border pb-3"><p className="text-sm font-medium flex-1">{t('mailReminders.unanswered')}</p><Button variant="outline" className="min-h-11 gap-2" onClick={()=>{setComposeMode(null);setReminderCompose(true);}}><Sparkles className="h-4 w-4" />{t('mailReminders.compose')}</Button></div>}
+        {mail.snoozedUntil && <p className="text-sm text-muted-foreground">{t('mailReminders.until',{date:new Date(mail.snoozedUntil).toLocaleString()})}</p>}
+        {mail.labels.includes('SNOOZED') && <Badge variant="secondary">{t('mailReminders.label')}</Badge>}
         {/* Subject header */}
         <div className="pb-5 border-b border-border/60">
           <h1 className="text-[22px] font-bold text-foreground tracking-tight mb-3 leading-tight">
@@ -542,6 +549,8 @@ const sentimentLabel = (v?: string) => {
                     <ActionIcon label={t('compose.reply')} onClick={() => setComposeMode('reply')}><Reply className="h-4 w-4" /></ActionIcon>
                     {canReplyAll(mail, connections.map(c => c.email_address)) && <ActionIcon label={t('compose.replyAll')} onClick={() => setComposeMode('replyAll')}><ReplyAll className="h-4 w-4" /></ActionIcon>}
                     <ActionIcon label={t('compose.forward')} onClick={() => setComposeMode('forward')}><Forward className="h-4 w-4" /></ActionIcon>
+                    {['inbox','archive','snoozed'].includes(mail.folder || 'inbox') && <ActionIcon label={t('mailReminders.snooze')} onClick={()=>actions.onSnooze(mail)}><Clock className="h-4 w-4" /></ActionIcon>}
+                    {mail.folder==='snoozed' && <Button variant="outline" className="min-h-11" onClick={()=>actions.onUnsnooze(mail)}>{t('mailReminders.unsnooze')}</Button>}
                     {mail.folder === 'trash' ? (
                       <Button variant="outline" size="sm" className="h-11 mr-1" onClick={() => actions.onRestore(mail)}><Undo2 className="h-4 w-4 mr-1.5" />{t('mailActions.restore')}</Button>
                     ) : mail.folder === 'spam' ? (
@@ -805,7 +814,7 @@ const sentimentLabel = (v?: string) => {
           {canReplyAll(mail, connections.map(c => c.email_address)) && <Button variant="outline" className="min-h-11 gap-2" onClick={() => setComposeMode('replyAll')}><ReplyAll className="h-4 w-4" />{t('compose.replyAll')}</Button>}
           <Button variant="outline" className="min-h-11 gap-2" onClick={() => setComposeMode('forward')}><Forward className="h-4 w-4" />{t('compose.forward')}</Button>
         </div>
-        <ComposeEmail open={composeMode !== null} inline mode={composeMode || 'reply'} mail={mail} connections={connections} hasConnection={connections.some(c => c.is_active)} onOpenChange={open => { if (!open) { setComposeMode(null); setReply(''); } }} onSaved={onDraftSaved} initialBody={reply || undefined} />
+        <ComposeEmail key={reminderCompose ? `reminder-${mail.id}` : `reply-${mail.id}`} open={composeMode !== null || reminderCompose} reminder={reminderCompose} inline mode={reminderCompose ? 'replyAll' : composeMode || 'reply'} mail={mail} connections={connections} hasConnection={connections.some(c => c.is_active)} onOpenChange={open => { if (!open) { setComposeMode(null); setReminderCompose(false); setReply(''); } }} onSaved={onDraftSaved} initialBody={reminderCompose ? undefined : reply || undefined} />
         </div>
       </div>
       <Dialog open={labelsOpen} onOpenChange={setLabelsOpen}>

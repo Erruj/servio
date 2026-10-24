@@ -12,6 +12,9 @@ export interface EmailConnection {
 }
 
 export interface Email {
+  snoozed_until?: string | null;
+  follow_up_pending?: boolean;
+  inbox_returned_at?: string | null;
   send_at?: string | null;
   send_error?: string | null;
   attachment_metadata?: { id?: string; name: string; sizeKB?: number }[];
@@ -49,6 +52,9 @@ export function emailToMailItem(email: Email): MailItem {
     : email.email_connections_safe;
 
   return {
+    snoozedUntil: email.snoozed_until || undefined,
+    followUpPending: email.follow_up_pending,
+    inboxReturnedAt: email.inbox_returned_at || undefined,
     draftData: email.draft_data || undefined,
     sendAt:email.send_at || undefined,
     sendError:email.send_error || undefined,

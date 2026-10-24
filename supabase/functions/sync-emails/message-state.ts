@@ -24,7 +24,8 @@ export function parseOutlookMessage(msg: any) {
 }
 
 // Omit Servio-owned fields entirely: reading and merging them would race with edits.
-export function mailboxUpdate(record: Record<string, unknown>) {
+export function mailboxUpdate(record: Record<string, unknown>, preserveReminderUnread = false) {
   const { folder: _folder, labels: _labels, ...update } = record;
+  if (preserveReminderUnread) delete update.is_read;
   return update;
 }

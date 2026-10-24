@@ -29,6 +29,7 @@ import type { MailActions } from '@/components/MailDetail';
 import type { MailView } from '@/hooks/useEmailConnections';
 import { FolderNav, FolderSelect } from '@/components/inbox/FolderNav';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { SnoozeDialog } from '@/components/inbox/SnoozeDialog';
 
 
 const MailDetail = lazy(() => import('@/components/MailDetail').then(module => ({ default: module.MailDetail })));
@@ -47,6 +48,7 @@ const Inbox = () => {
   const [filter, setFilter] = useState(initialFilter);
   const [view, setView] = useState<MailView>(initialFilter === 'starred' ? 'starred' : 'inbox');
   const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
+  const [snoozeMail, setSnoozeMail] = useState<MailItem | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [draftMail, setDraftMail] = useState<MailItem | null>(null);
@@ -66,7 +68,7 @@ const Inbox = () => {
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { connections, hasConnections, syncEmails, isLoading: connectionsLoading, refetch: refetchConnections } = useEmailConnections();
-  const { emails, isLoading: emailsLoading, refetch: refetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts } = useEmails(view);
+  const { emails, isLoading: emailsLoading, refetch: refetchEmails, snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts } = useEmails(view);
 
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
@@ -202,6 +204,8 @@ const Inbox = () => {
   };
 
   const mailActions: MailActions = {
+    onSnooze: setSnoozeMail,
+    onUnsnooze: async m => { try { await snooze(m.id, null); setSelectedMail(null); } catch { toast({ title: t('mailReminders.error'), variant: 'destructive' }); } },
     onArchive: (m) => handleMove(m, 'archive'),
     onDelete: (m) => handleMove(m, 'trash'),
     onSpam: (m) => handleMove(m, 'spam'),
@@ -239,6 +243,7 @@ const Inbox = () => {
     else if(command==='new') {setDraftMail(null);setComposeOpen(true);}
     else if(command==='search') window.dispatchEvent(new Event('servio-mail-search'));
     else if(command==='help') setShowShortcuts(true);
+    else if(mail && command==='snooze' && ['inbox','archive','snoozed'].includes(mail.folder || 'inbox')) setSnoozeMail(mail);
     else if(mail && ['reply','replyAll','forward'].includes(command)) {
       if(mail.folder==='drafts' || mail.folder==='scheduled') return;
       if(command==='replyAll' && !canReplyAll(mail,connections.map(connection=>connection.email_address))) return;
@@ -249,7 +254,7 @@ const Inbox = () => {
     else if(mail && command==='star') void handleToggleStar(mail);
     else if(mail && command==='unread') void setReadState(mail.id,false).catch(failToast);
   };
-  useInboxShortcuts(shortcutPrefs.enabled, composeOpen || showShortcuts, onShortcut);
+  useInboxShortcuts(shortcutPrefs.enabled, composeOpen || showShortcuts || !!snoozeMail, onShortcut);
 
   // Altijd de actuele versie van de geselecteerde mail tonen (ster/gelezen live).
   const currentMail = selectedMail ? (mails.find(m => m.id === selectedMail.id) ?? selectedMail) : null;
@@ -488,6 +493,7 @@ const Inbox = () => {
         </div>
       </div>
 
+      <SnoozeDialog key={snoozeMail?.id || 'closed'} open={!!snoozeMail} onOpenChange={open => { if (!open) setSnoozeMail(null); }} onSnooze={async until => { if (!snoozeMail) return; await snooze(snoozeMail.id, until); setSelectedMail(null); toast({ title: t('mailReminders.saved') }); }} />
       <ConfirmDialog
         open={emptyTrashOpen}
         onOpenChange={setEmptyTrashOpen}
