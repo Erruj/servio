@@ -1,0 +1,2 @@
+ALTER TABLE public.emails ADD COLUMN IF NOT EXISTS message_id text, ADD COLUMN IF NOT EXISTS reference_ids text[] NOT NULL DEFAULT '{}', ADD COLUMN IF NOT EXISTS attachment_metadata jsonb NOT NULL DEFAULT '[]', ADD COLUMN IF NOT EXISTS send_status text NOT NULL DEFAULT 'draft';
+UPDATE public.emails e SET message_id = '<' || e.external_id || '>' FROM public.email_connections c WHERE c.id=e.connection_id AND c.provider='imap' AND e.message_id IS NULL AND e.external_id LIKE '%@%';
