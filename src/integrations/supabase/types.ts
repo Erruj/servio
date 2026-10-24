@@ -523,6 +523,9 @@ export type Database = {
           message_id: string | null
           received_at: string
           reference_ids: string[]
+          send_at: string | null
+          send_error: string | null
+          send_payload: Json | null
           send_status: string
           snippet: string | null
           snoozed_until: string | null
@@ -532,6 +535,7 @@ export type Database = {
           thread_summary_updated_at: string | null
           to_emails: string[] | null
           trashed_at: string | null
+          undo_until: string | null
           updated_at: string
           user_id: string
         }
@@ -561,6 +565,9 @@ export type Database = {
           message_id?: string | null
           received_at: string
           reference_ids?: string[]
+          send_at?: string | null
+          send_error?: string | null
+          send_payload?: Json | null
           send_status?: string
           snippet?: string | null
           snoozed_until?: string | null
@@ -570,6 +577,7 @@ export type Database = {
           thread_summary_updated_at?: string | null
           to_emails?: string[] | null
           trashed_at?: string | null
+          undo_until?: string | null
           updated_at?: string
           user_id: string
         }
@@ -599,6 +607,9 @@ export type Database = {
           message_id?: string | null
           received_at?: string
           reference_ids?: string[]
+          send_at?: string | null
+          send_error?: string | null
+          send_payload?: Json | null
           send_status?: string
           snippet?: string | null
           snoozed_until?: string | null
@@ -608,6 +619,7 @@ export type Database = {
           thread_summary_updated_at?: string | null
           to_emails?: string[] | null
           trashed_at?: string | null
+          undo_until?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -699,6 +711,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mail_send_preferences: {
+        Row: {
+          undo_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          undo_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          undo_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mail_send_queue_config: {
+        Row: {
+          apikey: string
+          callback_url: string
+          singleton: boolean
+        }
+        Insert: {
+          apikey: string
+          callback_url: string
+          singleton?: boolean
+        }
+        Update: {
+          apikey?: string
+          callback_url?: string
+          singleton?: boolean
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1351,6 +1399,7 @@ export type Database = {
         }
         Returns: string
       }
+      refresh_mail_send_job: { Args: never; Returns: undefined }
       update_team_member_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
