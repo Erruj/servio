@@ -50,6 +50,8 @@ import { ComposeEmail } from '@/components/ComposeEmail';
 import type { EmailConnection } from '@/types/email';
 import { canReplyAll, type ComposeMode } from '@/lib/mail-compose';
 import { Reply, ReplyAll, Forward, Clock } from 'lucide-react';
+import { useBlockedSenders } from '@/hooks/useBlockedSenders';
+import { UnsubscribeSender } from '@/components/inbox/UnsubscribeSender';
 
 export interface MailActions {
   onSnooze: (mail: MailItem) => void;
@@ -83,7 +85,8 @@ function buildEml(mail: MailItem): string {
   return lines.join('\r\n');
 }
 
-const MailMoreMenu = ({ onPhishing, onResolved, onLabels, onPrint, onOriginal, onDownload, onSpam }: {
+const MailMoreMenu = ({ onPhishing, onResolved, onLabels, onPrint, onOriginal, onDownload, onSpam, onBlock }: {
+  onBlock?: () => void;
   onPhishing: () => void; onResolved: () => void; onLabels?: () => void; onPrint?: () => void;
   onOriginal?: () => void; onDownload?: () => void; onSpam?: () => void;
 }) => {
@@ -102,6 +105,7 @@ const MailMoreMenu = ({ onPhishing, onResolved, onLabels, onPrint, onOriginal, o
         {onDownload && <DropdownMenuItem onClick={onDownload}><Download className="h-4 w-4 mr-2" />{t('mailActions.downloadEml')}</DropdownMenuItem>}
         <DropdownMenuSeparator />
         {onSpam && <DropdownMenuItem onClick={onSpam}><Ban className="h-4 w-4 mr-2" />{t('mailActions.markSpam')}</DropdownMenuItem>}
+        {onBlock && <DropdownMenuItem onClick={onBlock}><Ban className="h-4 w-4 mr-2" />{t('mailSenders.block')}</DropdownMenuItem>}
         <DropdownMenuItem onClick={onPhishing} className="text-destructive focus:text-destructive"><ShieldAlert className="h-4 w-4 mr-2" />{t('mailActions.markPhishing')}</DropdownMenuItem>
         <DropdownMenuItem onClick={onResolved}><CheckCircle2 className="h-4 w-4 mr-2" />{t('mailActions.markResolved')}</DropdownMenuItem>
       </DropdownMenuContent>
@@ -137,6 +141,7 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
   const [originalOpen, setOriginalOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const blockedPrefs = useBlockedSenders();
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [reply, setReply] = useState('');
@@ -462,15 +467,14 @@ export function MailDetail({ mail, className, actions, connections = [], onDraft
 
   const isUnhappy = analysis?.sentiment === 'Negatief' || mail?.customerSentiment === 'unhappy';
 
-  const markAsPhishing = () => {
-  if (!mail) return;
-  const blocked = JSON.parse(localStorage.getItem('servio_blocked_senders') || '[]');
-  if (!blocked.includes(mail.from)) {
-    blocked.push(mail.from);
-    localStorage.setItem('servio_blocked_senders', JSON.stringify(blocked));
-  }
-  toast({ title: t('mailActions.phishingTitle'), description: t('mailActions.phishingDesc', { from: mail.from }) });
-};
+  const blockSender = (phishing = false) => {
+    if (!mail) return;
+    blockedPrefs.block.mutate(mail.fromEmail || mail.from, {
+      onSuccess: () => {toast({title:t(phishing?'mailActions.phishingTitle':'mailSenders.blocked')});if(phishing)actions?.onSpam(mail);},
+      onError: () => toast({title:t('mailSenders.blockError'),variant:'destructive'}),
+    });
+  };
+  const markAsPhishing = () => blockSender(true);
 
 const openLabels = () => { if (!mail) return; setLabelDraft(mail.labels.filter(l => l === l.toLowerCase() || !/^[A-Z_]+$/.test(l))); setNewLabel(''); setLabelsOpen(true); };
 const saveLabels = () => {
@@ -508,6 +512,7 @@ const downloadEml = () => {
 };
 
 const moreMenuProps = {
+  onBlock: () => blockSender(),
   onPhishing: markAsPhishing,
   onResolved: handleMarkAsResolved,
   ...(actions && mail ? {
@@ -525,6 +530,7 @@ const sentimentLabel = (v?: string) => {
     <ErrorBoundary>
       <div className={`bg-background overflow-y-auto overflow-x-hidden max-w-full ${className}`}>
         <div className="p-4 sm:p-8 space-y-5 max-w-full">
+        <UnsubscribeSender key={mail.id} mail={mail} onChanged={onDraftSaved} />
         {mail.followUpPending && <div role="status" className="flex flex-wrap items-center gap-2 border-b border-border pb-3"><p className="text-sm font-medium flex-1">{t('mailReminders.unanswered')}</p><Button variant="outline" className="min-h-11 gap-2" onClick={()=>{setComposeMode(null);setReminderCompose(true);}}><Sparkles className="h-4 w-4" />{t('mailReminders.compose')}</Button></div>}
         {mail.snoozedUntil && <p className="text-sm text-muted-foreground">{t('mailReminders.until',{date:new Date(mail.snoozedUntil).toLocaleString()})}</p>}
         {mail.labels.includes('SNOOZED') && <Badge variant="secondary">{t('mailReminders.label')}</Badge>}

@@ -18,6 +18,7 @@ import { useTheme } from 'next-themes';
 import { usePersonalization } from '@/hooks/usePersonalization';
 import { useMailSendPrefs } from '@/hooks/useMailSendPrefs';
 import { useMailShortcutPrefs } from '@/hooks/useInboxShortcuts';
+import { BlockedSenders } from '@/components/inbox/BlockedSenders';
 import { UNDO_OPTIONS } from '@/lib/mail-schedule';
 import { useEmailImagePrefs, type EmailImageMode } from '@/hooks/useEmailImagePrefs';
 import { Loader2, Globe, Bot, Cog, Check, Languages, Sun, Moon, MessageSquare, FolderKanban, Calculator, FileText, Tags, Palette, LayoutGrid, Pen, Sparkles, Zap, Download, Image } from 'lucide-react';
@@ -410,6 +411,11 @@ const Settings = () => {
             </Card>
 
             {/* Quick Actions Customization */}
+            <Card className="shadow-card">
+              <CardHeader><CardTitle className="text-lg">{t('mailSenders.title')}</CardTitle></CardHeader>
+              <CardContent><BlockedSenders /></CardContent>
+            </Card>
+
             <Card id="settings-quick" className="shadow-card scroll-mt-20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /><CardTitle className="text-lg">{t('quickActionsTitle')}</CardTitle></div>

@@ -4,6 +4,7 @@ import { registerMailActionTranslations } from './i18n-mail-actions';
 import { registerComposeTranslations } from './i18n-compose';
 import { registerInboxControlTranslations } from './i18n-inbox-controls';
 import { registerMailReminderTranslations } from './i18n-mail-reminders';
+import { registerMailSenderTranslations } from './i18n-mail-senders';
 
 /**
  * Detect the user's preferred language from:
@@ -3722,5 +3723,6 @@ registerMailActionTranslations(i18n);
 registerComposeTranslations(i18n);
 registerInboxControlTranslations(i18n);
 registerMailReminderTranslations(i18n);
+registerMailSenderTranslations(i18n);
 
 export default i18n;

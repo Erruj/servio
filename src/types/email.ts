@@ -12,6 +12,8 @@ export interface EmailConnection {
 }
 
 export interface Email {
+  list_unsubscribe?: string | null;
+  list_unsubscribe_post?: string | null;
   snoozed_until?: string | null;
   follow_up_pending?: boolean;
   inbox_returned_at?: string | null;
@@ -52,6 +54,8 @@ export function emailToMailItem(email: Email): MailItem {
     : email.email_connections_safe;
 
   return {
+    listUnsubscribe: email.list_unsubscribe || undefined,
+    listUnsubscribePost: email.list_unsubscribe_post || undefined,
     snoozedUntil: email.snoozed_until || undefined,
     followUpPending: email.follow_up_pending,
     inboxReturnedAt: email.inbox_returned_at || undefined,
