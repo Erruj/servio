@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { Buffer } from "node:buffer";
 import sanitizeHtml from "npm:sanitize-html@2";
-import { consumeUsageOrReject } from "../_shared/usage.ts";
+import { consumeUsageOrReject } from "../usage.ts";
 import { SendSchema, messageId, replyHeaders, assertAttachments, selectOriginals } from "./message.ts";
 import { decryptPassword, originalImap, buildMime, sendSmtp, appendSent, mimeAttachments } from "./transport.ts";
 

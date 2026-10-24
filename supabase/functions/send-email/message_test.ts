@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { SendSchema, replyHeaders, assertAttachments, selectOriginals, MAX_BYTES } from "./message.ts";
+import { SendSchema, replyHeaders, assertAttachments, selectOriginals, MAX_BYTES } from "../_shared/mail-send/message.ts";
 Deno.test('reply headers preserve original Message-ID and References',()=>{
   assertEquals(replyHeaders({message_id:'original@example.nl',reference_ids:['<first@example.nl>']},'replyAll'),{inReplyTo:'<original@example.nl>',references:['<first@example.nl>','<original@example.nl>']});
   assertEquals(replyHeaders({message_id:'original@example.nl'},'forward'),{});
