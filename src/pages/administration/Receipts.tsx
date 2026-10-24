@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { Receipt as ReceiptIcon, Camera, Eye, Download, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdminBreadcrumb } from '@/components/AdminBreadcrumb';
@@ -128,7 +129,7 @@ export default function Receipts() {
             return;
           }
           const d = ext?.data || {};
-          const updates: Record<string, unknown> = { status: 'completed' };
+          const updates: Database['public']['Tables']['receipts']['Update'] = { status: 'completed' };
           if (d.vendor_name) updates.merchant = String(d.vendor_name).substring(0, 200);
           if (d.total_amount != null && !isNaN(Number(d.total_amount))) updates.amount = Number(d.total_amount);
           if (d.date && /^\d{4}-\d{2}-\d{2}$/.test(d.date)) updates.receipt_date = d.date;

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { Upload, FileText, Download, Search, MoreHorizontal, CheckCircle, Clock, AlertTriangle, Plus, Tag, Loader2, Eye, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
@@ -194,7 +195,7 @@ export default function Invoices() {
       if (data?.error) throw new Error(data.error);
 
       const d = data?.data || {};
-      const updates: Record<string, unknown> = { status: 'review' };
+      const updates: Database['public']['Tables']['invoices']['Update'] = { status: 'review' };
       if (d.vendor_name) updates.supplier = String(d.vendor_name).substring(0, 200);
       if (d.total_amount != null && !isNaN(Number(d.total_amount))) updates.amount = Number(d.total_amount);
       if (d.vat_amount != null && !isNaN(Number(d.vat_amount))) updates.vat_amount = Number(d.vat_amount);
