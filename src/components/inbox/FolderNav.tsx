@@ -8,6 +8,7 @@ export const MAIL_VIEWS: { id: MailView; icon: typeof Inbox }[] = [
   { id: 'starred', icon: Star },
   { id: 'drafts', icon: FileText },
   { id: 'scheduled', icon: Clock },
+  { id: 'snoozed', icon: Clock },
   { id: 'sent', icon: Send },
   { id: 'archive', icon: Archive },
   { id: 'spam', icon: ShieldAlert },

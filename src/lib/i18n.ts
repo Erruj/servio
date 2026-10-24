@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import { registerMailActionTranslations } from './i18n-mail-actions';
 import { registerComposeTranslations } from './i18n-compose';
 import { registerInboxControlTranslations } from './i18n-inbox-controls';
+import { registerMailReminderTranslations } from './i18n-mail-reminders';
 
 /**
  * Detect the user's preferred language from:
@@ -3720,5 +3721,6 @@ i18n.on('languageChanged', (lng) => {
 registerMailActionTranslations(i18n);
 registerComposeTranslations(i18n);
 registerInboxControlTranslations(i18n);
+registerMailReminderTranslations(i18n);
 
 export default i18n;

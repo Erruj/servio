@@ -2,7 +2,7 @@ export type BulkMailAction = 'archive' | 'trash' | 'read' | 'unread' | 'star' | 
 export const INBOX_KEYS = {
   j: 'next', k: 'previous', Enter: 'open', u: 'back', r: 'reply', a: 'replyAll',
   f: 'forward', c: 'new', e: 'archive', '#': 'trash', s: 'star', U: 'unread',
-  '/': 'search', '?': 'help',
+  '/': 'search', '?': 'help', b: 'snooze',
 } as const;
 export type InboxCommand = typeof INBOX_KEYS[keyof typeof INBOX_KEYS];
 export function inboxCommand(event: {key: string; shiftKey: boolean; ctrlKey: boolean; metaKey: boolean; altKey: boolean}, enabled: boolean, blocked: boolean): InboxCommand | undefined {

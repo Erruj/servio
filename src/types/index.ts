@@ -5,6 +5,9 @@ export type Language = 'NL' | 'EN' | 'DE' | 'FR';
 export type ToneOfVoice = 'Neutraal' | 'Empathisch' | 'Formeel' | 'Vrolijk';
 
 export interface MailItem {
+  snoozedUntil?: string;
+  followUpPending?: boolean;
+  inboxReturnedAt?: string;
   sendAt?: string;
   sendError?: string;
   draftData?: import('@/lib/mail-compose').DraftData;

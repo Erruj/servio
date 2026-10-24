@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
+import { mailInboxOrder } from '@/lib/mail-reminders';
 
 export interface EmailConnection {
   id: string;
@@ -14,6 +15,9 @@ export interface EmailConnection {
 }
 
 export interface Email {
+  snoozed_until?: string | null;
+  follow_up_pending?: boolean;
+  inbox_returned_at?: string | null;
   id: string;
   connection_id: string;
   external_id: string;
@@ -193,14 +197,14 @@ async function runMailAction(emailId: string, action: MailActionName): Promise<v
   if (data && (data as any).error) throw new MailActionError((data as any).error);
 }
 
-export type EmailFolder = 'inbox' | 'archive' | 'trash' | 'spam' | 'sent' | 'drafts' | 'scheduled';
+export type EmailFolder = 'inbox' | 'archive' | 'trash' | 'spam' | 'sent' | 'drafts' | 'scheduled' | 'snoozed';
 
-export type MailView = 'inbox' | 'starred' | 'drafts' | 'sent' | 'archive' | 'spam' | 'trash' | 'scheduled';
+export type MailView = EmailFolder | 'starred';
 export type FolderCounts = Record<MailView, number>;
 
 // deno-lint-ignore no-explicit-any
 function applyView(query: any, view: MailView) {
-  if (view === 'starred') return query.eq('is_starred', true).not('folder', 'in', '(trash,spam,drafts,scheduled)');
+  if (view === 'starred') return query.eq('is_starred', true).not('folder', 'in', '(trash,spam,drafts,scheduled,snoozed)');
   return query.eq('folder', view);
 }
 
@@ -217,11 +221,12 @@ export function useEmails(view: MailView = 'inbox') {
         .from('emails')
         .select('*, email_connections_safe(email_address, provider)')
         .eq('user_id', user.id), view)
+        .order('inbox_returned_at', { ascending: false, nullsFirst: false })
         .order('received_at', { ascending: false })
         .limit(200);
 
       if (error) throw error;
-      const newEmails = (data as Email[]) || [];
+      const newEmails = ((data as Email[]) || []).sort(mailInboxOrder);
       
       // Check for new emails and send notification
       if (view === 'inbox' && prevEmailCountRef.current > 0 && newEmails.length > prevEmailCountRef.current) {
@@ -247,6 +252,19 @@ export function useEmails(view: MailView = 'inbox') {
   }, [user]);
 
   useEffect(() => { fetchEmails(); }, [fetchEmails]);
+  useEffect(() => {
+    if (!user) return;
+    const timer = setInterval(() => { if (!document.hidden) void fetchEmails(); }, 60000);
+    const refresh = () => { if (!document.hidden) void fetchEmails(); };
+    document.addEventListener('visibilitychange', refresh);
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
+  }, [user?.id, fetchEmails]);
+  const snooze = async (emailId: string, until: string | null) => {
+    const { error } = await supabase.rpc('set_mail_snooze', { _email_id: emailId, _until: until });
+    if (error) throw error;
+    setEmails(prev => prev.filter(email => email.id !== emailId));
+    await fetchEmails();
+  };
 
   const markAsRead = async (emailId: string) => { await setReadState(emailId, true); };
 
@@ -323,11 +341,12 @@ export function useEmails(view: MailView = 'inbox') {
         .select('*, email_connections_safe(email_address, provider)')
         .eq('user_id', user.id), view)
         .or(`subject.ilike.${q},from_email.ilike.${q},from_name.ilike.${q},snippet.ilike.${q}`)
+        .order('inbox_returned_at', { ascending: false, nullsFirst: false })
         .order('received_at', { ascending: false })
         .limit(200);
 
       if (error) throw error;
-      setEmails((data as Email[]) || []);
+      setEmails(((data as Email[]) || []).sort(mailInboxOrder));
     } catch (error) {
       console.error('Error searching emails:', error);
     }
@@ -336,7 +355,7 @@ export function useEmails(view: MailView = 'inbox') {
   // Group emails into threads
   const threads = groupIntoThreads(emails);
 
-  return { emails, threads, isLoading, refetch: fetchEmails, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts, refetchCounts: fetchCounts };
+  return { emails, threads, isLoading, refetch: fetchEmails, snooze, markAsRead, markMultipleAsRead, markMultipleAsUnread, deleteMultiple, searchEmails, setStarred, setReadState, setLabels, moveToFolder, emptyTrash, counts, refetchCounts: fetchCounts };
 }
 
 function groupIntoThreads(emails: Email[]): EmailThread[] {

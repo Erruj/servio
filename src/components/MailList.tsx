@@ -75,7 +75,7 @@ export function MailList({
   // Welke mails in de lijst horen wordt alleen herberekend bij filter-/zoekwijziging of wanneer
   // de set aan bestaande mail-ids verandert (nieuwe mail binnen, mail weg) — niet bij een
   // read/unread-toggle van een mail die al in de lijst stond.
-  const mailIdsFingerprint = mails.map((m) => m.id).sort().join(',');
+  const mailIdsFingerprint = mails.map((m) => `${m.id}:${m.inboxReturnedAt || ''}`).join(',');
   const mailsRef = useRef(mails);
   mailsRef.current = mails;
 
@@ -347,8 +347,9 @@ function VirtualMailList(props: VirtualMailListProps) {
                     {mail.subject}
                   </div>
                   <div className="text-[12px] text-muted-foreground truncate">
-                    {emailPreview}
+                    {mail.followUpPending ? t('mailReminders.unanswered') : emailPreview}
                   </div>
+                  {mail.labels.includes('SNOOZED') && <Badge variant="secondary" className="mt-1 text-xs">{t('mailReminders.label')}</Badge>}
                   {(() => { const a = getMailAnalysis(mail); if (!a.category && !a.urgency) return null; return (
                     <div className="flex items-center gap-1.5 mt-1.5">
                       {a.urgency && <span title={`Urgentie: ${a.urgency}`} aria-label={`Urgentie: ${a.urgency}`} className={cn('block w-2 h-2 rounded-full', getUrgencyClassName(a.urgency))} />}
