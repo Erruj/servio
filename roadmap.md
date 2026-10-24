@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Mail-prompt 4: antwoord/allen/doorstuur/nieuw opstelvenster, opmaak, ontvangers, hulpmiddelen en blijvende concepten
+- [x] Mail-prompt 4: antwoord/allen/doorstuur/nieuw opstelvenster, opmaak, ontvangers, hulpmiddelen en blijvende concepten
+- [ ] Mail-prompt 4: echte accounttest van concepten na herladen (externe Supabase zonder beschikbare inlogsessie)
 
 - [x] Deel 1 security: rechten user_settings/user_roles/usage_tracking, server-side tellers + limieten, TeamManagement via RPC, imap-connect 401
 - [x] Deel 2 trial-teksten: voorwaarden §5 (5 talen), banner, verlopen status in DB, prijzenpagina
