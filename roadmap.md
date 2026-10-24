@@ -1,4 +1,6 @@
 # Roadmap
+- [ ] Mail-prompt 10: full-text RPC, operatoren, suggesties en opgeslagen weergaven
+- [ ] Mail-prompt 10: gesprekken en geciteerde tekst inklappen, tests
 
 - [x] Mail-prompt 9: uitschrijfheaders, veilige uitschrijfactie, accountgebonden blokkeren en Spam-sync
 - [x] Mail-prompt 9: regeltests en gesimuleerde browsercontrole
