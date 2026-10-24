@@ -140,7 +140,7 @@ Deno.serve(async(req)=>{
       }
       if(!fetched) throw new SendError('original_missing');
       original={...original,message_id:fetched.message_id || original.message_id,reference_ids:fetched.reference_ids || original.reference_ids};
-      const selected=selectOriginals(fetched.attachments,input.originalAttachments);
+      const selected=selectOriginals<{id: string; filename: string; mimeType: string; content: string; unsupported?: boolean}>(fetched.attachments,input.originalAttachments);
       if(selected.some((a:any)=>a.unsupported || !a.content)) throw new SendError('attachment_missing');
       attachments.push(...selected);
       await db.from('emails').update({message_id:original.message_id,reference_ids:original.reference_ids}).eq('id',original.id).eq('user_id',owner);
@@ -187,7 +187,8 @@ Deno.serve(async(req)=>{
     return json({success:true,messageId:draft.message_id || mid,warnings});
   } catch(error) {
     const rawCode=error instanceof Error ? error.message : '';
-    const code=error instanceof SendError ? error.code : ['attachment_size','attachment_missing','original_missing'].includes(rawCode) ? rawCode : /auth|login|credentials/i.test(rawCode) ? 'reconnect' : 'network';
+    const smtpError=error as {code?: string; responseCode?: number};
+    const code=error instanceof SendError ? error.code : ['attachment_size','attachment_missing','original_missing'].includes(rawCode) ? rawCode : smtpError.code==='EAUTH' || /auth|login|credentials/i.test(rawCode) ? 'reconnect' : smtpError.responseCode || smtpError.code==='EENVELOPE' ? 'provider' : 'network';
     const uncertain=claimed && !delivered && (code==='network');
     if(db && draft && owner && claimed) await db.from('emails').update({send_status:delivered ? 'sent':uncertain ? 'uncertain':'failed'}).eq('id',draft.id).eq('user_id',owner);
     if(delivered) return json({success:true,warnings:['storage_sent']});
