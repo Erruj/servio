@@ -3,10 +3,6 @@ export const ACTIONS = ["read", "unread", "star", "unstar", "archive", "trash", 
 export type Action = typeof ACTIONS[number];
 type Folder = "inbox" | "archive" | "trash" | "spam" | "sent" | "drafts";
 const MOVE_TARGET: Partial<Record<Action, Folder>> = { archive: "archive", trash: "trash", spam: "spam", inbox: "inbox" };
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 class MailboxError extends Error {
   constructor(message: string, public status = 502) { super(message); }
@@ -156,7 +152,7 @@ async function imapAction(conn: any, email: any, action: Action) {
     const caps = (await imap.cmd("CAPABILITY")).join(" ").toUpperCase();
     await imap.cmd(`LOGIN ${q(conn.email_address)} ${q(password)}`);
     const current: Folder = (email.folder || "inbox") as Folder;
-    const sourceName = await resolveFolder(imap, current === "sent" || current === "drafts" ? "inbox" : current, cache);
+    const sourceName = await resolveFolder(imap, current === "sent" || current === "drafts" || email.folder === 'snoozed' ? "inbox" : current, cache);
     await imap.cmd(`SELECT ${q(sourceName)}`);
     const uid = await findUid(imap, email.external_id, sourceName === "INBOX");
     if (!uid) throw new MailboxError("Deze mail is niet (meer) gevonden in je mailbox.", 404);
@@ -249,6 +245,20 @@ async function outlookAction(supabase: any, conn: any, email: any, action: Actio
 export async function applyMailboxAction(db: any, conn: any, email: any, action: Action): Promise<string | null> {
   if(conn.provider==='imap') {await imapAction(conn,email,action);return null;}
   if(conn.provider==='outlook') return outlookAction(db,conn,email,action);
+  if(conn.provider==='gmail' && (action==='spam'||action==='archive')) {
+    let token=conn.access_token;
+    if(!token || new Date(conn.token_expires_at||0).getTime()<Date.now()+120000) {
+      if(!conn.refresh_token) throw new MailboxError('Koppel Gmail opnieuw.',409);
+      const response=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:Deno.env.get('GOOGLE_CLIENT_ID')||'',client_secret:Deno.env.get('GOOGLE_CLIENT_SECRET')||'',refresh_token:conn.refresh_token,grant_type:'refresh_token'})});
+      if(!response.ok) throw new MailboxError('Koppel Gmail opnieuw.',409);
+      const fresh=await response.json();token=fresh.access_token;
+      await db.from('email_connections').update({access_token:token,token_expires_at:new Date(Date.now()+fresh.expires_in*1000).toISOString()}).eq('id',conn.id).eq('user_id',conn.user_id);
+    }
+    const response=await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(email.external_id)}/modify`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({addLabelIds:action==='spam'?['SPAM']:[],removeLabelIds:action==='archive'?['INBOX','SPAM']:['INBOX']})});
+    await response.body?.cancel();
+    if(!response.ok) throw new MailboxError('Gmail kon deze mail niet verplaatsen. Controleer de schrijfrechten.',response.status===403?409:502);
+    return null;
+  }
   throw new MailboxError('Deze mailbox ondersteunt nog geen terug-synchronisatie.',409);
 }
 export { MailboxError };

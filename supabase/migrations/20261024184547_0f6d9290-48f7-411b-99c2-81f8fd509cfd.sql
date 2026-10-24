@@ -1,0 +1,1 @@
+ALTER TABLE public.emails ADD COLUMN IF NOT EXISTS spam_move_pending boolean NOT NULL DEFAULT false;

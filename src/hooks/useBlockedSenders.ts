@@ -7,7 +7,7 @@ export function useBlockedSenders() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const key = ['blocked-senders', user?.id];
-  const [legacy, setLegacy] = useState(() => legacyBlockedSenders(localStorage.getItem('servio_blocked_senders')));
+  const [legacy, setLegacy] = useState(() => {try {return legacyBlockedSenders(localStorage.getItem('servio_blocked_senders'));}catch{return [];}});
   const query = useQuery({queryKey:key, enabled:!!user, queryFn:async () => {
     if (!user) return [];
     const {data,error} = await supabase.from('blocked_senders').select('sender_email').eq('user_id',user.id).order('sender_email');
@@ -26,7 +26,7 @@ export function useBlockedSenders() {
     const {error} = await supabase.from('blocked_senders').delete().eq('user_id',user.id).eq('sender_email',sender);
     if (error) throw error;
   },onSuccess:()=>qc.invalidateQueries({queryKey:key})});
-  const dismissLegacy = () => {localStorage.removeItem('servio_blocked_senders');setLegacy([]);};
+  const dismissLegacy = () => {try {localStorage.removeItem('servio_blocked_senders');}catch{/* restricted storage */}setLegacy([]);};
   const importLegacy = useMutation({mutationFn:async () => {
     if (!user) throw new Error('session');
     // Old records also contained display names. Resolve those only against this owner's mail.

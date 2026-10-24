@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { safeLogBody, timingSafeEqual } from "../_shared/security.ts";
 import { mailboxUpdate, OUTLOOK_MESSAGE_FIELDS, parseOutlookMessage } from "./message-state.ts";
+import { unsubscribeHeaders, newSenderMail } from './sender-rules.ts';
+import { applyMailboxAction } from '../_shared/mailbox-actions.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -137,6 +139,7 @@ function parseGmailMessage(msg: any) {
 
   return {
     external_id: msg.id,
+    ...unsubscribeHeaders(headers),
     message_id: getHeader("Message-ID") || null,
     reference_ids: (getHeader("References") || "").match(/<[^>]+>/g) || [],
     thread_id: msg.threadId,
@@ -380,6 +383,8 @@ function processImapMessage(metaLine: string, rawBytes: Uint8Array): any | null 
 
     return {
       external_id: parsed.messageId || `uid-${uid}`,
+      list_unsubscribe: parsed.listUnsubscribe,
+      list_unsubscribe_post: parsed.listUnsubscribePost,
       thread_id: parsed.referenceIds[0] || parsed.inReplyTo || (parsed.messageId ? `<${parsed.messageId}>` : null),
       message_id: parsed.messageId ? `<${parsed.messageId}>` : null,
       reference_ids: parsed.referenceIds,
@@ -455,6 +460,8 @@ function parseRawEmail(raw: string) {
 
   return {
     messageId,
+    listUnsubscribe: headers['list-unsubscribe']?.slice(0,16000) || null,
+    listUnsubscribePost: headers['list-unsubscribe-post']?.slice(0,16000) || null,
     referenceIds: (headers["references"] || "").match(/<[^>]+>/g) || [],
     inReplyTo: headers["in-reply-to"] || null,
     fromEmail,
@@ -595,7 +602,7 @@ function decodeRFC2047(str: string): string {
 // ─── Persist Messages ────────────────────────────────────────────────────
 
 async function persistMessages(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<any>,
   connection: { id: string; user_id: string },
   messages: any[]
 ): Promise<{ insertedCount: number; updatedCount: number; insertedExternalIds: string[] }> {
@@ -615,6 +622,9 @@ async function persistMessages(
 
   const inserts: any[] = [];
   const updates: any[] = [];
+  const {data:blockedRows,error:blockedError}=await supabase.from('blocked_senders').select('sender_email').eq('user_id',connection.user_id);
+  if(blockedError) throw new Error('Geblokkeerde afzenders konden niet worden geladen.');
+  const blocked=new Set<string>((blockedRows||[]).map((r:any)=>r.sender_email));
 
   for (const message of messages) {
     const baseRecord = { ...message, user_id: connection.user_id, connection_id: connection.id };
@@ -626,7 +636,7 @@ async function persistMessages(
       // Eigen labels blijven in Servio; providerlabels worden alleen bij import gezet.
       updates.push({ ...mailboxUpdate(baseRecord, !!existing.inbox_returned_at && !existing.is_read), id: existing.id });
     } else {
-      inserts.push(baseRecord);
+      inserts.push(newSenderMail(baseRecord,blocked));
     }
   }
 
@@ -713,7 +723,7 @@ async function callAiExtract(dataUrl: string, mime: string, docType: "invoice" |
 }
 
 async function processGmailAttachmentsForEmail(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<any>,
   userId: string,
   emailId: string,
   emailSubject: string,
@@ -977,6 +987,14 @@ serve(async (req) => {
         }
 
         const { insertedCount, updatedCount, insertedExternalIds } = await persistMessages(supabase as any, connection, messages);
+        const {data:pending,error:pendingError}=await supabase.from('emails').select('id,external_id,folder').eq('connection_id',connection.id).eq('user_id',connection.user_id).eq('spam_move_pending',true).limit(50);
+        if(pendingError) throw new Error('Geblokkeerde mails konden niet naar Spam worden verplaatst.');
+        for(const email of pending || []) {
+          // Servio already hides the new blocked message. It is still physically in INBOX until the move succeeds.
+          const newId=await applyMailboxAction(supabase,connection,{...email,folder:'inbox'},'spam');
+          const {error:moveSaveError}=await supabase.from('emails').update({spam_move_pending:false,...(newId?{external_id:newId}:{})}).eq('id',email.id).eq('user_id',connection.user_id);
+          if(moveSaveError) throw new Error('Spam is bijgewerkt, maar Servio kon de wijziging niet opslaan.');
+        }
 
         // Auto-process invoice/receipt attachments for newly inserted Gmail messages
         let autoProcessedDocs = 0;

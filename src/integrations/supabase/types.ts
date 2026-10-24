@@ -557,6 +557,7 @@ export type Database = {
           send_status: string
           snippet: string | null
           snoozed_until: string | null
+          spam_move_pending: boolean
           subject: string | null
           thread_id: string | null
           thread_summary: string | null
@@ -603,6 +604,7 @@ export type Database = {
           send_status?: string
           snippet?: string | null
           snoozed_until?: string | null
+          spam_move_pending?: boolean
           subject?: string | null
           thread_id?: string | null
           thread_summary?: string | null
@@ -649,6 +651,7 @@ export type Database = {
           send_status?: string
           snippet?: string | null
           snoozed_until?: string | null
+          spam_move_pending?: boolean
           subject?: string | null
           thread_id?: string | null
           thread_summary?: string | null

@@ -1,7 +1,8 @@
 # Roadmap
 
-- [ ] Mail-prompt 9: uitschrijfheaders, veilige uitschrijfactie, accountgebonden blokkeren en Spam-sync
-- [ ] Mail-prompt 9: tests en echte nieuwsbrief-/mailboxcontrole
+- [x] Mail-prompt 9: uitschrijfheaders, veilige uitschrijfactie, accountgebonden blokkeren en Spam-sync
+- [x] Mail-prompt 9: regeltests en gesimuleerde browsercontrole
+- [ ] Mail-prompt 9: echte Capterra-uitschrijving en volgende-sync Spam-test (externe Supabase zonder beschikbare inlogsessie)
 
 - [x] Mail-prompt 8: snoozen, opvolg-herinneringen, vijfminutencontrole en tests
 - [ ] Mail-prompt 8: echte accountcontrole van snooze en opvolging (externe Supabase zonder beschikbare inlogsessie)
