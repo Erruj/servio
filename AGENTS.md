@@ -11,3 +11,6 @@
 - Inbox selection and shortcut navigation share the displayed filtered mail order; bulk actions reuse individual mailbox operations and retain failed selections for retry. Shortcut preferences are browser-local and user-scoped to prevent account leakage without changing server permissions.
 - Mail searches parse operators into structured RPC filters; search_mail is security-invoker, owner-scoped and paginated. Never re-filter full-text matches as literal query strings in the mail list.
 - Saved mail views persist under owner RLS; recent searches are browser-local and account-scoped. Conversations load across folders by owner, connection and exact thread ID, never by subject alone.
+- Mail notifications run in the authenticated shell and use account-scoped deduplication; permissions are requested only from a user command.
+- Vacation replies are sync-driven for IMAP and Outlook, atomically claimed per owner/sender before delivery and never retried after an uncertain send; audit rows exist before sending and remain after success or uncertainty to avoid duplicate delivery.
+- Mail settings are grouped in a focused mail section; mailbox signatures and the default connection are owner-scoped and applied by the shared composer.

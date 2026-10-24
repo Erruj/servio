@@ -1,3 +1,4 @@
+import { MailSettings } from '@/components/inbox/MailSettings';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -229,7 +230,7 @@ const Settings = () => {
     { id: 'settings-appearance', label: 'Uiterlijk' },
     { id: 'settings-language', label: 'Taal & weergave' },
     { id: 'settings-ai', label: 'AI' },
-    { id: 'settings-signature', label: 'Handtekening' },
+    { id: 'settings-mail', label: t('mailPrefs.title') },
     { id: 'settings-automation', label: 'Automatisering' },
     { id: 'mailboxes', label: 'Mailboxen', href: '/mailbox-setup' },
     { id: 'subscription', label: 'Abonnement', href: '/profile#subscription' },
@@ -294,26 +295,6 @@ const Settings = () => {
                 <Separator />
                 <SettingItem icon={LayoutGrid} label={t('compactLayout')} description={t('compactLayoutDesc')}>
                   <Switch checked={compactLayout} onCheckedChange={handleCompactToggle} />
-                </SettingItem>
-                <Separator />
-                <SettingItem icon={MessageSquare} label={t('inboxControls.pref')} description="">
-                  <Switch aria-label={t('inboxControls.pref')} checked={shortcutPrefs.enabled} onCheckedChange={value=>{try {shortcutPrefs.setEnabled(value);toast.success(t('inboxControls.prefSaved'));} catch {toast.error(t('inboxControls.prefError'));}}} />
-                </SettingItem>
-                <Separator />
-                <SettingItem icon={MessageSquare} label={t('mailSchedule.delay')} description=""><Select value={String(sendPrefs.seconds)} onValueChange={v=>sendPrefs.update.mutate(Number(v),{onSuccess:()=>toast.success(t('mailSchedule.prefSaved')),onError:()=>toast.error(t('mailSchedule.prefError'))})}><SelectTrigger className="min-h-11 w-[180px]"><SelectValue /></SelectTrigger><SelectContent>{sendPrefs.seconds===8 && <SelectItem value="8">{t('mailSchedule.defaultDelay')}</SelectItem>}{UNDO_OPTIONS.map(n=><SelectItem key={n} value={String(n)}>{t('mailSchedule.seconds',{count:n})}</SelectItem>)}</SelectContent></Select></SettingItem>
-                <Separator />
-                <SettingItem icon={Image} label={t('emailView.settingLabel')} description={t('emailView.settingDesc')}>
-                  <Select value={imagePrefs.mode} onValueChange={(v) => imagePrefs.setMode.mutate(v as EmailImageMode, {
-                    onSuccess: () => toast.success(t('emailView.settingSaved')),
-                    onError: (e) => toast.error((e as Error).message),
-                  })}>
-                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ask">{t('emailView.modeAsk')}</SelectItem>
-                      <SelectItem value="always">{t('emailView.modeAlways')}</SelectItem>
-                      <SelectItem value="never">{t('emailView.modeNever')}</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </SettingItem>
               </CardContent>
             </Card>
@@ -393,27 +374,9 @@ const Settings = () => {
               </CardContent>
             </Card>
 
-            {/* Email Signature */}
-            <Card id="settings-signature" className="shadow-card scroll-mt-20">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2"><Pen className="h-5 w-5 text-primary" /><CardTitle className="text-lg">{t('emailSignature')}</CardTitle></div>
-                <CardDescription>{t('emailSignatureDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  value={emailSignature}
-                  onChange={(e) => setEmailSignature(e.target.value)}
-                  placeholder={t('emailSignaturePlaceholder')}
-                  className="min-h-28 resize-none font-mono text-sm"
-                />
-                <p className="text-xs text-muted-foreground mt-2">{t('emailSignatureTip')}</p>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions Customization */}
-            <Card className="shadow-card">
-              <CardHeader><CardTitle className="text-lg">{t('mailSenders.title')}</CardTitle></CardHeader>
-              <CardContent><BlockedSenders /></CardContent>
+            <Card id="settings-mail" className="shadow-card scroll-mt-20">
+              <CardHeader><CardTitle className="text-lg">{t('mailPrefs.title')}</CardTitle></CardHeader>
+              <CardContent><MailSettings /></CardContent>
             </Card>
 
             <Card id="settings-quick" className="shadow-card scroll-mt-20">

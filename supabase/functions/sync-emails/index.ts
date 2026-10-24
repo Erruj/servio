@@ -1,3 +1,5 @@
+import {processVacationReplies} from '../_shared/mail-vacation.ts';
+import {suppressAutomaticReply} from '../_shared/vacation-rules.ts';
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { safeLogBody, timingSafeEqual } from "../_shared/security.ts";
@@ -140,6 +142,7 @@ function parseGmailMessage(msg: any) {
   return {
     external_id: msg.id,
     ...unsubscribeHeaders(headers),
+    auto_reply_suppressed:suppressAutomaticReply(headers),
     message_id: getHeader("Message-ID") || null,
     reference_ids: (getHeader("References") || "").match(/<[^>]+>/g) || [],
     thread_id: msg.threadId,
@@ -384,6 +387,7 @@ function processImapMessage(metaLine: string, rawBytes: Uint8Array): any | null 
     return {
       external_id: parsed.messageId || `uid-${uid}`,
       list_unsubscribe: parsed.listUnsubscribe,
+      auto_reply_suppressed:parsed.autoReplySuppressed,
       list_unsubscribe_post: parsed.listUnsubscribePost,
       thread_id: parsed.referenceIds[0] || parsed.inReplyTo || (parsed.messageId ? `<${parsed.messageId}>` : null),
       message_id: parsed.messageId ? `<${parsed.messageId}>` : null,
@@ -460,6 +464,7 @@ function parseRawEmail(raw: string) {
 
   return {
     messageId,
+    autoReplySuppressed:suppressAutomaticReply(Object.entries(headers).map(([name,value])=>({name,value}))),
     listUnsubscribe: headers['list-unsubscribe']?.slice(0,16000) || null,
     listUnsubscribePost: headers['list-unsubscribe-post']?.slice(0,16000) || null,
     referenceIds: (headers["references"] || "").match(/<[^>]+>/g) || [],
@@ -987,6 +992,7 @@ serve(async (req) => {
         }
 
         const { insertedCount, updatedCount, insertedExternalIds } = await persistMessages(supabase as any, connection, messages);
+        try { await processVacationReplies(supabase,connection,insertedExternalIds); } catch { console.error('Afwezigheidsverwerking mislukt'); }
         const {data:pending,error:pendingError}=await supabase.from('emails').select('id,external_id,folder').eq('connection_id',connection.id).eq('user_id',connection.user_id).eq('spam_move_pending',true).limit(50);
         if(pendingError) throw new Error('Geblokkeerde mails konden niet naar Spam worden verplaatst.');
         for(const email of pending || []) {

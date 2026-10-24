@@ -26,7 +26,7 @@ async function providerCall(url:string,token:string,method='GET',body?:unknown) 
   }
   return response.status === 202 || response.status === 204 ? {} : response.json();
 }
-async function accessToken(db:any,connection:any) {
+export async function accessToken(db:any,connection:any) {
   if (connection.access_token && new Date(connection.token_expires_at).getTime() > Date.now()+60000) return connection.access_token;
   const microsoft = connection.provider === 'outlook';
   const client = Deno.env.get(microsoft ? 'MICROSOFT_CLIENT_ID':'GOOGLE_CLIENT_ID');

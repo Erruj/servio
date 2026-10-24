@@ -249,13 +249,6 @@ export function useEmails(view: MailView = 'inbox', searchQuery = '', connection
       if(request!==requestRef.current)return;
       const newEmails = ((data as Email[]) || []).sort(mailInboxOrder);
       
-      // Check for new emails and send notification
-      if (view === 'inbox' && prevEmailCountRef.current > 0 && newEmails.length > prevEmailCountRef.current) {
-        const newCount = newEmails.length - prevEmailCountRef.current;
-        sendBrowserNotification(newCount, newEmails[0]);
-      }
-      prevEmailCountRef.current = newEmails.length;
-      
       setEmails(newEmails);
       setSearchError(null);setHasMore(false);
     } catch (error) {
@@ -397,21 +390,3 @@ function normalizeSubject(subject: string): string {
   return subject.replace(/^(Re|Fw|Fwd|Antw|Doorst):\s*/gi, '').trim().toLowerCase();
 }
 
-function sendBrowserNotification(count: number, latestEmail: Email) {
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  
-  try {
-    new Notification(`${count} nieuwe email${count > 1 ? 's' : ''}`, {
-      body: latestEmail.subject || 'Nieuw bericht',
-      icon: '/favicon.ico',
-      tag: 'new-email',
-    });
-  } catch { /* ignore */ }
-}
-
-export function requestNotificationPermission() {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'default') {
-    Notification.requestPermission();
-  }
-}
