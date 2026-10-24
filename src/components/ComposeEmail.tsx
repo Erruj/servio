@@ -65,6 +65,8 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     quoteHeading: mail ? mode === 'forward' ? t('compose.forwarded') : t('compose.quoted', { date: new Date(mail.receivedAt).toLocaleString(i18n.language), name: mail.from }) : '',
     attachments: [], originalAttachments: mode === 'forward' ? (mail?.attachments || []).map(a => ({ id: a.id, name: a.name, url: a.url, selected: false })) : [],
   });
+  const signatureByMailbox=useRef<Record<string,string>>({});
+  const lastSignature=useRef('');
   const [ready, setReady] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -110,12 +112,14 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
       setConnections(active);
       setSuggestions(addresses([...(emails.data || []).flatMap(e => [e.from_email, ...(e.to_emails || []), ...(e.cc_emails || [])]), ...(customers.data || []).map(c => c.email || '')]));
       setTemplates(tmpl.data || []);
+      signatureByMailbox.current=Object.fromEntries(active.map(c=>[c.id,mailboxPrefs.data?.find(p=>p.connection_id===c.id)?.signature ?? settings.data?.email_signature ?? '']));
       setDraft(prev => {
         if (initialDraft) return prev;
         const recipients = reminder ? { to: mail?.to || [], cc: mail?.cc || [] } : mail ? composeRecipients(mail, mode, active.map(c => c.email_address)) : { to: prev.to, cc: prev.cc };
         const connectionId=prev.connectionId || (active.some(c=>c.id===mailPrefs.data?.default_connection_id)?mailPrefs.data?.default_connection_id:active[0]?.id) || '';
         const mailbox=mailboxPrefs.data?.find(p=>p.connection_id===connectionId);
         const signature = mailbox ? mailbox.signature : settings.data?.email_signature;
+        lastSignature.current=signature||'';
         return { ...prev, ...recipients, connectionId, html: prev.html + (signature && !plainText(prev.html).includes(signature) ? `<br><br>${textToComposeHtml(signature)}` : '') };
       });
       setReady(true);
@@ -248,7 +252,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
     </header>
     <div className={minimized ? 'hidden' : 'overflow-y-auto min-h-0 p-3 space-y-2'} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); void addFiles(Array.from(e.dataTransfer.files)); }}>
       {!ready ? <div className="space-y-3"><Skeleton className="h-11" /><Skeleton className="h-11" /><Skeleton className="h-40" /></div> : <>
-        <div className="flex items-center gap-2"><label className="text-sm text-muted-foreground w-12 shrink-0">{t('compose.from')}</label><Select value={draft.connectionId} onValueChange={v => patch({ connectionId: v })}><SelectTrigger className="min-h-11 flex-1" aria-label={t('compose.from')}><SelectValue placeholder={t('compose.from')} /></SelectTrigger><SelectContent>{connections.map(c => <SelectItem key={c.id} value={c.id}>{c.email_address}</SelectItem>)}</SelectContent></Select></div>
+        <div className="flex items-center gap-2"><label className="text-sm text-muted-foreground w-12 shrink-0">{t('compose.from')}</label><Select value={draft.connectionId} onValueChange={v => {const next=signatureByMailbox.current[v]||'';let html=latest.current.html;const old=textToComposeHtml(lastSignature.current);if(lastSignature.current&&html.endsWith(old))html=html.slice(0,-old.length).replace(/(?:<br>)+$/,'');if(next)html+=`<br><br>${textToComposeHtml(next)}`;lastSignature.current=next;if(editor.current)editor.current.innerHTML=cleanHtml(html);patch({connectionId:v,html});}}><SelectTrigger className="min-h-11 flex-1" aria-label={t('compose.from')}><SelectValue placeholder={t('compose.from')} /></SelectTrigger><SelectContent>{connections.map(c => <SelectItem key={c.id} value={c.id}>{c.email_address}</SelectItem>)}</SelectContent></Select></div>
         <RecipientInput label={t('compose.to')} value={draft.to} onChange={to => patch({ to })} suggestions={suggestions} />
         <Button variant="ghost" className="min-h-11" onClick={() => setShowCopies(!showCopies)}>{t('compose.cc')} / {t('compose.bcc')}</Button>
         {showCopies && <><RecipientInput label={t('compose.cc')} value={draft.cc} onChange={cc => patch({ cc })} suggestions={suggestions} /><RecipientInput label={t('compose.bcc')} value={draft.bcc} onChange={bcc => patch({ bcc })} suggestions={suggestions} /></>}

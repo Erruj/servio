@@ -310,7 +310,7 @@ const Inbox = () => {
                 <span className="hidden sm:inline">{t('ui.newEmail')}</span>
               </Button>
               {'Notification' in window && Notification.permission === 'default' && (
-                <Button variant="ghost" size="sm" onClick={requestNotificationPermission} title="Notificaties inschakelen">
+                <Button variant="ghost" size="sm" onClick={()=>navigate('/settings#settings-mail')} title={t('mailPrefs.notifications')} aria-label={t('mailPrefs.notifications')}>
                   <Bell className="h-4 w-4" />
                 </Button>
               )}
