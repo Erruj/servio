@@ -526,6 +526,7 @@ export type Database = {
           ai_classified_at: string | null
           ai_urgency: string | null
           attachment_metadata: Json
+          auto_reply_suppressed: boolean
           body_html: string | null
           body_text: string | null
           category_from_correction: boolean
@@ -573,6 +574,7 @@ export type Database = {
           ai_classified_at?: string | null
           ai_urgency?: string | null
           attachment_metadata?: Json
+          auto_reply_suppressed?: boolean
           body_html?: string | null
           body_text?: string | null
           category_from_correction?: boolean
@@ -620,6 +622,7 @@ export type Database = {
           ai_classified_at?: string | null
           ai_urgency?: string | null
           attachment_metadata?: Json
+          auto_reply_suppressed?: boolean
           body_html?: string | null
           body_text?: string | null
           category_from_correction?: boolean
@@ -751,6 +754,30 @@ export type Database = {
           },
         ]
       }
+      mail_preferences: {
+        Row: {
+          created_at: string
+          default_connection_id: string | null
+          notification_mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_connection_id?: string | null
+          notification_mode?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_connection_id?: string | null
+          notification_mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mail_saved_views: {
         Row: {
           created_at: string
@@ -816,6 +843,87 @@ export type Database = {
           singleton?: boolean
         }
         Relationships: []
+      }
+      mail_vacation_replies: {
+        Row: {
+          audit_id: string
+          created_at: string
+          last_claimed_at: string
+          sender_email: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audit_id: string
+          created_at?: string
+          last_claimed_at?: string
+          sender_email: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audit_id?: string
+          created_at?: string
+          last_claimed_at?: string
+          sender_email?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mailbox_preferences: {
+        Row: {
+          connection_id: string
+          created_at: string
+          signature: string
+          updated_at: string
+          user_id: string
+          vacation_enabled: boolean
+          vacation_end: string | null
+          vacation_error: string | null
+          vacation_start: string | null
+          vacation_text: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          signature?: string
+          updated_at?: string
+          user_id: string
+          vacation_enabled?: boolean
+          vacation_end?: string | null
+          vacation_error?: string | null
+          vacation_start?: string | null
+          vacation_text?: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          signature?: string
+          updated_at?: string
+          user_id?: string
+          vacation_enabled?: boolean
+          vacation_end?: string | null
+          vacation_error?: string | null
+          vacation_start?: string | null
+          vacation_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mailbox_preferences_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "email_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mailbox_preferences_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "email_connections_safe"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1417,6 +1525,10 @@ export type Database = {
         Returns: boolean
       }
       choose_free_plan: { Args: never; Returns: undefined }
+      claim_vacation_reply: {
+        Args: { _connection_id: string; _email_id: string; _user_id: string }
+        Returns: string
+      }
       consume_usage: {
         Args: { _kind: string; _limit: number; _user_id: string }
         Returns: boolean
@@ -1490,6 +1602,7 @@ export type Database = {
           ai_classified_at: string | null
           ai_urgency: string | null
           attachment_metadata: Json
+          auto_reply_suppressed: boolean
           body_html: string | null
           body_text: string | null
           category_from_correction: boolean
