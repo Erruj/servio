@@ -178,6 +178,30 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_senders: {
+        Row: {
+          created_at: string
+          id: string
+          sender_email: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sender_email: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sender_email?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string | null
@@ -522,6 +546,8 @@ export type Database = {
           is_read: boolean | null
           is_starred: boolean | null
           labels: string[] | null
+          list_unsubscribe: string | null
+          list_unsubscribe_post: string | null
           message_id: string | null
           received_at: string
           reference_ids: string[]
@@ -566,6 +592,8 @@ export type Database = {
           is_read?: boolean | null
           is_starred?: boolean | null
           labels?: string[] | null
+          list_unsubscribe?: string | null
+          list_unsubscribe_post?: string | null
           message_id?: string | null
           received_at: string
           reference_ids?: string[]
@@ -610,6 +638,8 @@ export type Database = {
           is_read?: boolean | null
           is_starred?: boolean | null
           labels?: string[] | null
+          list_unsubscribe?: string | null
+          list_unsubscribe_post?: string | null
           message_id?: string | null
           received_at?: string
           reference_ids?: string[]

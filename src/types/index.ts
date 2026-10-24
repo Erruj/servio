@@ -5,6 +5,8 @@ export type Language = 'NL' | 'EN' | 'DE' | 'FR';
 export type ToneOfVoice = 'Neutraal' | 'Empathisch' | 'Formeel' | 'Vrolijk';
 
 export interface MailItem {
+  listUnsubscribe?: string;
+  listUnsubscribePost?: string;
   snoozedUntil?: string;
   followUpPending?: boolean;
   inboxReturnedAt?: string;
