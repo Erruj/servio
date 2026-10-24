@@ -751,6 +751,36 @@ export type Database = {
           },
         ]
       }
+      mail_saved_views: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          query: string
+          updated_at: string
+          user_id: string
+          view: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          query: string
+          updated_at?: string
+          user_id: string
+          view?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          query?: string
+          updated_at?: string
+          user_id?: string
+          view?: string
+        }
+        Relationships: []
+      }
       mail_send_preferences: {
         Row: {
           undo_seconds: number
@@ -1447,6 +1477,68 @@ export type Database = {
       }
       process_mail_reminders: { Args: never; Returns: undefined }
       refresh_mail_send_job: { Args: never; Returns: undefined }
+      search_mail: {
+        Args: {
+          _connection_id?: string
+          _filters?: Json
+          _limit?: number
+          _offset?: number
+          _view?: string
+        }
+        Returns: {
+          ai_category: string | null
+          ai_classified_at: string | null
+          ai_urgency: string | null
+          attachment_metadata: Json
+          body_html: string | null
+          body_text: string | null
+          category_from_correction: boolean
+          cc_emails: string[] | null
+          connection_id: string | null
+          created_at: string
+          customer_sentiment: string | null
+          draft_data: Json | null
+          external_id: string
+          folder: string
+          follow_up_at: string | null
+          follow_up_pending: boolean
+          from_email: string
+          from_name: string | null
+          has_attachments: boolean | null
+          id: string
+          inbox_returned_at: string | null
+          is_read: boolean | null
+          is_starred: boolean | null
+          labels: string[] | null
+          list_unsubscribe: string | null
+          list_unsubscribe_post: string | null
+          message_id: string | null
+          received_at: string
+          reference_ids: string[]
+          send_at: string | null
+          send_error: string | null
+          send_payload: Json | null
+          send_status: string
+          snippet: string | null
+          snoozed_until: string | null
+          spam_move_pending: boolean
+          subject: string | null
+          thread_id: string | null
+          thread_summary: string | null
+          thread_summary_updated_at: string | null
+          to_emails: string[] | null
+          trashed_at: string | null
+          undo_until: string | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "emails"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       set_mail_snooze: {
         Args: { _email_id: string; _until: string }
         Returns: undefined
