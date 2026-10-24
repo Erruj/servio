@@ -508,6 +508,7 @@ export type Database = {
           connection_id: string | null
           created_at: string
           customer_sentiment: string | null
+          draft_data: Json | null
           external_id: string
           folder: string
           follow_up_at: string | null
@@ -541,6 +542,7 @@ export type Database = {
           connection_id?: string | null
           created_at?: string
           customer_sentiment?: string | null
+          draft_data?: Json | null
           external_id: string
           folder?: string
           follow_up_at?: string | null
@@ -574,6 +576,7 @@ export type Database = {
           connection_id?: string | null
           created_at?: string
           customer_sentiment?: string | null
+          draft_data?: Json | null
           external_id?: string
           folder?: string
           follow_up_at?: string | null

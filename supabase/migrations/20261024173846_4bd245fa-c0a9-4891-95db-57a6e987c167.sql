@@ -1,0 +1,2 @@
+ALTER TABLE public.emails ADD COLUMN IF NOT EXISTS draft_data jsonb;
+COMMENT ON COLUMN public.emails.draft_data IS 'Composer state for Servio drafts: mode, recipients, rich body, quote, attachments and original email reference. Scoped by existing emails RLS.';
