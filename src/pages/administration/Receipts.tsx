@@ -1,4 +1,5 @@
 import { formatEUR } from '@/lib/finance';
+import {MailSourceLink} from '@/components/inbox/MailBusiness';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -245,7 +246,7 @@ export default function Receipts() {
                         <p className="text-sm text-muted-foreground">{receipt.receipt_date || new Date(receipt.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(receipt.status)}>{receipt.status}</Badge>
+                        <Badge variant={getStatusColor(receipt.status)}>{receipt.status==='needs_review'||receipt.status==='review'?t('mailBusiness.review'):receipt.status}</Badge>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-6 w-6 p-0">⋮</Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -258,6 +259,7 @@ export default function Receipts() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
+                      <MailSourceLink documentId={receipt.id}/>
                       <p className="text-2xl font-bold text-foreground">{formatEUR(Number(receipt.amount ?? 0))}</p>
                       {receipt.category && <Badge variant="outline">{receipt.category}</Badge>}
                     </div>

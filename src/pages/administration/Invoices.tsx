@@ -1,4 +1,5 @@
 import { formatEUR } from '@/lib/finance';
+import {MailSourceLink} from '@/components/inbox/MailBusiness';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -555,7 +556,7 @@ export default function Invoices() {
                   >
                     <TableCell><Checkbox checked={selectedInvoices.has(invoice.id)} onCheckedChange={() => toggleSelect(invoice.id)} /></TableCell>
                     <TableCell className="font-medium">{invoice.invoice_number || '-'}</TableCell>
-                    <TableCell>{invoice.supplier || t('unknown')}</TableCell>
+                    <TableCell>{invoice.supplier || t('unknown')}<MailSourceLink documentId={invoice.id}/></TableCell>
                     <TableCell>{invoice.invoice_date || '-'}</TableCell>
                     <TableCell className="text-right font-medium">{formatEUR(Number(invoice.amount ?? 0))}</TableCell>
                     <TableCell className="text-right text-muted-foreground">{formatEUR(Number(invoice.vat_amount ?? 0))}</TableCell>

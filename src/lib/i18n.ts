@@ -1,4 +1,5 @@
 import {registerMailPreferenceTranslations} from './i18n-mail-preferences';
+import {registerMailBusinessTranslations} from './i18n-mail-business';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { registerMailActionTranslations } from './i18n-mail-actions';
@@ -3728,5 +3729,6 @@ registerMailReminderTranslations(i18n);
 registerMailSenderTranslations(i18n);
 registerMailSearchTranslations(i18n);
 registerMailPreferenceTranslations(i18n);
+registerMailBusinessTranslations(i18n);
 
 export default i18n;
