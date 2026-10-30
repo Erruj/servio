@@ -53,6 +53,7 @@ import { Reply, ReplyAll, Forward, Clock } from 'lucide-react';
 import { useBlockedSenders } from '@/hooks/useBlockedSenders';
 import { UnsubscribeSender } from '@/components/inbox/UnsubscribeSender';
 import { MailConversation } from '@/components/inbox/MailConversation';
+import {SenderCustomer,MailAttachmentActions} from '@/components/inbox/MailBusiness';
 
 export interface MailActions {
   onSnooze: (mail: MailItem) => void;
@@ -546,7 +547,7 @@ const sentimentLabel = (v?: string) => {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
               <div className="text-[14px]">
-                <span className="font-semibold text-foreground">{mail.from}</span>
+                <SenderCustomer key={mail.id} mail={mail}/>
               </div>
               <div className="text-[13px] text-muted-foreground">
                 Aan: <span className="text-foreground/70">{mail.to.join(', ')}</span>
@@ -591,22 +592,7 @@ const sentimentLabel = (v?: string) => {
             </div>
           </div>
 
-          {mail.attachments && mail.attachments.length > 0 && (
-            <div className="flex items-center gap-2 mt-3 flex-wrap">
-              {mail.attachments.map((attachment, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-1.5 bg-secondary rounded-full px-3 py-1 text-xs"
-                >
-                  <Paperclip className="h-3 w-3 text-muted-foreground" />
-                  <span className="font-medium">{attachment.name}</span>
-                  {attachment.sizeKB && (
-                    <span className="text-muted-foreground">({attachment.sizeKB}KB)</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <MailAttachmentActions key={mail.id} mail={mail}/>
         </div>
 
         {/* Unhappy customer banner */}
@@ -652,6 +638,7 @@ const sentimentLabel = (v?: string) => {
         </div>
 
         {/* Analysis Section */}
+        {analysis && <div className="space-y-3"><SenderCustomer key={`suggest-${mail.id}`} mail={mail} suggestion/><MailAttachmentActions mail={mail} suggestion/></div>}
         {isAnalyzing ? (
           <Card className="shadow-card">
             <CardHeader>
@@ -670,6 +657,8 @@ const sentimentLabel = (v?: string) => {
           <div className="sticky bottom-3 z-20">
             <Card className="rounded-2xl border-primary/20 bg-card/95 backdrop-blur shadow-elevated">
               <CardContent className="p-4 space-y-3">
+                <SenderCustomer key={`suggest-${mail.id}`} mail={mail} suggestion/>
+                <MailAttachmentActions mail={mail} suggestion/>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
                   <span className="text-sm font-semibold text-foreground mr-1">AI</span>

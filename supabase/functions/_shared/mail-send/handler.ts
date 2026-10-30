@@ -39,7 +39,7 @@ export async function accessToken(db:any,connection:any) {
   if (error) throw new SendError('storage',500);
   return tokens.access_token;
 }
-async function graphAttachments(token:string,externalId:string) {
+export async function graphAttachments(token:string,externalId:string) {
   let url:string | undefined = `${graphBase}/messages/${encodeURIComponent(externalId)}/attachments`;
   const attachments:any[]=[];
   while(url) {
@@ -53,7 +53,7 @@ async function graphAttachments(token:string,externalId:string) {
   }
   return attachments;
 }
-async function gmailOriginal(token:string,externalId:string) {
+export async function gmailOriginal(token:string,externalId:string) {
   const data=await providerCall(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(externalId)}?format=full`,token);
   const headers=data.payload?.headers || [];
   const header=(name:string)=>headers.find((h:any)=>h.name.toLowerCase()===name)?.value;

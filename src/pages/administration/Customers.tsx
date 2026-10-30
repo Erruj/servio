@@ -1,5 +1,6 @@
 import { formatEUR } from '@/lib/finance';
 import { useState, useEffect } from 'react';
+import {useSearchParams} from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ const emptyForm = {
 };
 
 export default function Customers() {
+  const [searchParams]=useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const newCustomerIds = useNewItems(customers.map((c) => c.id));
   const [stats, setStats] = useState<Record<string, CustomerStats>>({});
@@ -57,6 +59,7 @@ export default function Customers() {
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => { loadCustomers(); }, []);
+  useEffect(()=>{const id=searchParams.get('customer');if(id)setDetailCustomer(customers.find(c=>c.id===id)||null);},[customers,searchParams]);
 
   const loadCustomers = async () => {
     setLoading(true);
