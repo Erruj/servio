@@ -1,7 +1,8 @@
 # Roadmap
-- [ ] Mail-prompt 12: afzender-klantkaart, vooringevuld klantformulier en AI-suggesties
-- [ ] Mail-prompt 12: bijlagen via bestaande OCR naar Facturen/Bonnetjes, deduplicatie en teruglink
-- [ ] Mail-prompt 12: regeltests en browsercontrole
+- [x] Mail-prompt 12: afzender-klantkaart, vooringevuld klantformulier en AI-suggesties
+- [x] Mail-prompt 12: bijlagen via bestaande OCR naar Facturen/Bonnetjes, deduplicatie en teruglink
+- [x] Mail-prompt 12: 10 regeltests en gesimuleerde klant-/PDF-browsercontrole
+- [ ] Mail-prompt 12: echte mailboxdownload en OCR-resultaat (externe Supabase zonder beschikbare accountsessie)
 - [x] Mail-prompt 11: browsermeldingen en samengevoegde Mail-instellingen
 - [x] Mail-prompt 11: mailboxafzender/handtekening en veilige sync-gestuurde afwezigheidsberichten met audit; Outlook volgt exacte Servio-regels
 - [x] Mail-prompt 11: 42 regeltests, tijdelijke Postgres-cooldown/RLS/audittests en gesimuleerde meldingen-/instellingenproef
