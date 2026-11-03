@@ -16,3 +16,4 @@
 - Mail settings are grouped in a focused mail section; mailbox signatures and the default connection are owner-scoped and applied by the shared composer.
 - Explicit mail document imports use a service-written, owner-readable unique attachment ledger before fetching provider bytes; retries reuse the document ID, existing OCR fills review records, and source links never change accounting rules.
 - Mail customer suggestions are user-triggered server-side signature extraction; sender matching is exact case-insensitive and owner-scoped, and suggested values require form confirmation before customer creation.
+- Mail commercial actions prefill existing quote/time editors through owner-validated navigation state after confirmed customer creation; payment suggestions reuse the sales-invoice predicate and require a unique exact customer/amount match plus a conditional user-approved status update, without altering accounting rules.

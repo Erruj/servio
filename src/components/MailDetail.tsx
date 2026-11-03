@@ -54,6 +54,8 @@ import { useBlockedSenders } from '@/hooks/useBlockedSenders';
 import { UnsubscribeSender } from '@/components/inbox/UnsubscribeSender';
 import { MailConversation } from '@/components/inbox/MailConversation';
 import {SenderCustomer,MailAttachmentActions} from '@/components/inbox/MailBusiness';
+import {useMailCommercial} from '@/hooks/useMailCommercial';
+import {MailCommercialActions} from '@/components/inbox/MailCommercialActions';
 
 export interface MailActions {
   onSnooze: (mail: MailItem) => void;
@@ -87,7 +89,8 @@ function buildEml(mail: MailItem): string {
   return lines.join('\r\n');
 }
 
-const MailMoreMenu = ({ onPhishing, onResolved, onLabels, onPrint, onOriginal, onDownload, onSpam, onBlock }: {
+const MailMoreMenu = ({ onPhishing, onResolved, onLabels, onPrint, onOriginal, onDownload, onSpam, onBlock, onQuote, onTime }: {
+  onQuote?: () => void; onTime?: () => void;
   onBlock?: () => void;
   onPhishing: () => void; onResolved: () => void; onLabels?: () => void; onPrint?: () => void;
   onOriginal?: () => void; onDownload?: () => void; onSpam?: () => void;
@@ -101,6 +104,8 @@ const MailMoreMenu = ({ onPhishing, onResolved, onLabels, onPrint, onOriginal, o
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {onQuote && <DropdownMenuItem onClick={onQuote}><FileText className="h-4 w-4 mr-2"/>{t('mailCommercial.quote')}</DropdownMenuItem>}
+        {onTime && <DropdownMenuItem onClick={onTime}><Clock className="h-4 w-4 mr-2"/>{t('mailCommercial.time')}</DropdownMenuItem>}
         {onLabels && <DropdownMenuItem onClick={onLabels}><Tag className="h-4 w-4 mr-2" />{t('mailActions.labels')}</DropdownMenuItem>}
         {onPrint && <DropdownMenuItem onClick={onPrint}><Printer className="h-4 w-4 mr-2" />{t('mailActions.print')}</DropdownMenuItem>}
         {onOriginal && <DropdownMenuItem onClick={onOriginal}><Code className="h-4 w-4 mr-2" />{t('mailActions.viewOriginal')}</DropdownMenuItem>}
@@ -138,6 +143,7 @@ export function MailDetail({ mail: selectedMail, className, actions, connections
   useEffect(()=>{setLatestMail(null);},[selectedMail?.id]);
   const mail=latestMail && latestMail.threadId===selectedMail?.threadId && latestMail.connectionId===selectedMail?.connectionId ? (latestMail.id===selectedMail?.id?selectedMail:latestMail) : selectedMail;
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
+  const commercial = useMailCommercial(mail);
   const [reminderCompose, setReminderCompose] = useState(false);
   const { t } = useTranslation();
   const [labelsOpen, setLabelsOpen] = useState(false);
@@ -517,6 +523,8 @@ const downloadEml = () => {
 };
 
 const moreMenuProps = {
+  onQuote: () => void commercial.start('quote'),
+  onTime: () => void commercial.start('time'),
   onBlock: () => blockSender(),
   onPhishing: markAsPhishing,
   onResolved: handleMarkAsResolved,
@@ -547,7 +555,7 @@ const sentimentLabel = (v?: string) => {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
               <div className="text-[14px]">
-                <SenderCustomer key={mail.id} mail={mail}/>
+                <SenderCustomer key={mail.id} mail={mail} createRequest={commercial.createRequest} onCreated={commercial.onCreated}/>
               </div>
               <div className="text-[13px] text-muted-foreground">
                 Aan: <span className="text-foreground/70">{mail.to.join(', ')}</span>
@@ -638,7 +646,7 @@ const sentimentLabel = (v?: string) => {
         </div>
 
         {/* Analysis Section */}
-        {analysis && <div className="space-y-3"><SenderCustomer key={`suggest-${mail.id}`} mail={mail} suggestion/><MailAttachmentActions mail={mail} suggestion/></div>}
+        {analysis && <div className="space-y-3"><MailCommercialActions actions={commercial}/><SenderCustomer key={`suggest-${mail.id}`} mail={mail} suggestion/><MailAttachmentActions mail={mail} suggestion/></div>}
         {isAnalyzing ? (
           <Card className="shadow-card">
             <CardHeader>
@@ -657,6 +665,7 @@ const sentimentLabel = (v?: string) => {
           <div className="sticky bottom-3 z-20">
             <Card className="rounded-2xl border-primary/20 bg-card/95 backdrop-blur shadow-elevated">
               <CardContent className="p-4 space-y-3">
+                <MailCommercialActions actions={commercial}/>
                 <SenderCustomer key={`suggest-${mail.id}`} mail={mail} suggestion/>
                 <MailAttachmentActions mail={mail} suggestion/>
                 <div className="flex items-center gap-2 flex-wrap">
