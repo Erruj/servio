@@ -1,4 +1,7 @@
 # Roadmap
+- [ ] Mail-prompt 13: mail naar gecontroleerd offerteconcept en vooringevulde uren
+- [ ] Mail-prompt 13: betalingssuggestie bij exacte klant/bedrag en bestaande verkoopfactuur
+- [ ] Mail-prompt 13: tests en browsercontrole (echte accountsessie extern niet beschikbaar)
 - [x] Mail-prompt 12: afzender-klantkaart, vooringevuld klantformulier en AI-suggesties
 - [x] Mail-prompt 12: bijlagen via bestaande OCR naar Facturen/Bonnetjes, deduplicatie en teruglink
 - [x] Mail-prompt 12: 10 regeltests en gesimuleerde klant-/PDF-browsercontrole
