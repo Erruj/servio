@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState,useEffect} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
@@ -16,7 +16,7 @@ import {HoverCard,HoverCardTrigger,HoverCardContent} from '@/components/ui/hover
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription,DialogFooter} from '@/components/ui/dialog';
 import {Paperclip,FileText,Receipt,UserPlus,Check} from 'lucide-react';
 
-export function SenderCustomer({mail,suggestion=false}:{mail:MailItem;suggestion?:boolean}){
+export function SenderCustomer({mail,suggestion=false,createRequest=0,onCreated}:{mail:MailItem;suggestion?:boolean;createRequest?:number;onCreated?:(id:string)=>void}){
  const {t}=useTranslation();const {user}=useAuth();const qc=useQueryClient();const email=(mail.fromEmail||mail.from).trim().toLowerCase();
  const [open,setOpen]=useState(false);const [cardOpen,setCardOpen]=useState(false);const [saving,setSaving]=useState(false);const [aiBusy,setAiBusy]=useState(false);
  const [form,setForm]=useState({name:mail.from,email,company_name:'',phone:''});
@@ -32,9 +32,11 @@ export function SenderCustomer({mail,suggestion=false}:{mail:MailItem;suggestion
  const create=async()=>{setCardOpen(false);setOpen(true);setAiBusy(true);try{const {data,error}=await supabase.functions.invoke('mail-business',{body:{action:'customer',email_id:mail.id}});if(error||data?.errorCode||data?.error)throw error||new Error('ai');setForm(f=>({...f,company_name:f.company_name||data?.data?.company_name||'',phone:f.phone||data?.data?.phone||''}));}catch{toast.error(t('mailBusiness.aiFailed'));}finally{setAiBusy(false);}};
  const save=async()=>{if(!user||!form.name.trim()||!form.email.trim())return;setSaving(true);try{
  const {data:existing,error:findError}=await supabase.from('customers').select('id').eq('user_id',user.id).ilike('email',form.email.trim().replace(/[\\%_]/g,'\\$&')).limit(1).maybeSingle();if(findError)throw findError;
- if(!existing){const {error}=await supabase.from('customers').insert({...form,name:form.name.trim(),email:form.email.trim(),user_id:user.id});if(error)throw error;}
- await qc.invalidateQueries({queryKey:key});setOpen(false);setCardOpen(false);toast.success(t('mailBusiness.created'));
+ let id=existing?.id;
+ if(!existing){const {data,error}=await supabase.from('customers').insert({...form,name:form.name.trim(),email:form.email.trim(),user_id:user.id}).select('id').single();if(error||!data)throw error||new Error('customer');id=data.id;}
+ await qc.invalidateQueries({queryKey:key});setOpen(false);setCardOpen(false);toast.success(t('mailBusiness.created'));if(id)onCreated?.(id);
  }catch{toast.error(t('mailBusiness.error'));}finally{setSaving(false);}};
+ useEffect(()=>{if(createRequest>0)void create();},[createRequest]);
  const content=query.isLoading?<Skeleton className="h-20 w-full"/>:query.isError?<div role="alert">{t('mailBusiness.loadError')}<Button variant="ghost" onClick={()=>void query.refetch()}>{t('mailBusiness.retry')}</Button></div>:query.data?<div className="space-y-2"><Badge variant="secondary">{t('mailBusiness.known')}</Badge><p className="font-medium">{query.data.customer.company_name||query.data.customer.name}</p><p className="text-sm">{t('mailBusiness.invoices',{count:query.data.invoices})}</p><p className="text-sm">{t('mailBusiness.quotes',{count:query.data.quotes})}</p><Button asChild variant="outline" className="min-h-11"><Link to={`/administration/customers?customer=${query.data.customer.id}`}>{t('mailBusiness.customer')}</Link></Button></div>:<Button variant="outline" className="min-h-11 gap-2" onClick={()=>void create()}><UserPlus className="h-4 w-4"/>{t('mailBusiness.create')}</Button>;
  return <>{suggestion?(query.isSuccess&&!query.data?<div className="flex flex-wrap items-center gap-2"><p className="text-sm text-muted-foreground">{t('mailBusiness.customerSuggestion')}</p>{content}</div>:null):<HoverCard open={cardOpen} onOpenChange={setCardOpen}><HoverCardTrigger asChild><Button variant="ghost" className="min-h-11 px-0 font-semibold max-w-full whitespace-normal text-left" onClick={()=>setCardOpen(v=>!v)}>{mail.from}</Button></HoverCardTrigger><HoverCardContent align="start" className="w-80 max-w-[calc(100vw-2rem)]">{content}</HoverCardContent></HoverCard>}
  <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{t('mailBusiness.create')}</DialogTitle><DialogDescription>{t('mailBusiness.aiReview')}</DialogDescription></DialogHeader>{aiBusy&&<Skeleton className="h-4 w-full"/>}<form onSubmit={e=>{e.preventDefault();void save();}} className="space-y-3">{(['name','email','company_name','phone'] as const).map(field=><div key={field}><Label htmlFor={`mail-customer-${field}`}>{t(`mailBusiness.${field==='company_name'?'company':field}`)}</Label><Input id={`mail-customer-${field}`} required={field==='name'||field==='email'} type={field==='email'?'email':'text'} maxLength={field==='phone'?50:200} value={form[field]} onChange={e=>setForm({...form,[field]:e.target.value})}/></div>)}<DialogFooter><Button type="button" variant="outline" onClick={()=>setOpen(false)}>{t('mailBusiness.cancel')}</Button><Button type="submit" disabled={saving||aiBusy}>{t('mailBusiness.save')}</Button></DialogFooter></form></DialogContent></Dialog></>;
