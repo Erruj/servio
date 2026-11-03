@@ -18,6 +18,9 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { quotePrefill, type MailQuotePrefill } from '@/lib/mail-commercial';
+import { useTranslation } from 'react-i18next';
 
 interface Customer { id: string; name: string; company_name: string | null; email: string | null; }
 interface QuoteLine { id?: string; description: string; quantity: number; unit_price: number; vat_rate: number; total: number; sort_order: number; }
@@ -37,6 +40,7 @@ const statusColors: Record<string, string> = {
 const statusLabels: Record<string, string> = { draft: 'Concept', sent: 'Verzonden', accepted: 'Geaccepteerd', rejected: 'Afgewezen', expired: 'Verlopen' };
 
 export default function Quotes() {
+  const location = useLocation(); const navigate = useNavigate(); const {t} = useTranslation();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerMap, setCustomerMap] = useState<Record<string, Customer>>({});
@@ -71,6 +75,15 @@ export default function Quotes() {
       const map: Record<string, Customer> = {};
       custs.forEach(c => map[c.id] = c);
       setCustomerMap(map);
+      const prefill = (location.state as {mailQuote?:MailQuotePrefill}|null)?.mailQuote;
+      if(prefill?.userId===user.user.id && custs.some(c=>c.id===prefill.customerId)) {
+        const values=quotePrefill(prefill);
+        setCustomerId(values.customerId);setDescription(values.description);
+        setNotes(values.notes?t('mailCommercial.date',{date:values.notes}):'');
+        if(values.lines.length)setLines(values.lines);
+        setShowEditor(true);
+        navigate(location.pathname,{replace:true,state:null});
+      }
     } catch (error) {
       console.error('Error loading quotes:', error);
       toast.error('Offertes konden niet worden geladen');

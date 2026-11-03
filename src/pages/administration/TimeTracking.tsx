@@ -18,6 +18,8 @@ import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import {useLocation,useNavigate} from 'react-router-dom';
+import type {MailTimePrefill} from '@/lib/mail-commercial';
 
 interface Customer { id: string; name: string; }
 interface TimeEntry {
@@ -27,6 +29,7 @@ interface TimeEntry {
 }
 
 export default function TimeTracking() {
+  const location=useLocation();const navigate=useNavigate();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +80,11 @@ export default function TimeTracking() {
     ]);
     setEntries((entriesRes.data as any[]) || []);
     setCustomers((customersRes.data as any[]) || []);
+    const prefill=(location.state as {mailTime?:MailTimePrefill}|null)?.mailTime;
+    if(prefill?.userId===user.user.id && customersRes.data?.some(c=>c.id===prefill.customerId)){
+      setManualCustomer(prefill.customerId);setManualDesc(prefill.subject);setShowManual(true);
+      navigate(location.pathname,{replace:true,state:null});
+    }
     setLoading(false);
   };
 
