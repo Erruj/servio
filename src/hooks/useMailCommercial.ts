@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { commercialSchema, paymentMatch, type CommercialExtraction } from '@/lib
 export function useMailCommercial(mail: MailItem | null) {
  const { user } = useAuth(); const { t } = useTranslation(); const navigate = useNavigate(); const qc = useQueryClient();
  const [busy, setBusy] = useState(false); const [createRequest, setCreateRequest] = useState(0); const [pending, setPending] = useState<'quote'|'time'|null>(null);
+ useEffect(()=>{setCreateRequest(0);setPending(null);},[mail?.id,user?.id]);
  const email = (mail?.fromEmail || mail?.from || '').trim().toLowerCase();
  const customer = useQuery({queryKey:['mail-commercial-customer',user?.id,email],enabled:!!user&&!!email,retry:false,queryFn:async()=>{
   if(!user)return null;
@@ -23,7 +24,7 @@ export function useMailCommercial(mail: MailItem | null) {
   if(error)throw error;return data||[];
  }});
  const paymentCandidate = /betalin|betaald|payment|paid|zahlung|bezahlt|paiement|payé|pago|pagado/i.test(`${mail?.subject||''} ${mail?.bodyText||mail?.snippet||''}`);
- const extraction = useQuery({queryKey:['mail-commercial-extraction',user?.id,mail?.id],enabled:!!user&&!!mail&&!!invoices.data?.length&&paymentCandidate,retry:false,staleTime:Infinity,queryFn:async()=>{
+ const extraction = useQuery({queryKey:['mail-commercial-extraction',user?.id,mail?.id],enabled:!!user&&!!mail&&!!invoices.data?.length&&paymentCandidate,retry:false,refetchOnMount:false,refetchOnWindowFocus:false,refetchOnReconnect:false,staleTime:Infinity,queryFn:async()=>{
   if(!mail)throw new Error('mail');
   const {data,error}=await supabase.functions.invoke('mail-business',{body:{action:'commercial',email_id:mail.id}});
   if(error||data?.errorCode)throw error||new Error('ai');return commercialSchema.parse(data.data);

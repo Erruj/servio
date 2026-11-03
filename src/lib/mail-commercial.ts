@@ -13,7 +13,7 @@ export type MailQuotePrefill = { userId: string; customerId: string; subject: st
 export type MailTimePrefill = { userId: string; customerId: string; subject: string };
 export function quotePrefill(value: MailQuotePrefill) {
   return { customerId: value.customerId, description: value.subject, notes: value.extraction.requested_date || '',
-    lines: value.extraction.lines.map((line, sort_order) => ({ ...line, unit_price: 0, vat_rate: 21, total: 0, sort_order })) };
+    lines: value.extraction.lines.map((line, sort_order) => ({ description: line.description || '', quantity: line.quantity ?? 1, unit_price: 0, vat_rate: 21, total: 0, sort_order })) };
 }
 export function paymentMatch<T extends InvoiceRow & { status?: string | null }>(invoices: T[], customerId: string, extraction: CommercialExtraction): T | null {
   if (!extraction.payment_confirmed || extraction.currency !== 'EUR' || extraction.payment_amount === null) return null;
