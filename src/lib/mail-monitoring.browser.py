@@ -58,6 +58,9 @@ async def main():
         transformed = subprocess.run(['bun','-e',"const e=require('esbuild');let s=await Bun.stdin.text();console.log(e.transformSync(s,{loader:'jsx',format:'esm'}).code)"],input=HARNESS,text=True,capture_output=True,check=True).stdout
         await context.route('**/qa-harness.jsx', lambda r:r.fulfill(content_type='application/javascript',body=transformed))
         page = await context.new_page()
+        page.on('console',lambda m:print('CONSOLE',m.text))
+        page.on('response',lambda r:print('HTTP',r.status,r.url) if r.status>=400 else None)
+        page.on('requestfailed',lambda r:print('FAILED',r.url,r.failure))
         errors=[]
         page.on('pageerror',lambda e:(errors.append(str(e)),print('PAGE ERROR',str(e))))
         await page.goto('http://localhost:8080/qa-mail-monitoring?mode=detail')
