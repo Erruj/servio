@@ -1,4 +1,8 @@
 # Roadmap
+- [ ] Monitoring: geselecteerde mail als actiedoel behouden
+- [ ] Monitoring: klantaanmaak niet opnieuw starten bij mailwisseling
+- [ ] Monitoring: klantdetails na sluiten gesloten houden
+- [ ] Monitoring: mislukte geplande mail na bewerken opnieuw versturen
 - [x] Mail-prompt 13: mail naar gecontroleerd offerteconcept en vooringevulde uren
 - [x] Mail-prompt 13: betalingssuggestie bij exacte klant/bedrag en bestaande verkoopfactuur
 - [x] Mail-prompt 13: 21 tests, live AI-extractie en gesimuleerde offerte/uren/betalingsproef

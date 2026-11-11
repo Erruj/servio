@@ -46,7 +46,7 @@ const emptyForm = {
 };
 
 export default function Customers() {
-  const [searchParams]=useSearchParams();
+  const [searchParams,setSearchParams]=useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const newCustomerIds = useNewItems(customers.map((c) => c.id));
   const [stats, setStats] = useState<Record<string, CustomerStats>>({});
@@ -301,7 +301,11 @@ export default function Customers() {
         </Dialog>
 
         {/* Detail Dialog */}
-        <Dialog open={!!detailCustomer} onOpenChange={() => setDetailCustomer(null)}>
+        <Dialog open={!!detailCustomer} onOpenChange={open => {
+          if (open) return;
+          setDetailCustomer(null);
+          setSearchParams(params => { const next = new URLSearchParams(params); next.delete('customer'); return next; }, {replace:true});
+        }}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>{detailCustomer?.name}</DialogTitle>

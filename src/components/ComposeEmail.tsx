@@ -36,7 +36,6 @@ interface ComposeEmailProps {
   initialDraft?: DraftData;
   onSaved?: () => void;
   initialBody?: string;
-  scheduledAt?: string;
   reminder?: boolean;
 }
 const cleanHtml = (html: string) => DOMPurify.sanitize(html, { ALLOWED_TAGS: ['p','div','br','strong','b','em','i','u','ul','ol','li','a','blockquote'], ALLOWED_ATTR: ['href'], ALLOW_DATA_ATTR: false });
@@ -50,7 +49,7 @@ export function ComposeEmail(props: ComposeEmailProps) {
   if (!props.open) return null;
   return <ComposerSession key={props.draftId || `${props.mode || 'new'}-${props.mail?.id || props.replyTo?.emailId || props.initialTo || 'new'}`} {...props} />;
 }
-function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail, mode = replyTo ? 'reply' : 'new', inline, connections: provided, draftId, initialDraft, onSaved, initialBody, scheduledAt, reminder }: ComposeEmailProps) {
+function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail, mode = replyTo ? 'reply' : 'new', inline, connections: provided, draftId, initialDraft, onSaved, initialBody, reminder }: ComposeEmailProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -206,7 +205,7 @@ function ComposerSession({ onOpenChange, hasConnection, initialTo, replyTo, mail
   useEffect(() => {
     if (ready && reminder && !reminderStarted.current && !initialDraft) { reminderStarted.current = true; void ai(undefined, true); }
   }, [ready, reminder]);
-  const send = async (sendAt: string | undefined = scheduledAt) => {
+  const send = async (sendAt?: string) => {
     const d = latest.current;
     if (!d.to.length || !d.subject.trim() || !plainText(d.html).trim()) { toast({ title: t('compose.missingFields'), variant: 'destructive' }); return; }
     if (!hasConnection || !d.connectionId) { toast({ title: t('compose.noMailbox'), variant: 'destructive' }); return; }
