@@ -49,7 +49,7 @@ async def main():
         context = await browser.new_context(viewport={'width':1280,'height':1800})
         await context.route('**/src/components/AuthProvider.tsx', lambda r:r.fulfill(content_type='application/javascript',body=AUTH))
         await context.route('**/src/integrations/supabase/client.ts', lambda r:r.fulfill(content_type='application/javascript',body=CLIENT))
-        await context.route('**/qa-mail-monitoring*', lambda r:r.fulfill(content_type='text/html',body='<div id="root"></div><script type="module" src="/qa-harness.jsx"></script>'))
+        await context.route('**/qa-mail-monitoring*', lambda r:r.fulfill(content_type='text/html',body='<script type="module" src="/@oj/refresh-preamble.js"></script><div id="root"></div><script type="module" src="/qa-harness.jsx"></script>'))
         # Vite transforms the JSX served below through its normal source loader.
         import requests
         response = requests.post('http://localhost:8080/__unused', data='') if False else None
