@@ -24,7 +24,7 @@ return(...args)=>{if(['insert','update','upsert','delete'].includes(key)){op=key
 HARNESS = """
 import React,{useState} from '/@oj-deps/react.mjs';
 import {createRoot} from '/@oj-deps/react-dom_client__oj_named.mjs';
-import {QueryClient,QueryClientProvider} from '/@oj-deps/@tanstack/react-query.mjs';
+import {QueryClient,QueryClientProvider} from '/@oj-deps/tanstack_react-query.mjs';
 import {BrowserRouter} from '/@oj-deps/react-router-dom.mjs';
 import i18n from '/src/lib/i18n.ts';
 import {MailDetail} from '/src/components/MailDetail.tsx';
