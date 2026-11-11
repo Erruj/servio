@@ -59,8 +59,10 @@ async def main():
         await context.route('**/qa-harness.jsx', lambda r:r.fulfill(content_type='application/javascript',body=transformed))
         page = await context.new_page()
         errors=[]
-        page.on('pageerror',lambda e:errors.append(str(e)))
+        page.on('pageerror',lambda e:(errors.append(str(e)),print('PAGE ERROR',str(e))))
         await page.goto('http://localhost:8080/qa-mail-monitoring?mode=detail')
+        await page.wait_for_timeout(1500)
+        print((await page.locator('body').inner_text())[:1000])
         await page.get_by_text('Already replied',exact=True).wait_for()
         await page.get_by_role('button',name='Archiveren',exact=True).click()
         await page.get_by_role('button',name='Verwijderen',exact=True).click()
