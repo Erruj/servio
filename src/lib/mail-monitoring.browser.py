@@ -70,13 +70,13 @@ async def main():
         await page.goto('http://localhost:8080/qa-mail-monitoring?mode=detail')
         await page.wait_for_timeout(1500)
         print((await page.locator('body').inner_text())[:1000])
-        await page.get_by_text('Already replied',exact=True).wait_for()
+        await page.get_by_text('Already replied',exact=True).last.wait_for()
         await page.get_by_role('button',name='Archiveren',exact=True).click()
         await page.get_by_role('button',name='Verwijderen',exact=True).click()
-        await page.get_by_role('button',name='Ster toevoegen',exact=True).click()
+        await page.get_by_role('button',name='Met ster markeren',exact=True).click()
         assert await page.evaluate("qaCalls.filter(c=>c.action).every(c=>c.id==='original-1')")
         assert await page.evaluate("qaCalls.filter(c=>c.action).length") == 3
-        await page.get_by_role('button',name='Beantwoorden',exact=True).click()
+        await page.get_by_role('button',name='Beantwoorden',exact=True).first.click()
         await page.locator('[data-mail-composer]').wait_for()
         assert await page.locator('[data-mail-composer]').inner_text() and await page.get_by_text('alice@example.test',exact=True).count()>0
         await page.screenshot(path=str(OUT/'1-selected-mail.png'))
