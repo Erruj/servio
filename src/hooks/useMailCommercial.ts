@@ -10,8 +10,9 @@ import { commercialSchema, paymentMatch, type CommercialExtraction } from '@/lib
 
 export function useMailCommercial(mail: MailItem | null) {
  const { user } = useAuth(); const { t } = useTranslation(); const navigate = useNavigate(); const qc = useQueryClient();
- const [busy, setBusy] = useState(false); const [createRequest, setCreateRequest] = useState(0); const [pending, setPending] = useState<'quote'|'time'|null>(null);
- useEffect(()=>{setCreateRequest(0);setPending(null);},[mail?.id,user?.id]);
+ const [busy, setBusy] = useState(false); const [customerRequest, setCustomerRequest] = useState<{mailId:string;userId:string;nonce:number}|null>(null); const [pending, setPending] = useState<'quote'|'time'|null>(null);
+ const createRequest = customerRequest?.mailId === mail?.id && customerRequest?.userId === user?.id ? customerRequest?.nonce || 0 : 0;
+ useEffect(()=>{setCustomerRequest(null);setPending(null);},[mail?.id,user?.id]);
  const email = (mail?.fromEmail || mail?.from || '').trim().toLowerCase();
  const customer = useQuery({queryKey:['mail-commercial-customer',user?.id,email],enabled:!!user&&!!email,retry:false,queryFn:async()=>{
   if(!user)return null;
@@ -45,7 +46,7 @@ export function useMailCommercial(mail: MailItem | null) {
   if(!mail||!user||busy)return;
   if(customer.isPending||customer.isError){toast.error(t('mailBusiness.loadError'));return;}
   if(customer.data){await continueAction(action,customer.data.id);return;}
-  setPending(action);setCreateRequest(v=>v+1);toast.info(t('mailCommercial.customer'));
+  setPending(action);setCustomerRequest(v=>({mailId:mail.id,userId:user.id,nonce:(v?.nonce||0)+1}));toast.info(t('mailCommercial.customer'));
  };
  const onCreated=(id:string)=>{const action=pending;setPending(null);void qc.invalidateQueries({queryKey:['mail-commercial-customer',user?.id,email]});if(action)void continueAction(action,id);};
  const markPaid=async()=>{

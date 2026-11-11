@@ -139,9 +139,7 @@ interface MailDetailProps {
 }
 
 export function MailDetail({ mail: selectedMail, className, actions, connections = [], onDraftSaved, composeRequest }: MailDetailProps) {
-  const [latestMail,setLatestMail]=useState<MailItem|null>(null);
-  useEffect(()=>{setLatestMail(null);},[selectedMail?.id]);
-  const mail=latestMail && latestMail.threadId===selectedMail?.threadId && latestMail.connectionId===selectedMail?.connectionId ? (latestMail.id===selectedMail?.id?selectedMail:latestMail) : selectedMail;
+  const mail = selectedMail;
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
   const commercial = useMailCommercial(mail);
   const [reminderCompose, setReminderCompose] = useState(false);
@@ -642,7 +640,7 @@ const sentimentLabel = (v?: string) => {
 
         {/* Email body — 15px / 1.6 line-height */}
         <div className="text-[15px] leading-[1.6] text-foreground">
-          <MailConversation mail={selectedMail || mail} onLatest={setLatestMail}/>
+          <MailConversation mail={mail}/>
         </div>
 
         {/* Analysis Section */}
