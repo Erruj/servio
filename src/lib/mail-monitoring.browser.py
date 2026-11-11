@@ -55,7 +55,11 @@ async def main():
         response = requests.post('http://localhost:8080/__unused', data='') if False else None
         # JSX is transformed by the project's installed esbuild without a project build.
         import subprocess
-        transformed = subprocess.run(['bun','-e',"const e=require('esbuild');let s=await Bun.stdin.text();console.log(e.transformSync(s,{loader:'jsx',format:'esm'}).code)"],input=HARNESS,text=True,capture_output=True,check=True).stdout
+        import re
+        dep_source = requests.get('http://localhost:8080/src/components/MailDetail.tsx').text + requests.get('http://localhost:8080/src/main.tsx').text + requests.get('http://localhost:8080/src/hooks/useMailCommercial.ts').text
+        version = re.search(r'v=([a-f0-9]+)', dep_source).group(1)
+        harness = re.sub(r"(/@oj-deps/[^']+.mjs)", lambda m:m.group(1)+'?v='+version, HARNESS)
+        transformed = subprocess.run(['bun','-e',"const e=require('esbuild');let s=await Bun.stdin.text();console.log(e.transformSync(s,{loader:'jsx',format:'esm'}).code)"],input=harness,text=True,capture_output=True,check=True).stdout
         await context.route('**/qa-harness.jsx', lambda r:r.fulfill(content_type='application/javascript',body=transformed))
         page = await context.new_page()
         page.on('console',lambda m:print('CONSOLE',m.text))
