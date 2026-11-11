@@ -148,7 +148,7 @@ const Inbox = () => {
   const scheduledAction=async(mail:MailItem,action:'cancel'|'now',edit=false)=>{
     const {data,error}=await supabase.functions.invoke('scheduled-mail',{body:{action,draftId:mail.id}});
     if(error||data?.errorCode){toast({title:t('mailSchedule.error'),variant:'destructive'});return;}
-    await refetchEmails();if(edit){setDraftMail({...mail,folder:'drafts',sendAt:undefined,sendStatus:'draft',sendError:undefined,undoUntil:undefined});setComposeOpen(true);}else toast({title:t(action==='cancel'?'mailSchedule.cancelled':'mailSchedule.scheduled')});
+    await refetchEmails();if(edit){setDraftMail({...mail,folder:'drafts',sendAt:undefined,sendError:undefined});setComposeOpen(true);}else toast({title:t(action==='cancel'?'mailSchedule.cancelled':'mailSchedule.scheduled')});
   };
   const handleMailSelect = (mail: MailItem) => {
     setComposeRequest(undefined);
