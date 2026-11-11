@@ -22,7 +22,7 @@ if(table==='user_settings'||table==='mail_preferences')return {data:null};return
 return(...args)=>{if(['insert','update','upsert','delete'].includes(key)){op=key;payload=args[0];}if(['eq','ilike'].includes(key))filters.push(args);return q;};}});return q;}};
 """
 HARNESS = """
-import React,{useState} from '/@oj-deps/react.mjs';
+import React from '/@oj-deps/react.mjs'; import {useState} from '/@oj-deps/react__oj_named.mjs';
 import {createRoot} from '/@oj-deps/react-dom_client__oj_named.mjs';
 import {QueryClient,QueryClientProvider} from '/@oj-deps/tanstack_react-query.mjs';
 import {BrowserRouter} from '/@oj-deps/react-router-dom.mjs';
