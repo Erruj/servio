@@ -22,10 +22,10 @@ if(table==='user_settings'||table==='mail_preferences')return {data:null};return
 return(...args)=>{if(['insert','update','upsert','delete'].includes(key)){op=key;payload=args[0];}if(['eq','ilike'].includes(key))filters.push(args);return q;};}});return q;}};
 """
 HARNESS = """
-import React,{useState} from '/node_modules/.vite/deps/react.js';
-import {createRoot} from '/node_modules/.vite/deps/react-dom_client.js';
-import {QueryClient,QueryClientProvider} from '/node_modules/.vite/deps/@tanstack_react-query.js';
-import {BrowserRouter} from '/node_modules/.vite/deps/react-router-dom.js';
+import React,{useState} from '/@oj-deps/react.mjs';
+import {createRoot} from '/@oj-deps/react-dom_client__oj_named.mjs';
+import {QueryClient,QueryClientProvider} from '/@oj-deps/@tanstack/react-query.mjs';
+import {BrowserRouter} from '/@oj-deps/react-router-dom.mjs';
 import i18n from '/src/lib/i18n.ts';
 import {MailDetail} from '/src/components/MailDetail.tsx';
 import {SenderCustomer} from '/src/components/inbox/MailBusiness.tsx';
