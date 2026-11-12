@@ -60,6 +60,7 @@ async def main():
             harness = HARNESS.replace("import React from '/@oj-deps/react.mjs'; import {useState} from '/@oj-deps/react__oj_named.mjs';", "import React from '/node_modules/.vite/deps/react.js?v="+version+"'; const {useState}=React;")
             for old,new in [('react-dom_client__oj_named.mjs','react-dom_client.js'),('tanstack_react-query.mjs','@tanstack_react-query.js'),('react-router-dom.mjs','react-router-dom.js')]:
                 harness=harness.replace('/@oj-deps/'+old,'/node_modules/.vite/deps/'+new+'?v='+version)
+            harness=harness.replace("import {createRoot} from", "import ReactDOMClient from").replace("import i18n from", "const {createRoot}=ReactDOMClient; import i18n from")
             preamble='<script type="module">import RefreshRuntime from "/@react-refresh"; RefreshRuntime.injectIntoGlobalHook(window); window.$RefreshReg$=()=>{}; window.$RefreshSig$=()=>type=>type; window.__vite_plugin_react_preamble_installed__=true;</script>'
         else:
             preamble='<script type="module" src="/@oj/refresh-preamble.js"></script>'
