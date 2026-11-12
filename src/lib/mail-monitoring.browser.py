@@ -50,9 +50,7 @@ async def main():
         await context.route('**/src/components/AuthProvider.tsx', lambda r:r.fulfill(content_type='application/javascript',body=AUTH))
         await context.route('**/src/integrations/supabase/client.ts', lambda r:r.fulfill(content_type='application/javascript',body=CLIENT))
         await context.route('**/qa-mail-monitoring*', lambda r:r.fulfill(content_type='text/html',body='<script type="module" src="/@oj/refresh-preamble.js"></script><div id="root"></div><script type="module" src="/qa-harness.jsx"></script>'))
-        # Vite transforms the JSX served below through its normal source loader.
         import requests
-        response = requests.post('http://localhost:8080/__unused', data='') if False else None
         # JSX is transformed by the project's installed esbuild without a project build.
         import subprocess
         import re
@@ -68,8 +66,6 @@ async def main():
         errors=[]
         page.on('pageerror',lambda e:(errors.append(str(e)),print('PAGE ERROR',str(e))))
         await page.goto('http://localhost:8080/qa-mail-monitoring?mode=detail')
-        await page.wait_for_timeout(1500)
-        print((await page.locator('body').inner_text())[:1000])
         await page.get_by_text('Already replied',exact=True).last.wait_for()
         await page.get_by_role('button',name='Archiveren',exact=True).click()
         await page.get_by_role('button',name='Verwijderen',exact=True).click()
