@@ -49,7 +49,6 @@ async def main():
         context = await browser.new_context(viewport={'width':1280,'height':1800})
         await context.route('**/src/components/AuthProvider.tsx', lambda r:r.fulfill(content_type='application/javascript',body=AUTH))
         await context.route('**/src/integrations/supabase/client.ts', lambda r:r.fulfill(content_type='application/javascript',body=CLIENT))
-        await context.route('**/qa-mail-monitoring*', lambda r:r.fulfill(content_type='text/html',body='<script type="module" src="/@oj/refresh-preamble.js"></script><div id="root"></div><script type="module" src="/qa-harness.jsx"></script>'))
         import requests
         # JSX is transformed by the project's installed esbuild without a project build.
         import subprocess
@@ -57,6 +56,14 @@ async def main():
         dep_source = requests.get('http://localhost:8080/src/components/MailDetail.tsx').text + requests.get('http://localhost:8080/src/main.tsx').text + requests.get('http://localhost:8080/src/hooks/useMailCommercial.ts').text
         version = re.search(r'v=([a-f0-9]+)', dep_source).group(1)
         harness = re.sub(r"(/@oj-deps/[^']+.mjs)", lambda m:m.group(1)+'?v='+version, HARNESS)
+        if '/node_modules/.vite/deps/' in dep_source:
+            harness = HARNESS.replace("import React from '/@oj-deps/react.mjs'; import {useState} from '/@oj-deps/react__oj_named.mjs';", "import React from '/node_modules/.vite/deps/react.js?v="+version+"'; const {useState}=React;")
+            for old,new in [('react-dom_client__oj_named.mjs','react-dom_client.js'),('tanstack_react-query.mjs','@tanstack_react-query.js'),('react-router-dom.mjs','react-router-dom.js')]:
+                harness=harness.replace('/@oj-deps/'+old,'/node_modules/.vite/deps/'+new+'?v='+version)
+            preamble='<script type="module">import RefreshRuntime from "/@react-refresh"; RefreshRuntime.injectIntoGlobalHook(window); window.$RefreshReg$=()=>{}; window.$RefreshSig$=()=>type=>type; window.__vite_plugin_react_preamble_installed__=true;</script>'
+        else:
+            preamble='<script type="module" src="/@oj/refresh-preamble.js"></script>'
+        await context.route('**/qa-mail-monitoring*', lambda r:r.fulfill(content_type='text/html',body=preamble+'<div id="root"></div><script type="module" src="/qa-harness.jsx"></script>'))
         transformed = subprocess.run(['bun','-e',"const e=require('esbuild');let s=await Bun.stdin.text();console.log(e.transformSync(s,{loader:'jsx',format:'esm'}).code)"],input=harness,text=True,capture_output=True,check=True).stdout
         await context.route('**/qa-harness.jsx', lambda r:r.fulfill(content_type='application/javascript',body=transformed))
         page = await context.new_page()
